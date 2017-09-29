@@ -11,4 +11,13 @@
     <string name="rep_pass">Repeat password</string>
     <string name="sign_up">Sign up</string>
     <string name="log_in_link">Already have an account? Log in!</string>
+    <string name="event_name">Event name</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="description">Description</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="create">Create</string>
+    <string name="join">Join</string>
+    <string name="create_event">Create event</string>
 </resources>
