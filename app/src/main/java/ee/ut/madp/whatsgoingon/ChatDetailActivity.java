@@ -16,9 +16,9 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
 
     private static final String TAG = "chat.ChatDetailActivity";
 
+    private ListView messagesListView;
     private ArrayAdapter<ChatMessage> adapter;
     private ChatApplication application;
-    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,11 +28,9 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
         application = (ChatApplication) getApplication();
         application.addObserver(this);
 
-        ListView messagesListView = (ListView) findViewById(R.id.messagesListView);
-        adapter = new ChatMessageAdapter(getApplicationContext(), R.layout.message_list_item, null);
+        messagesListView = (ListView) findViewById(R.id.messagesListView);
+        adapter = new ChatMessageAdapter(this, R.layout.message_list_item, application.getHistory());
         messagesListView.setAdapter(adapter);
-
-        username = getIntent().getStringExtra("username");
 
         updateHistory();
     }
@@ -100,10 +98,8 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
 
     public void sendMessage(View view) {
         EditText messageET = (EditText) findViewById(R.id.messageEditText);
-        String messageText = String.valueOf(messageET.getText());
-        String messageAuthor = username;
-        ChatMessage newMessage = new ChatMessage(messageText, messageAuthor);
-        application.newLocalUserMessage(newMessage);
+        String message = String.valueOf(messageET.getText());
+        application.newLocalUserMessage(message);
         messageET.setText("");
     }
 }

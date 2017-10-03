@@ -18,6 +18,12 @@ public class ChatMessage {
         this.messageTime = new Date().getTime();
     }
 
+    public ChatMessage(String messageText, String messageAuthor, long messageTime) {
+        this.messageText = messageText;
+        this.messageAuthor = messageAuthor;
+        this.messageTime = messageTime;
+    }
+
     public ChatMessage() {
     }
 

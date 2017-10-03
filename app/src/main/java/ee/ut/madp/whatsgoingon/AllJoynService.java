@@ -77,6 +77,8 @@ public class AllJoynService extends Service implements Observer {
         mBackgroundHandler.startDiscovery();
     }
 
+    private static final int NOTIFICATION_ID = 0xdefaced;
+
     /**
      * Our onDestroy() is called by the Android appliation framework when it
      * decides that our Service is no longer needed.  We tell our background
@@ -884,6 +886,7 @@ public class AllJoynService extends Service implements Observer {
             mChatApplication.hostSetChannelState(mHostChannelState);
         } else {
             mChatApplication.alljoynError(ChatApplication.Module.HOST, "Unable to bind session contact port: (" + status + ")");
+            return;
         }
     }
 
@@ -1151,10 +1154,10 @@ public class AllJoynService extends Service implements Observer {
             try {
                 if (mJoinedToSelf) {
                     if (mHostChatInterface != null) {
-                        mHostChatInterface.Chat(message);
+                        mHostChatInterface.Chat(message.getMessageText());
                     }
                 } else {
-                    mChatInterface.Chat(message);
+                    mChatInterface.Chat(message.getMessageText());
                 }
             } catch (BusException ex) {
                 mChatApplication.alljoynError(ChatApplication.Module.USE, "Bus exception while sending message: (" + ex + ")");
@@ -1173,7 +1176,7 @@ public class AllJoynService extends Service implements Observer {
          * method is only used as a signal emitter, it will never be called
          * directly.
          */
-        public void Chat(ChatMessage msg) throws BusException {
+        public void Chat(String str) throws BusException {
         }
     }
 
@@ -1193,7 +1196,7 @@ public class AllJoynService extends Service implements Observer {
      * handler names.
      */
     @BusSignalHandler(iface = "org.alljoyn.bus.samples.chat", signal = "Chat")
-    public void Chat(ChatMessage msg) {
+    public void Chat(String string) {
 
         /*
          * See the long comment in doJoinSession() for more explanation of
@@ -1233,10 +1236,9 @@ public class AllJoynService extends Service implements Observer {
          */
         String nickname = ctx.sender;
         nickname = nickname.substring(nickname.length()-10, nickname.length());
-        msg.setMessageAuthor(nickname);
 
-        Log.i(TAG, "Chat(): signal " + msg + " received from nickname " + nickname);
-        mChatApplication.newRemoteUserMessage(msg);
+        Log.i(TAG, "Chat(): signal " + string + " received from nickname " + nickname);
+        mChatApplication.newRemoteUserMessage(nickname, string);
     }
 
     /*
