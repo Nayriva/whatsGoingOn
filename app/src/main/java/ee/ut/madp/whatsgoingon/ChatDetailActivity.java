@@ -16,9 +16,9 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
 
     private static final String TAG = "chat.ChatDetailActivity";
 
-    private ListView messagesListView;
-    private ArrayAdapter<String> adapter;
+    private ArrayAdapter<ChatMessage> adapter;
     private ChatApplication application;
+    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,9 +28,11 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
         application = (ChatApplication) getApplication();
         application.addObserver(this);
 
-        messagesListView = (ListView) findViewById(R.id.messagesListView);
-        adapter = new ArrayAdapter<>(this, android.R.layout.test_list_item); //TODO
+        ListView messagesListView = (ListView) findViewById(R.id.messagesListView);
+        adapter = new ChatMessageAdapter(getApplicationContext(), R.layout.message_list_item, null);
         messagesListView.setAdapter(adapter);
+
+        username = getIntent().getStringExtra("username");
 
         updateHistory();
     }
@@ -45,8 +47,8 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
     private void updateHistory() {
         Log.i(TAG, "updateHistory()");
         adapter.clear();
-        List<String> messages = application.getHistory();
-        for (String message : messages) {
+        List<ChatMessage> messages = application.getHistory();
+        for (ChatMessage message : messages) {
             adapter.add(message);
         }
         adapter.notifyDataSetChanged();
@@ -98,8 +100,10 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
 
     public void sendMessage(View view) {
         EditText messageET = (EditText) findViewById(R.id.messageEditText);
-        String message = String.valueOf(messageET.getText());
-        application.newLocalUserMessage(message);
+        String messageText = String.valueOf(messageET.getText());
+        String messageAuthor = username;
+        ChatMessage newMessage = new ChatMessage(messageText, messageAuthor);
+        application.newLocalUserMessage(newMessage);
         messageET.setText("");
     }
 }

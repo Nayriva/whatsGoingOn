@@ -86,7 +86,7 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String clickedChannelName = (String) parent.getItemAtPosition(position);
                 Intent newChat = new Intent(getApplicationContext(), ChatDetailActivity.class);
-                newChat.putExtra("channelName", clickedChannelName);
+                newChat.putExtra("username", username);
                 startActivity(newChat);
             }
         });

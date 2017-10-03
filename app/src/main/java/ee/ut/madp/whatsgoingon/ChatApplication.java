@@ -19,6 +19,7 @@ package ee.ut.madp.whatsgoingon;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.os.Message;
 import android.util.Log;
 
 import java.text.DateFormat;
@@ -465,8 +466,8 @@ public class ChatApplication extends Application implements Observable {
      * the channel.  Since the sessions that implement the channel don't "echo"
      * back to the source, we need to echo the message into our history.
      */
-    public synchronized void newLocalUserMessage(String message) {
-        addInboundItem("Me", message);
+    public synchronized void newLocalUserMessage(ChatMessage message) {
+        addInboundItem(message);
         if (useGetChannelState() == AllJoynService.UseChannelState.JOINED) {
             addOutboundItem(message);
         }
@@ -481,8 +482,8 @@ public class ChatApplication extends Application implements Observable {
      * unique ID of the sending bus attachment.  This is not very user friendly,
      * but is convenient and guaranteed to be unique.
      */
-    public synchronized void newRemoteUserMessage(String nickname, String message) {
-        addInboundItem(nickname, message);
+    public synchronized void newRemoteUserMessage(ChatMessage msg) {
+        addInboundItem(msg);
     }
 
     final int OUTBOUND_MAX = 5;
@@ -497,7 +498,7 @@ public class ChatApplication extends Application implements Observable {
      * The outbound list is the list of all messages that have been originated
      * by our local user and are designed for the outside world.
      */
-    private List<String> mOutbound = new ArrayList<String>();
+    private List<ChatMessage> mOutbound = new ArrayList<>();
 
     /**
      * Whenever the local user types a message for distribution to the channel
@@ -507,7 +508,7 @@ public class ChatApplication extends Application implements Observable {
      * eventually respond by calling back in here to get items off of the queue
      * and send them down the session corresponding to the channel.
      */
-    private void addOutboundItem(String message) {
+    private void addOutboundItem(ChatMessage message) {
         if (mOutbound.size() == OUTBOUND_MAX) {
             mOutbound.remove(0);
         }
@@ -521,7 +522,7 @@ public class ChatApplication extends Application implements Observable {
      * notified and calls in here to get the outbound messages that need to be
      * sent.
      */
-    public synchronized String getOutboundItem() {
+    public synchronized ChatMessage getOutboundItem() {
         if (mOutbound.isEmpty()) {
             return null;
         } else {
@@ -545,8 +546,8 @@ public class ChatApplication extends Application implements Observable {
      * The user interface part of the application is then expected to wake up
      * and syncrhonize itself to the new history.
      */
-    private void addInboundItem(String nickname, String message) {
-        addHistoryItem(nickname, message);
+    private void addInboundItem(ChatMessage msg) {
+        addHistoryItem(msg);
     }
 
     /**
@@ -559,7 +560,7 @@ public class ChatApplication extends Application implements Observable {
      * The history list is the list of all messages that have been originated
      * or recieved by the "use" channel.
      */
-    private List<String> mHistory = new ArrayList<String>();
+    private List<ChatMessage> mHistory = new ArrayList<>();
 
     /**
      * Whenever a user in the channel types a message, it needs to result in
@@ -571,14 +572,11 @@ public class ChatApplication extends Application implements Observable {
      * change notification to all observers indicating that the history has
      * changed when we modify it.
      */
-    private void addHistoryItem(String nickname, String message) {
+    private void addHistoryItem(ChatMessage msg) {
         if (mHistory.size() == HISTORY_MAX) {
             mHistory.remove(0);
         }
-
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm");
-        Date date = new Date();
-        mHistory.add("[" + dateFormat.format(date) + "] (" + nickname + ") " + message);
+        mHistory.add(msg);
         notifyObservers(HISTORY_CHANGED_EVENT);
     }
 
@@ -600,10 +598,14 @@ public class ChatApplication extends Application implements Observable {
      * access or change the list, and we are deeply paranoid, we provide a
      * deep copy.
      */
-    public synchronized List<String> getHistory() {
-        List<String> clone = new ArrayList<String>(mHistory.size());
-        for (String string : mHistory) {
-            clone.add(new String(string));
+    public synchronized List<ChatMessage> getHistory() {
+        List<ChatMessage> clone = new ArrayList<>(mHistory.size());
+        for (ChatMessage original : mHistory) {
+            ChatMessage copy = new ChatMessage();
+            copy.setMessageText(original.getMessageText());
+            copy.setMessageAuthor(original.getMessageAuthor());
+            copy.setMessageTime(original.getMessageTime());
+            clone.add(copy);
         }
         return clone;
     }
@@ -659,5 +661,5 @@ public class ChatApplication extends Application implements Observable {
      * The observers list is the list of all objects that have registered with
      * us as observers in order to get notifications of interesting events.
      */
-    private List<Observer> mObservers = new ArrayList<Observer>();
+    private List<Observer> mObservers = new ArrayList<>();
 }

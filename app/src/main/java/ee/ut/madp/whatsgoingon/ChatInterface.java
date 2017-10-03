@@ -32,5 +32,5 @@ public interface ChatInterface {
      * signals and not to receive signals.
      */
     @BusSignal
-    public void Chat(String str) throws BusException;
+    void Chat(ChatMessage msg) throws BusException;
 }
