@@ -20,4 +20,5 @@
     <string name="create">Create</string>
     <string name="join">Join</string>
     <string name="create_event">Create event</string>
+    <string name="please_log_in">Please log in</string>
 </resources>
