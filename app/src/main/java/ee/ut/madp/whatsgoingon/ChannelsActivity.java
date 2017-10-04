@@ -52,46 +52,6 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
         }
     }
 
-    private void isLoggedInInitialize() {
-        application = (ChatApplication) getApplication();
-        application.checkin();
-        application.addObserver(this);
-
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                findChannels();
-                swipeRefreshLayout.setRefreshing(false);
-            }
-        });
-
-        chatsListView = (ListView) findViewById(R.id.chatListView);
-        setChatListViewListener();
-        chatsAdapter = new ArrayAdapter<>(this, android.R.layout.test_list_item); //TODO
-        chatsListView.setAdapter(chatsAdapter);
-        if (chatsAdapter.isEmpty()) {
-            chatsAdapter.add("Nothing to show...");
-        }
-
-        if (application.hostGetChannelName() == null) {
-            setUpChannel();
-        }
-        findChannels();
-    }
-
-    private void setChatListViewListener() {
-        chatsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String clickedChannelName = (String) parent.getItemAtPosition(position);
-                Intent newChat = new Intent(getApplicationContext(), ChatDetailActivity.class);
-                newChat.putExtra("username", username);
-                startActivity(newChat);
-            }
-        });
-    }
-
     @Override
     public void onDestroy() {
         application = (ChatApplication)getApplication();
@@ -119,6 +79,50 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
         application.hostSetChannelName(username);
         application.hostInitChannel();
         application.hostStartChannel();
+    }
+
+    private void setChatListViewListener() {
+        chatsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent newChat = new Intent(getApplicationContext(), ChatDetailActivity.class);
+                newChat.putExtra("username", username);
+                startActivity(newChat);
+            }
+        });
+    }
+
+    public void startLogin(View view) {
+        Intent logIn = new Intent(this, LoginActivity.class);
+        startActivityForResult(logIn, LOGIN_REQUEST_CODE);
+    }
+
+    private void isLoggedInInitialize() {
+        application = (ChatApplication) getApplication();
+        application.checkin();
+        application.addObserver(this);
+
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                findChannels();
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
+        chatsListView = (ListView) findViewById(R.id.chatListView);
+        setChatListViewListener();
+        chatsAdapter = new ArrayAdapter<>(this, android.R.layout.test_list_item); //TODO
+        chatsListView.setAdapter(chatsAdapter);
+        if (chatsAdapter.isEmpty()) {
+            chatsAdapter.add("Nothing to show...");
+        }
+
+        if (application.hostGetChannelName() == null) {
+            setUpChannel();
+        }
+        findChannels();
     }
 
     @Override
@@ -170,10 +174,5 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
                 application.getErrorModule() == ChatApplication.Module.USE) {
             showDialog(DIALOG_ALLJOYN_ERROR_ID);
         }
-    }
-
-    public void startLogin(View view) {
-        Intent logIn = new Intent(this, LoginActivity.class);
-        startActivityForResult(logIn, LOGIN_REQUEST_CODE);
     }
 }

@@ -12,6 +12,8 @@ import android.widget.ListView;
 
 import java.util.List;
 
+import ee.ut.madp.whatsgoingon.models.ChatMessage;
+
 public class ChatDetailActivity extends AppCompatActivity implements Observer {
 
     private static final String TAG = "chat.ChatDetailActivity";

@@ -21,12 +21,11 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.util.Log;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+
+import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 /**
  * The ChatAppliation class serves as the Model (in the sense of the common

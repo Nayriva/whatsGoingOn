@@ -13,6 +13,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import ee.ut.madp.whatsgoingon.models.ChatMessage;
+
 /**
  * Created by dominikf on 3. 10. 2017.
  */

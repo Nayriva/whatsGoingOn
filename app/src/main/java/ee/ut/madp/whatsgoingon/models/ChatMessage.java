@@ -1,11 +1,13 @@
-package ee.ut.madp.whatsgoingon;
+package ee.ut.madp.whatsgoingon.models;
 
 import java.util.Date;
 
 /**
+ * Class represents message sent in chat. Every message has it's author, time when it was sent
+ * and the text of the message.
+ *
  * Created by dominikf on 3. 10. 2017.
  */
-
 public class ChatMessage {
 
     private String messageText;

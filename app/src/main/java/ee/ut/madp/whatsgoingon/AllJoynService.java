@@ -15,17 +15,13 @@
  */
 package ee.ut.madp.whatsgoingon;
 
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.alljoyn.bus.BusAttachment;
@@ -40,6 +36,8 @@ import org.alljoyn.bus.SessionPortListener;
 import org.alljoyn.bus.SignalEmitter;
 import org.alljoyn.bus.Status;
 import org.alljoyn.bus.annotation.BusSignalHandler;
+
+import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 public class AllJoynService extends Service implements Observer {
     private static final String TAG = "chat.AllJoynService";
