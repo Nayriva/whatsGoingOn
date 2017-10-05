@@ -1,4 +1,4 @@
-package ee.ut.madp.whatsgoingon;
+package ee.ut.madp.whatsgoingon.chat;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +13,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import java.util.List;
+
+import ee.ut.madp.whatsgoingon.LoginActivity;
+import ee.ut.madp.whatsgoingon.Observable;
+import ee.ut.madp.whatsgoingon.Observer;
+import ee.ut.madp.whatsgoingon.R;
 
 public class ChannelsActivity extends AppCompatActivity implements Observer {
 

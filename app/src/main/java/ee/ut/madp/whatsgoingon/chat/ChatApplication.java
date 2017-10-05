@@ -14,7 +14,7 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package ee.ut.madp.whatsgoingon;
+package ee.ut.madp.whatsgoingon.chat;
 
 import android.app.Application;
 import android.content.ComponentName;
@@ -25,6 +25,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import ee.ut.madp.whatsgoingon.AllJoynService;
+import ee.ut.madp.whatsgoingon.Observable;
+import ee.ut.madp.whatsgoingon.Observer;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 /**

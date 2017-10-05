@@ -8,14 +8,14 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
     <application
-        android:name=".ChatApplication"
+        android:name=".chat.ChatApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".LoginActivity" />
-        <activity android:name=".ChannelsActivity" >
+        <activity android:name=".chat.ChannelsActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,7 +25,7 @@
 
         <service android:name=".AllJoynService" />
 
-        <activity android:name=".ChatDetailActivity"></activity>
+        <activity android:name=".chat.ChatDetailActivity"></activity>
     </application>
 
 </manifest>

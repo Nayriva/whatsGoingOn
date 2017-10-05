@@ -1,4 +1,4 @@
-package ee.ut.madp.whatsgoingon;
+package ee.ut.madp.whatsgoingon.chat;
 
 import android.os.Handler;
 import android.os.Message;
@@ -12,6 +12,9 @@ import android.widget.ListView;
 
 import java.util.List;
 
+import ee.ut.madp.whatsgoingon.Observable;
+import ee.ut.madp.whatsgoingon.Observer;
+import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 public class ChatDetailActivity extends AppCompatActivity implements Observer {

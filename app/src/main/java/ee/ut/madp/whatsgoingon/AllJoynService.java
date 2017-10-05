@@ -37,6 +37,7 @@ import org.alljoyn.bus.SignalEmitter;
 import org.alljoyn.bus.Status;
 import org.alljoyn.bus.annotation.BusSignalHandler;
 
+import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 public class AllJoynService extends Service implements Observer {

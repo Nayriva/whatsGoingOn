@@ -1,4 +1,4 @@
-package ee.ut.madp.whatsgoingon;
+package ee.ut.madp.whatsgoingon.chat;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,6 +13,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 /**

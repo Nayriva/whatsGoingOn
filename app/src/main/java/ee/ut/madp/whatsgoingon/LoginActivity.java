@@ -1,19 +1,34 @@
 package ee.ut.madp.whatsgoingon;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.util.prefs.Preferences;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import java.text.Normalizer;
+
+
+import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -23,7 +38,8 @@ public class LoginActivity extends AppCompatActivity {
     private EditText passwordRegisterET;
     private EditText repPasswordRegisterET;
     private ChatApplication application;
-    private static final String ACCOUNTS_FILE = "ACCOUNTS";
+    private GoogleApiClient mGoogleApiClient;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +49,60 @@ public class LoginActivity extends AppCompatActivity {
         usernameLoginET = (EditText) findViewById(R.id.usernameEditText);
         passwordLoginET = (EditText) findViewById(R.id.passwordEditText);
 
+        mAuth = FirebaseAuth.getInstance();
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getResources().getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, null)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         application = (ChatApplication) getApplication();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            FirebaseAuth.getInstance().signOut();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            if (result.isSuccess()) {
+                GoogleSignInAccount account = result.getSignInAccount();
+                firebaseAuthWithGoogle(account);
+            }
+        }
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            if (user != null) {
+                                String username = user.getDisplayName();
+                                username = Normalizer
+                                        .normalize(username, Normalizer.Form.NFD)
+                                        .replaceAll("\\p{M}", "")
+                                        .replaceAll("\\s+", "_");
+                                loggedInContinue(username);
+                            }
+                        }
+                    }
+                });
     }
 
     public void logIn(View view) {
@@ -54,7 +123,10 @@ public class LoginActivity extends AppCompatActivity {
             } case LOGIN_CONFIRMED : // ALL WENT OK
                 break;
         }
+        loggedInContinue(username);
+    }
 
+    private void loggedInContinue(String username) {
         application = (ChatApplication) getApplication();
         application.hostSetChannelName(username);
         application.hostInitChannel();
@@ -143,6 +215,11 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.login);
     }
 
+    public void googleSignIn(View view) {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
     public static String encrypt(String strClearText,String strKey) throws Exception {
         String strData="";
 
@@ -168,5 +245,7 @@ public class LoginActivity extends AppCompatActivity {
     private final short PASSWORDS_ARE_DIFFERENT = 6;
     private final short REGISTRATION_SUCCESSFUL = 7;
 
-    private final String ENCRYPT_KEY = "ee.ut.madp.chat.aíéuenkl";
+    private final String ENCRYPT_KEY = "ee.ut.madp.chat.auenkl";
+    private final int RC_SIGN_IN = 1;
+    private static final String ACCOUNTS_FILE = "ACCOUNTS";
 }
