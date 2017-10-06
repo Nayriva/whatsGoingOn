@@ -21,9 +21,9 @@ import ee.ut.madp.whatsgoingon.models.ChatMessage;
  */
 
 public class ChatMessageAdapter extends ArrayAdapter<ChatMessage> {
-    Context context;
-    int layoutResourceId;
-    ArrayList<ChatMessage> data = null;
+    private Context context;
+    private int layoutResourceId;
+    private ArrayList<ChatMessage> data = null;
 
     public ChatMessageAdapter(Context context, int resource, List<ChatMessage> objects) {
         super(context, resource, objects);

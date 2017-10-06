@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -30,6 +31,8 @@ import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final String TAG = "app.Login";
+
     private EditText usernameLoginET;
     private EditText passwordLoginET;
     private EditText usernameRegisterET;
@@ -42,6 +45,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
 
@@ -50,6 +54,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initializeEditTexts() {
+        Log.i(TAG, "initializeEditTexts()");
         if (regScreenActive) {
             setContentView(R.layout.registration);
             usernameRegisterET = (EditText) findViewById(R.id.usernameRegEditText);
@@ -63,16 +68,18 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     public void onStart() {
+        Log.i(TAG, "onStart");
         super.onStart();
         application = (ChatApplication) getApplication();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            loggedInContinue(currentUser.getDisplayName());
+            mAuth.signOut();
         }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        Log.i(TAG, "onSaveInstanceState()");
         super.onSaveInstanceState(outState);
         outState.putBoolean("regScreenActive", regScreenActive);
         if (regScreenActive) {
@@ -87,6 +94,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Log.i(TAG, "onRestoreInstanceState");
         super.onRestoreInstanceState(savedInstanceState);
         regScreenActive = savedInstanceState.getBoolean("regScreenActive");
         if (regScreenActive) {
@@ -105,6 +113,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult");
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SIGN_IN) {
@@ -117,6 +126,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        Log.i(TAG, "firebaseAuthWithGoogle(" + acct + " )" );
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -138,6 +148,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initializeAuth() {
+        Log.i(TAG, "initializeAuth()");
         mAuth = FirebaseAuth.getInstance();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getResources().getString(R.string.default_web_client_id))
@@ -151,6 +162,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void logIn(View view) {
+        Log.i(TAG, "logIn( " + view + " )");
         String username = String.valueOf(usernameLoginET.getText());
         String password = String.valueOf(passwordLoginET.getText());
 
@@ -169,6 +181,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void loggedInContinue(String username) {
+        Log.i(TAG, "loggedInContinue( " + username + " )");
         application = (ChatApplication) getApplication();
         application.hostSetChannelName(username);
         application.hostInitChannel();
@@ -182,6 +195,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private short checkIfRegistered(String username, String password) {
+        Log.i(TAG, "checkIfRegistered( " + username + " , " + password + " )");
         Context context = getApplicationContext();
         SharedPreferences accountsFile = context.getSharedPreferences(ACCOUNTS_FILE, Context.MODE_PRIVATE);
         int fileHash = accountsFile.getInt(username, -1);
@@ -197,6 +211,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void register(View view) {
+        Log.i(TAG, "register( " + view + " )");
         String username = String.valueOf(usernameRegisterET.getText());
         String password = String.valueOf(passwordRegisterET.getText());
         String repPassword = String.valueOf(repPasswordRegisterET.getText());
@@ -220,6 +235,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private short tryRegister(String username, String password, String repPassword) {
+        Log.i(TAG, "tryRegister( " + username + " , " + password + " , " + repPassword + " )");
         Context context = getApplicationContext();
         SharedPreferences accountsFile = context.getSharedPreferences(ACCOUNTS_FILE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = accountsFile.edit();
@@ -236,18 +252,21 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void switchToRegister(View view) {
+        Log.i(TAG, "switchToRegister( " + view + " )");
         setContentView(R.layout.registration);
         regScreenActive = true;
         initializeEditTexts();
     }
 
     public void switchToLogin(View view) {
+        Log.i(TAG, "switchToLogin( " + view +" )");
         setContentView(R.layout.login);
         regScreenActive = false;
         initializeEditTexts();
     }
 
     public void googleSignIn(View view) {
+        Log.i(TAG, "googleSignIn( " + view + " )");
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }

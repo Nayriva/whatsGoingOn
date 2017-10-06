@@ -28,6 +28,7 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.chat_detail);
 
@@ -53,12 +54,14 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        Log.i(TAG, "onSaveInstanceState()");
         super.onSaveInstanceState(outState);
         outState.putString("messageETText", String.valueOf(messageEditText.getText()));
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Log.i(TAG, "onRestoreInstanceState()");
         super.onRestoreInstanceState(savedInstanceState);
         messageEditText.setText(savedInstanceState.getString("messageETText", ""));
     }
@@ -119,6 +122,7 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
     }
 
     public void sendMessage(View view) {
+        Log.i(TAG, "sendMessage()");
         EditText messageET = (EditText) findViewById(R.id.messageEditText);
         String message = String.valueOf(messageET.getText());
         application.newLocalUserMessage(message);

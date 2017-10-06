@@ -33,14 +33,14 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_screen_host);
-
-
     }
 
     @Override
     protected void onResume() {
+        Log.i(TAG, "onResume()");
         super.onResume();
         if (loggedIn) {
             setContentView(R.layout.main_screen);
@@ -52,6 +52,7 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onCreateActivityResult( " + requestCode + " , " + resultCode + " , " + data + " )");
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == LOGIN_REQUEST_CODE && resultCode == RESULT_OK) {
             username = data.getStringExtra("username");
@@ -61,6 +62,7 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        Log.i(TAG, "onSaveInstanceState()");
         super.onSaveInstanceState(outState);
         outState.putBoolean("loggedIn", loggedIn);
         outState.putString("username", username);
@@ -68,6 +70,7 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Log.i(TAG, "onRestoreInstanceState()");
         super.onRestoreInstanceState(savedInstanceState);
         loggedIn = savedInstanceState.getBoolean("loggedIn");
         username = savedInstanceState.getString("username");
@@ -75,12 +78,14 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
 
     @Override
     public void onDestroy() {
+        Log.i(TAG, "onDestroy()");
         application = (ChatApplication)getApplication();
         application.deleteObserver(this);
         super.onDestroy();
     }
 
     private void findChannels() {
+        Log.i(TAG, "findChannels()");
         chatsAdapter.clear();
         List<String> channels = application.getFoundChannels();
         if (channels.isEmpty()) {
@@ -97,12 +102,14 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
     }
 
     private void setUpChannel() {
+        Log.i(TAG, "setUpChannel()");
         application.hostSetChannelName(username);
         application.hostInitChannel();
         application.hostStartChannel();
     }
 
     private void setChatListViewListener() {
+        Log.i(TAG, "setChatListViewListener");
         chatsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -114,11 +121,13 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
     }
 
     public void startLogin(View view) {
+        Log.i(TAG, "startLogin()");
         Intent logIn = new Intent(this, LoginActivity.class);
         startActivityForResult(logIn, LOGIN_REQUEST_CODE);
     }
 
     private void isLoggedInInitialize() {
+        Log.i(TAG, "isLoggedInInitialize()");
         application = (ChatApplication) getApplication();
         application.checkin();
         application.addObserver(this);
@@ -167,11 +176,11 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
         }
     }
 
-    public static final int DIALOG_ALLJOYN_ERROR_ID = 3;
-
     private static final int HANDLE_APPLICATION_QUIT_EVENT = 0;
     private static final int HANDLE_CHANNEL_STATE_CHANGED_EVENT = 1;
     private static final int HANDLE_ALLJOYN_ERROR_EVENT = 2;
+
+    public static final int DIALOG_ALLJOYN_ERROR_ID = 3;
 
     private Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
@@ -191,6 +200,7 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
     };
 
     private void alljoynError() {
+        Log.i(TAG, "alljoynError");
         if (application.getErrorModule() == ChatApplication.Module.GENERAL ||
                 application.getErrorModule() == ChatApplication.Module.USE) {
             showDialog(DIALOG_ALLJOYN_ERROR_ID);
