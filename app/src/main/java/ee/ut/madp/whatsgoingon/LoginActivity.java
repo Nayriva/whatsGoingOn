@@ -23,8 +23,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 import java.text.Normalizer;
 
 
@@ -40,25 +38,27 @@ public class LoginActivity extends AppCompatActivity {
     private ChatApplication application;
     private GoogleApiClient mGoogleApiClient;
     private FirebaseAuth mAuth;
+    private boolean regScreenActive = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
 
-        usernameLoginET = (EditText) findViewById(R.id.usernameEditText);
-        passwordLoginET = (EditText) findViewById(R.id.passwordEditText);
+        initializeAuth();
+        initializeEditTexts();
+    }
 
-        mAuth = FirebaseAuth.getInstance();
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getResources().getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, null)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
+    private void initializeEditTexts() {
+        if (regScreenActive) {
+            setContentView(R.layout.registration);
+            usernameRegisterET = (EditText) findViewById(R.id.usernameRegEditText);
+            passwordRegisterET = (EditText) findViewById(R.id.passwordRegEditText);
+            repPasswordRegisterET = (EditText) findViewById(R.id.repPasswordEditText);
+        } else {
+            usernameLoginET = (EditText) findViewById(R.id.usernameEditText);
+            passwordLoginET = (EditText) findViewById(R.id.passwordEditText);
+        }
     }
 
     @Override
@@ -67,7 +67,39 @@ public class LoginActivity extends AppCompatActivity {
         application = (ChatApplication) getApplication();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            FirebaseAuth.getInstance().signOut();
+            loggedInContinue(currentUser.getDisplayName());
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("regScreenActive", regScreenActive);
+        if (regScreenActive) {
+            outState.putString("usernameRegisterETText", String.valueOf(usernameRegisterET.getText()));
+            outState.putString("passwordRegisterETText", String.valueOf(passwordRegisterET.getText()));
+            outState.putString("repPasswordRegisterETText", String.valueOf(repPasswordRegisterET.getText()));
+        } else {
+            outState.putString("usernameLoginETText", String.valueOf(usernameLoginET.getText()));
+            outState.putString("passwordLoginETText", String.valueOf(passwordLoginET.getText()));
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        regScreenActive = savedInstanceState.getBoolean("regScreenActive");
+        if (regScreenActive) {
+            setContentView(R.layout.registration);
+            initializeEditTexts();
+            usernameRegisterET.setText(savedInstanceState.getString("usernameRegisterETText", ""));
+            passwordRegisterET.setText(savedInstanceState.getString("passwordRegisterETText", ""));
+            repPasswordRegisterET.setText(savedInstanceState.getString("repPasswordRegisterETText", ""));
+        } else {
+            setContentView(R.layout.login);
+            initializeEditTexts();
+            usernameLoginET.setText(savedInstanceState.getString("usernameLoginETText", ""));
+            passwordLoginET.setText(savedInstanceState.getString("passwordLoginETText", ""));
         }
     }
 
@@ -105,6 +137,19 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
+    private void initializeAuth() {
+        mAuth = FirebaseAuth.getInstance();
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getResources().getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, null)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+    }
+
     public void logIn(View view) {
         String username = String.valueOf(usernameLoginET.getText());
         String password = String.valueOf(passwordLoginET.getText());
@@ -116,9 +161,6 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             } case WRONG_PASSWORD : {
                 Toast.makeText(this, "Wrong password!", Toast.LENGTH_SHORT).show();
-                return;
-            } case ENCRYPTION_EXCEPTION : {
-                Toast.makeText(this, "Error occurred, try again!", Toast.LENGTH_SHORT).show();
                 return;
             } case LOGIN_CONFIRMED : // ALL WENT OK
                 break;
@@ -142,17 +184,13 @@ public class LoginActivity extends AppCompatActivity {
     private short checkIfRegistered(String username, String password) {
         Context context = getApplicationContext();
         SharedPreferences accountsFile = context.getSharedPreferences(ACCOUNTS_FILE, Context.MODE_PRIVATE);
-        String filePassword = accountsFile.getString(username, null);
-        if (filePassword == null) {
+        int fileHash = accountsFile.getInt(username, -1);
+        if (fileHash == -1) {
             return ACCOUNT_NOT_FOUND;
         }
-        try {
-            password = encrypt(password, ENCRYPT_KEY);
-            if (! password.equals(filePassword)) {
-                return WRONG_PASSWORD;
-            }
-        } catch (Exception e) {
-            return ENCRYPTION_EXCEPTION;
+        int passHash = password.hashCode();
+        if (passHash != fileHash) {
+            return WRONG_PASSWORD;
         }
 
         return LOGIN_CONFIRMED;
@@ -175,9 +213,6 @@ public class LoginActivity extends AppCompatActivity {
             } case PASSWORDS_ARE_DIFFERENT : {
                 Toast.makeText(this, "Passwords don't match!", Toast.LENGTH_SHORT).show();
                 return;
-            } case ENCRYPTION_EXCEPTION : {
-                Toast.makeText(this, "Error occurred, try again!", Toast.LENGTH_SHORT).show();
-                return;
             } case REGISTRATION_SUCCESSFUL : // ALL WENT OK
                 break;
         }
@@ -194,25 +229,22 @@ public class LoginActivity extends AppCompatActivity {
         } else if (! repPassword.equals(password)) {
             return PASSWORDS_ARE_DIFFERENT;
         }
-        try {
-            password = encrypt(password, ENCRYPT_KEY);
-        } catch (Exception e) {
-            return ENCRYPTION_EXCEPTION;
-        }
-        editor.putString(username, password);
+
+        editor.putInt(username, password.hashCode());
         editor.apply();
         return REGISTRATION_SUCCESSFUL;
     }
 
     public void switchToRegister(View view) {
         setContentView(R.layout.registration);
-        usernameRegisterET = (EditText) findViewById(R.id.usernameEditText);
-        passwordRegisterET = (EditText) findViewById(R.id.passwordEditText);
-        repPasswordRegisterET = (EditText) findViewById(R.id.repPasswordEditText);
+        regScreenActive = true;
+        initializeEditTexts();
     }
 
     public void switchToLogin(View view) {
         setContentView(R.layout.login);
+        regScreenActive = false;
+        initializeEditTexts();
     }
 
     public void googleSignIn(View view) {
@@ -220,32 +252,13 @@ public class LoginActivity extends AppCompatActivity {
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
-    public static String encrypt(String strClearText,String strKey) throws Exception {
-        String strData="";
-
-        try {
-            SecretKeySpec skeyspec = new SecretKeySpec(strKey.getBytes(),"Blowfish");
-            Cipher cipher = Cipher.getInstance("Blowfish");
-            cipher.init(Cipher.ENCRYPT_MODE, skeyspec);
-            byte[] encrypted = cipher.doFinal(strClearText.getBytes());
-            strData=new String(encrypted);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception(e);
-        }
-        return strData;
-    }
-
     private final short ACCOUNT_NOT_FOUND = 1;
     private final short WRONG_PASSWORD = 2;
-    private final short ENCRYPTION_EXCEPTION = 3;
-    private final short LOGIN_CONFIRMED = 4;
-    private final short USERNAME_ALREADY_USED = 5;
-    private final short PASSWORDS_ARE_DIFFERENT = 6;
-    private final short REGISTRATION_SUCCESSFUL = 7;
+    private final short LOGIN_CONFIRMED = 3;
+    private final short USERNAME_ALREADY_USED = 4;
+    private final short PASSWORDS_ARE_DIFFERENT = 5;
+    private final short REGISTRATION_SUCCESSFUL = 6;
 
-    private final String ENCRYPT_KEY = "ee.ut.madp.chat.auenkl";
     private final int RC_SIGN_IN = 1;
     private static final String ACCOUNTS_FILE = "ACCOUNTS";
 }

@@ -32,9 +32,11 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
     private String username;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_screen_host);
+
+
     }
 
     @Override
@@ -55,6 +57,20 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
             username = data.getStringExtra("username");
             loggedIn = data.getBooleanExtra("loggedIn", false);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("loggedIn", loggedIn);
+        outState.putString("username", username);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        loggedIn = savedInstanceState.getBoolean("loggedIn");
+        username = savedInstanceState.getString("username");
     }
 
     @Override

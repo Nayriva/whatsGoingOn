@@ -24,6 +24,7 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
     private ListView messagesListView;
     private ArrayAdapter<ChatMessage> adapter;
     private ChatApplication application;
+    private EditText messageEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,14 +38,29 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
         adapter = new ChatMessageAdapter(this, R.layout.message_list_item, application.getHistory());
         messagesListView.setAdapter(adapter);
 
+        messageEditText = (EditText) findViewById(R.id.messageEditText);
+
         updateHistory();
     }
 
+    @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy()");
         application = (ChatApplication)getApplication();
         application.deleteObserver(this);
         super.onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("messageETText", String.valueOf(messageEditText.getText()));
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        messageEditText.setText(savedInstanceState.getString("messageETText", ""));
     }
 
     private void updateHistory() {
@@ -76,6 +92,7 @@ public class ChatDetailActivity extends AppCompatActivity implements Observer {
     private static final int HANDLE_CHANNEL_STATE_CHANGED_EVENT = 2;
     private static final int HANDLE_ALLJOYN_ERROR_EVENT = 3;
 
+    @Override
     public synchronized void update(Observable o, Object arg) {
         Log.i(TAG, "update(" + arg + ")");
         String qualifier = (String)arg;
