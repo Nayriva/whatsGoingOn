@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">What\'sGoingOn</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="log_in">Log in</string>
+    <string name="facebook">Facebook</string>
+    <string name="google">Google</string>
+    <string name="or">or</string>
+    <string name="reg_link">No account? Register here!</string>
+    <string name="create_acc">Create new account</string>
+    <string name="rep_pass">Repeat password</string>
+    <string name="sign_up">Sign up</string>
+    <string name="log_in_link">Already have an account? Log in!</string>
+    <string name="event_name">Event name</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="description">Description</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="create">Create</string>
+    <string name="join">Join</string>
+    <string name="create_event">Create event</string>
+    <string name="please_log_in">Please log in</string>
 </resources>
