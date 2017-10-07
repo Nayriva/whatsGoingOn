@@ -17,11 +17,15 @@
         <item name="android:textAlignment">center</item>
     </style>
 
-    <style name="AppTheme.NoActionBar">
+    <style name="AppTheme.FullScreen">
         <item name="windowActionBar">true</item>
         <item name="windowNoTitle">true</item>
         <item name="colorControlNormal">@color/colorWhite</item>
         <item name="android:screenOrientation">portrait</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowNoTitle">true</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

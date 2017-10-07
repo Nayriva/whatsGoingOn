@@ -2,7 +2,6 @@ package ee.ut.madp.whatsgoingon.activities;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +14,7 @@ import butterknife.ButterKnife;
 import ee.ut.madp.whatsgoingon.FirebaseApplication;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.constants.SettingsConstants;
+import ee.ut.madp.whatsgoingon.helpers.FontHelper;
 
 import static ee.ut.madp.whatsgoingon.constants.SettingsConstants.SPLASH_DISPLAY_LENGTH;
 
@@ -50,7 +50,6 @@ public class SplashActivity extends AppCompatActivity {
         }, SPLASH_DISPLAY_LENGTH);
 
 
-        Typeface typeface = Typeface.createFromAsset(this.getAssets(), SettingsConstants.CUSTOM_FONT);
-        appName.setTypeface(typeface);
+        FontHelper.setFont(this, appName, SettingsConstants.CUSTOM_FONT);
     }
 }

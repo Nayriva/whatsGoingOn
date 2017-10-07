@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.widget.TextView;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -31,6 +32,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.FirebaseApplication;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.constants.SettingsConstants;
+import ee.ut.madp.whatsgoingon.helpers.FontHelper;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -40,6 +43,9 @@ public class LoginActivity extends AppCompatActivity {
     @BindView(R.id.input_email)
     TextInputEditText emailInput;
     @BindView(R.id.input_password) TextInputEditText passwordInput;
+
+    @BindView(R.id.login_title)
+    TextView loginTitle;
 
     private FirebaseApplication application;
     private GoogleApiClient mGoogleApiClient;
@@ -54,6 +60,8 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         ButterKnife.bind(this);
+
+        FontHelper.setFont(this, loginTitle, SettingsConstants.CUSTOM_FONT);
 
         initializeAuth();
     }

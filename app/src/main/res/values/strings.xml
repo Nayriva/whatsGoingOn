@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">What\'s Going On</string>
+    <string name="app_name">What\'s Going On???</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="log_in">Log in</string>
@@ -42,4 +42,6 @@
     <string name="error">Error!</string>
     <string name="progress_dialog_content">Please wait...</string>
     <string name="progress_dialog_title_signup">Sign up</string>
+    <string name="invalid_password_format">Password must be at least 6 characters long</string>
+    <string name="login_title">Login???</string>
 </resources>
