@@ -22,7 +22,7 @@
         android:layout_alignTop="@+id/messageEditText"
         android:clickable="true"
         android:onClick="sendMessage"
-        app:backgroundTint="@color/project_red"
+        app:backgroundTint="@color/colorPrimary"
         app:fabSize="mini"
         app:srcCompat="@android:drawable/ic_menu_send" />
 

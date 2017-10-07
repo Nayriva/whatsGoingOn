@@ -123,7 +123,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="8dp"
-        android:background="@color/project_red"
+        android:background="@color/colorPrimary"
         android:text="@string/create"
         android:textColor="@android:color/white"
         app:layout_constraintLeft_toLeftOf="parent"

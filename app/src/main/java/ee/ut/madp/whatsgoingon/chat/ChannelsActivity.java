@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -14,7 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import java.util.List;
 
-import ee.ut.madp.whatsgoingon.LoginActivity;
+import ee.ut.madp.whatsgoingon.activities.LoginActivity;
 import ee.ut.madp.whatsgoingon.Observable;
 import ee.ut.madp.whatsgoingon.Observer;
 import ee.ut.madp.whatsgoingon.R;

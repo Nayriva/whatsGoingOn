@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">What\'sGoingOn</string>
+    <string name="app_name">What\'s Going On</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="log_in">Log in</string>
@@ -21,4 +21,7 @@
     <string name="join">Join</string>
     <string name="create_event">Create event</string>
     <string name="please_log_in">Please log in</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="btn_login">Log in</string>
 </resources>

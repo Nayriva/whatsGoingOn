@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3f51b5</color>
+    <!--<color name="colorPrimary">#3f51b5</color>-->
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-    <color name="project_red">#dd4437</color>
+    <color name="colorPrimary">#dd4437</color>
+    <color name="colorWhite">#ffffff</color>
+    <color name="colorFacebook">#3b5998</color>
+    <color name="colorGoogle">#d62d20</color>
 </resources>
