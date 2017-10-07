@@ -5,11 +5,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.view.Window;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -28,19 +28,20 @@ import java.text.Normalizer;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import ee.ut.madp.whatsgoingon.FirebaseApplication;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
+    public static final int REQUEST_CODE = 1;
 
-    @BindView(R.id.usernameRegEditText) EditText usernameLoginET;
-    @BindView(R.id.passwordRegEditText) EditText passwordLoginET;
-    private EditText usernameRegisterET;
-    private EditText passwordRegisterET;
-    @BindView(R.id.repPasswordEditText) EditText repPasswordRegisterET;
-    private ChatApplication application;
+    @BindView(R.id.input_email)
+    TextInputEditText emailInput;
+    @BindView(R.id.input_password) TextInputEditText passwordInput;
+
+    private FirebaseApplication application;
     private GoogleApiClient mGoogleApiClient;
     private FirebaseAuth mAuth;
     private boolean regScreenActive = false;
@@ -49,6 +50,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login);
 
         ButterKnife.bind(this);
@@ -61,44 +63,44 @@ public class LoginActivity extends AppCompatActivity {
     public void onStart() {
         Log.i(TAG, "onStart");
         super.onStart();
-        application = (ChatApplication) getApplication();
+        application = (FirebaseApplication) getApplication();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             mAuth.signOut();
         }
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        Log.i(TAG, "onSaveInstanceState()");
-        super.onSaveInstanceState(outState);
-        outState.putBoolean("regScreenActive", regScreenActive);
-        if (regScreenActive) {
-            outState.putString("usernameRegisterETText", String.valueOf(usernameRegisterET.getText()));
-            outState.putString("passwordRegisterETText", String.valueOf(passwordRegisterET.getText()));
-            outState.putString("repPasswordRegisterETText", String.valueOf(repPasswordRegisterET.getText()));
-        } else {
-            outState.putString("usernameLoginETText", String.valueOf(usernameLoginET.getText()));
-            outState.putString("passwordLoginETText", String.valueOf(passwordLoginET.getText()));
-        }
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        Log.i(TAG, "onRestoreInstanceState");
-        super.onRestoreInstanceState(savedInstanceState);
-        regScreenActive = savedInstanceState.getBoolean("regScreenActive");
-        if (regScreenActive) {
-            setContentView(R.layout.activity_registration);
-            usernameRegisterET.setText(savedInstanceState.getString("usernameRegisterETText", ""));
-            passwordRegisterET.setText(savedInstanceState.getString("passwordRegisterETText", ""));
-            repPasswordRegisterET.setText(savedInstanceState.getString("repPasswordRegisterETText", ""));
-        } else {
-            setContentView(R.layout.activity_login);
-            usernameLoginET.setText(savedInstanceState.getString("usernameLoginETText", ""));
-            passwordLoginET.setText(savedInstanceState.getString("passwordLoginETText", ""));
-        }
-    }
+//    @Override
+//    protected void onSaveInstanceState(Bundle outState) {
+//        Log.i(TAG, "onSaveInstanceState()");
+//        super.onSaveInstanceState(outState);
+//        outState.putBoolean("regScreenActive", regScreenActive);
+//        if (regScreenActive) {
+//            outState.putString("usernameRegisterETText", String.valueOf(usernameRegisterET.getText()));
+//            outState.putString("passwordRegisterETText", String.valueOf(passwordRegisterET.getText()));
+//            outState.putString("repPasswordRegisterETText", String.valueOf(repPasswordRegisterET.getText()));
+//        } else {
+//            outState.putString("usernameLoginETText", String.valueOf(emailInput.getText()));
+//            outState.putString("passwordLoginETText", String.valueOf(passwordInput.getText()));
+//        }
+//    }
+//
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        Log.i(TAG, "onRestoreInstanceState");
+//        super.onRestoreInstanceState(savedInstanceState);
+//        regScreenActive = savedInstanceState.getBoolean("regScreenActive");
+//        if (regScreenActive) {
+//            setContentView(R.layout.activity_registration);
+//            usernameRegisterET.setText(savedInstanceState.getString("usernameRegisterETText", ""));
+//            passwordRegisterET.setText(savedInstanceState.getString("passwordRegisterETText", ""));
+//            repPasswordRegisterET.setText(savedInstanceState.getString("repPasswordRegisterETText", ""));
+//        } else {
+//            setContentView(R.layout.activity_login);
+//            emailInput.setText(savedInstanceState.getString("usernameLoginETText", ""));
+//            passwordInput.setText(savedInstanceState.getString("passwordLoginETText", ""));
+//        }
+//    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -150,31 +152,33 @@ public class LoginActivity extends AppCompatActivity {
                 .build();
     }
 
+    @OnClick(R.id.btn_login)
     public void logIn(View view) {
         Log.i(TAG, "logIn( " + view + " )");
-        String username = String.valueOf(usernameLoginET.getText());
-        String password = String.valueOf(passwordLoginET.getText());
-
-        short checkResult = checkIfRegistered(username, password);
-        switch (checkResult) {
-            case ACCOUNT_NOT_FOUND : {
-                Toast.makeText(this, "Username not found!", Toast.LENGTH_SHORT).show();
-                return;
-            } case WRONG_PASSWORD : {
-                Toast.makeText(this, "Wrong password!", Toast.LENGTH_SHORT).show();
-                return;
-            } case LOGIN_CONFIRMED : // ALL WENT OK
-                break;
-        }
-        loggedInContinue(username);
+        String email = String.valueOf(emailInput.getText());
+        String password = String.valueOf(passwordInput.getText());
+//
+//        short checkResult = checkIfRegistered(username, password);
+//        switch (checkResult) {
+//            case ACCOUNT_NOT_FOUND : {
+//                Toast.makeText(this, "Username not found!", Toast.LENGTH_SHORT).show();
+//                return;
+//            } case WRONG_PASSWORD : {
+//                Toast.makeText(this, "Wrong password!", Toast.LENGTH_SHORT).show();
+//                return;
+//            } case LOGIN_CONFIRMED : // ALL WENT OK
+//                break;
+//        }
+//        loggedInContinue(username);
+        ((FirebaseApplication) getApplication()).loginUser(this, email, password);
     }
 
     private void loggedInContinue(String username) {
         Log.i(TAG, "loggedInContinue( " + username + " )");
-        application = (ChatApplication) getApplication();
-        application.hostSetChannelName(username);
-        application.hostInitChannel();
-        application.hostStartChannel();
+        application = (FirebaseApplication) getApplication();
+//        application.hostSetChannelName(username);
+//        application.hostInitChannel();
+//        application.hostStartChannel();
 
         Intent finishedIntent = new Intent();
         finishedIntent.putExtra("loggedIn", true);
@@ -199,28 +203,29 @@ public class LoginActivity extends AppCompatActivity {
         return LOGIN_CONFIRMED;
     }
 
+    @OnClick(R.id.register_link)
     public void register(View view) {
         Log.i(TAG, "register( " + view + " )");
-        String username = String.valueOf(usernameRegisterET.getText());
-        String password = String.valueOf(passwordRegisterET.getText());
-        String repPassword = String.valueOf(repPasswordRegisterET.getText());
-        if (username == null || username.isEmpty() || password == null || password.isEmpty()
-                || repPassword == null || repPassword.isEmpty()) {
-            Toast.makeText(this, "Fill all fields!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        short checkResult = tryRegister(username, password, repPassword);
-        switch (checkResult) {
-            case USERNAME_ALREADY_USED : {
-                Toast.makeText(this, "Username is already used!", Toast.LENGTH_SHORT).show();
-                return;
-            } case PASSWORDS_ARE_DIFFERENT : {
-                Toast.makeText(this, "Passwords don't match!", Toast.LENGTH_SHORT).show();
-                return;
-            } case REGISTRATION_SUCCESSFUL : // ALL WENT OK
-                break;
-        }
-        switchToLogin(view);
+//        String username = String.valueOf(usernameRegisterET.getText());
+//        String password = String.valueOf(passwordRegisterET.getText());
+//        String repPassword = String.valueOf(repPasswordRegisterET.getText());
+//        if (username == null || username.isEmpty() || password == null || password.isEmpty()
+//                || repPassword == null || repPassword.isEmpty()) {
+//            Toast.makeText(this, "Fill all fields!", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+        //short checkResult = tryRegister(username, password, repPassword);
+//        switch (checkResult) {
+//            case USERNAME_ALREADY_USED : {
+//                Toast.makeText(this, "Username is already used!", Toast.LENGTH_SHORT).show();
+//                return;
+//            } case PASSWORDS_ARE_DIFFERENT : {
+//                Toast.makeText(this, "Passwords don't match!", Toast.LENGTH_SHORT).show();
+//                return;
+//            } case REGISTRATION_SUCCESSFUL : // ALL WENT OK
+//                break;
+//        }
+//        switchToLogin(view);
     }
 
     private short tryRegister(String username, String password, String repPassword) {
@@ -240,10 +245,11 @@ public class LoginActivity extends AppCompatActivity {
         return REGISTRATION_SUCCESSFUL;
     }
 
+    @OnClick(R.id.register_link)
     public void switchToRegister(View view) {
         Log.i(TAG, "switchToRegister( " + view + " )");
-        setContentView(R.layout.activity_registration);
-        regScreenActive = true;
+        Intent intent = new Intent(this, RegisterActivity.class);
+        startActivityForResult(intent, REQUEST_CODE);
         //initializeEditTexts();
     }
 
@@ -254,6 +260,7 @@ public class LoginActivity extends AppCompatActivity {
         //initializeEditTexts();
     }
 
+    @OnClick(R.id.btn_google)
     public void googleSignIn(View view) {
         Log.i(TAG, "googleSignIn( " + view + " )");
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);

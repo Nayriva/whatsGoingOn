@@ -7,4 +7,5 @@
     <color name="colorWhite">#ffffff</color>
     <color name="colorFacebook">#3b5998</color>
     <color name="colorGoogle">#d62d20</color>
+    <color name="colorGreyLine">#565555</color>
 </resources>

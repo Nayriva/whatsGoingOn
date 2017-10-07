@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import ee.ut.madp.whatsgoingon.FirebaseApplication;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.constants.SettingsConstants;
 
@@ -37,16 +38,13 @@ public class SplashActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-//                boolean isLogged = ((FirebaseApplication) getApplication()).checkUserLogin(SplashActivity.this);
-//
-//                if (isLogged) {
-//                    String userId = ((FirebaseApplication) getApplication()).getFirebaseUserId();
-//                    FirebaseMessaging.getInstance().subscribeToTopic(userId);
-//                    startActivity(new Intent(SplashActivity.this, MainActivity.class));
-//
-//                } else {
+                boolean isLogged = ((FirebaseApplication) getApplication()).checkUserLogin(SplashActivity.this);
+
+                if (isLogged) {
+                    startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                } else {
                     startActivity(new Intent(SplashActivity.this, LoginActivity.class));
-                //}
+                }
 
             }
         }, SPLASH_DISPLAY_LENGTH);
