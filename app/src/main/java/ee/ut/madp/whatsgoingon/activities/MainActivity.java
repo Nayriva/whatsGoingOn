@@ -19,11 +19,7 @@ import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
-import ee.ut.madp.whatsgoingon.fragments.ChatFragment;
-import ee.ut.madp.whatsgoingon.fragments.EventsFragment;
-import ee.ut.madp.whatsgoingon.fragments.HelpFragment;
-import ee.ut.madp.whatsgoingon.fragments.MyProfileFragment;
-import ee.ut.madp.whatsgoingon.fragments.SettingsFragment;
+import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -84,27 +80,26 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void selectDrawerItem(MenuItem menuItem) {
-        // Create a new fragment and specify the fragment to show based on nav item clicked
         Fragment fragment = null;
-        Class fragmentClass;
+        Class fragmentClass = null;
         switch(menuItem.getItemId()) {
             case R.id.nav_chat:
-                fragmentClass = ChatFragment.class;
+                fragmentClass = ChatChannelsFragment.class;
                 break;
             case R.id.nav_events:
-                fragmentClass = EventsFragment.class;
+                //fragmentClass = EventsFragment.class;
                 break;
             case R.id.nav_profile:
-                fragmentClass = MyProfileFragment.class;
+                //fragmentClass = MyProfileFragment.class;
                 break;
             case R.id.nav_settings:
-                fragmentClass = SettingsFragment.class;
+                //fragmentClass = SettingsFragment.class;
                 break;
             case R.id.nav_help:
-                fragmentClass = HelpFragment.class;
+                //fragmentClass = HelpFragment.class;
                 break;
             default:
-                fragmentClass = ChatFragment.class;
+                fragmentClass = ChatChannelsFragment.class;
                 break;
         }
 
