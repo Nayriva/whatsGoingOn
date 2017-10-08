@@ -39,22 +39,8 @@ dependencies {
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.Mariovc:ImagePicker:1.2.0'
     compile 'com.android.support:support-v4:25.3.1'
-<<<<<<< HEAD
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
-=======
->>>>>>> d111ac5d9966f0e03702157c6ffa045f79274eef
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 }
-
-
-
-
-
-
-<<<<<<< HEAD
-=======
-
-
->>>>>>> d111ac5d9966f0e03702157c6ffa045f79274eef
 apply plugin: 'com.google.gms.google-services'

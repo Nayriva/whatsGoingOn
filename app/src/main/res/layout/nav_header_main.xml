@@ -20,12 +20,7 @@
         android:scaleType="centerCrop"
         app:civ_border_color="@android:color/white"
         app:civ_border_width="1dp"
-<<<<<<< HEAD
         android:src="@drawable/user"/>
-=======
-        android:src="@drawable/logo"/>
->>>>>>> d111ac5d9966f0e03702157c6ffa045f79274eef
-
     <TextView
         android:id="@+id/header_name"
         android:layout_width="match_parent"
