@@ -16,7 +16,7 @@
             style="@style/AppTheme.Title"/>
 
         <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/dog_profile_photo"
+            android:id="@+id/user_profile_photo"
             style="@style/ProfilePhotoLargeStyle"/>
 
         <!-- Username -->
