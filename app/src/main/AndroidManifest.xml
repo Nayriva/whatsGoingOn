@@ -37,6 +37,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.MainActivity"
+            android:theme="@style/AppTheme.Activity"
             android:label="@string/title_activity_main"></activity>
     </application>
 

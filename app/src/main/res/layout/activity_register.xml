@@ -10,11 +10,6 @@
         android:orientation="vertical"
         android:padding="@dimen/activity_horizontal_margin">
 
-        <TextView
-            android:id="@+id/register_title"
-            android:text="@string/create_acc"
-            style="@style/AppTheme.Title"/>
-
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/user_profile_photo"
             style="@style/ProfilePhotoLargeStyle"/>
@@ -93,6 +88,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"
+            android:layout_margin="@dimen/spacing_medium"
             android:text="@string/log_in_link"
             android:layout_gravity="center_horizontal"
             android:gravity="center_horizontal"

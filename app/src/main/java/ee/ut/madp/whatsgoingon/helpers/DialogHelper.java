@@ -20,7 +20,7 @@ public class DialogHelper {
         if (context != null) {
             progressDialog = new ProgressDialog(context);
             progressDialog.setTitle(titleMessage);
-            progressDialog.setMessage(context.getResources().getString(R.string.progress_dialog_content));
+            progressDialog.setMessage(context.getResources().getString(R.string.progress_dialog_wait));
             progressDialog.setCancelable(false);
             progressDialog.show();
         }

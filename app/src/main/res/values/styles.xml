@@ -28,6 +28,15 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="AppTheme.Activity" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
     <style name="AppTheme.Title">
         <item name="android:layout_gravity">center_horizontal</item>
         <item name="android:gravity">center_horizontal</item>
@@ -51,5 +60,5 @@
         <item name="android:src">@drawable/ic_image</item>
     </style>
 
-    <dimen name="profile_photo_large_size">80dp</dimen>
+    <dimen name="profile_photo_large_size">100dp</dimen>
 </resources>

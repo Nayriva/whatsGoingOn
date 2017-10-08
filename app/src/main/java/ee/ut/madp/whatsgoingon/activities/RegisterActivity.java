@@ -7,7 +7,6 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mobsandgeeks.saripaar.ValidationError;
@@ -29,8 +28,6 @@ import butterknife.OnClick;
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.FirebaseApplication;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.constants.SettingsConstants;
-import ee.ut.madp.whatsgoingon.helpers.FontHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.helpers.ModelHelper;
 import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
@@ -60,9 +57,6 @@ public class RegisterActivity extends AppCompatActivity implements Validator.Val
     @BindView(R.id.btn_register)
     Button signUpButton;
 
-    @BindView(R.id.register_title)
-    TextView registerTitle;
-
     @BindView(R.id.user_profile_photo)
     CircleImageView photo;
 
@@ -77,8 +71,6 @@ public class RegisterActivity extends AppCompatActivity implements Validator.Val
         setContentView(R.layout.activity_register);
 
         ButterKnife.bind(this);
-
-        FontHelper.setFont(this, registerTitle, SettingsConstants.CUSTOM_FONT);
 
         validator = new Validator(this);
         validator.setValidationListener(this);
