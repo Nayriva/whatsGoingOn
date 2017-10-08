@@ -41,8 +41,10 @@ public class SplashActivity extends AppCompatActivity {
                 // TODO check if the user is really logged in
                 if (firebaseAuth.getCurrentUser() != null) {
                     startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                    finish();
                 } else {
                     startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+                    finish();
                 }
             }
         }, SPLASH_DISPLAY_LENGTH);
