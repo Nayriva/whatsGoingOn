@@ -34,53 +34,6 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main_screen_host);
-    }
-
-    @Override
-    protected void onResume() {
-        Log.i(TAG, "onResume()");
-        super.onResume();
-        if (loggedIn) {
-            setContentView(R.layout.main_screen);
-            isLoggedInInitialize();
-        } else {
-            setContentView(R.layout.main_screen_host);
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i(TAG, "onCreateActivityResult( " + requestCode + " , " + resultCode + " , " + data + " )");
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == LOGIN_REQUEST_CODE && resultCode == RESULT_OK) {
-            username = data.getStringExtra("username");
-            loggedIn = data.getBooleanExtra("loggedIn", false);
-        }
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        Log.i(TAG, "onSaveInstanceState()");
-        super.onSaveInstanceState(outState);
-        outState.putBoolean("loggedIn", loggedIn);
-        outState.putString("username", username);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        Log.i(TAG, "onRestoreInstanceState()");
-        super.onRestoreInstanceState(savedInstanceState);
-        loggedIn = savedInstanceState.getBoolean("loggedIn");
-        username = savedInstanceState.getString("username");
-    }
-
-    @Override
-    public void onDestroy() {
-        Log.i(TAG, "onDestroy()");
-        application = (ChatApplication)getApplication();
-        application.deleteObserver(this);
-        super.onDestroy();
     }
 
     private void findChannels() {
