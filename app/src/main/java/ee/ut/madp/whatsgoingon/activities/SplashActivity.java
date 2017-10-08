@@ -9,9 +9,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import ee.ut.madp.whatsgoingon.FirebaseApplication;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.constants.SettingsConstants;
 import ee.ut.madp.whatsgoingon.helpers.FontHelper;
@@ -21,10 +22,8 @@ import static ee.ut.madp.whatsgoingon.constants.SettingsConstants.SPLASH_DISPLAY
 public class SplashActivity extends AppCompatActivity {
 
     public static final String TAG = SplashActivity.class.getSimpleName();
-
-    @BindView(R.id.app_name)
-    TextView appName;
-
+    private FirebaseAuth firebaseAuth;
+    @BindView(R.id.app_name) TextView appName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,21 +33,19 @@ public class SplashActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_splash);
         ButterKnife.bind(this);
+        firebaseAuth = FirebaseAuth.getInstance();
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                boolean isLogged = ((FirebaseApplication) getApplication()).checkUserLogin(SplashActivity.this);
-
-                if (isLogged) {
+                firebaseAuth.signOut();
+                if (firebaseAuth.getCurrentUser() != null) {
                     startActivity(new Intent(SplashActivity.this, MainActivity.class));
                 } else {
                     startActivity(new Intent(SplashActivity.this, LoginActivity.class));
                 }
-
             }
         }, SPLASH_DISPLAY_LENGTH);
-
 
         FontHelper.setFont(this, appName, SettingsConstants.CUSTOM_FONT);
     }
