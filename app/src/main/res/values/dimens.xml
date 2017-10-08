@@ -15,4 +15,6 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="font_size_large">50dp</dimen>
     <dimen name="font_size_medium">25dp</dimen>
+    <dimen name="profile_photo_large_size">100dp</dimen>
+    <dimen name="profile_photo_size">70dp</dimen>
 </resources>

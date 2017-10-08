@@ -37,6 +37,8 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+
+
     <style name="AppTheme.Title">
         <item name="android:layout_gravity">center_horizontal</item>
         <item name="android:gravity">center_horizontal</item>
@@ -60,5 +62,12 @@
         <item name="android:src">@drawable/ic_image</item>
     </style>
 
-    <dimen name="profile_photo_large_size">100dp</dimen>
+    <style name="FabStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">@dimen/fab_margin</item>
+        <item name="android:layout_gravity">bottom|end</item>
+        <item name="android:src">@drawable/ic_add</item>
+    </style>
+
 </resources>
