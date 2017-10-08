@@ -2,6 +2,7 @@ package ee.ut.madp.whatsgoingon.chat;
 
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,7 +18,7 @@ import ee.ut.madp.whatsgoingon.Observer;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
-public class ChatDetailActivity extends AppCompatActivity implements Observer {
+public class ChatDetailActivity extends FragmentActivity implements Observer {
 
     private static final String TAG = "chat.ChatDetailActivity";
 

@@ -1,6 +1,5 @@
 package ee.ut.madp.whatsgoingon.activities;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -171,51 +170,6 @@ public class LoginActivity extends AppCompatActivity {
     private void startMainActivity() {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
-        finish();
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private void loggedInContinue(String username) {
-        Log.i(TAG, "loggedInContinue( " + username + " )");
-        application.hostSetChannelName(username);
-        application.hostInitChannel();
-        application.hostStartChannel();
-
-        Intent finishedIntent = new Intent();
-        finishedIntent.putExtra("loggedIn", true);
-        finishedIntent.putExtra("username", username);
-        setResult(RESULT_OK, finishedIntent);
         finish();
     }
 

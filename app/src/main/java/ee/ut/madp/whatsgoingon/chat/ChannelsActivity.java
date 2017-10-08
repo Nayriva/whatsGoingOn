@@ -4,36 +4,55 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.google.firebase.auth.FirebaseAuth;
+
+import java.text.Normalizer;
 import java.util.List;
 
-import ee.ut.madp.whatsgoingon.activities.LoginActivity;
 import ee.ut.madp.whatsgoingon.Observable;
 import ee.ut.madp.whatsgoingon.Observer;
 import ee.ut.madp.whatsgoingon.R;
 
-public class ChannelsActivity extends AppCompatActivity implements Observer {
+public class ChannelsActivity extends FragmentActivity implements Observer {
 
     private static final String TAG = "chat.ChannelsActivity";
-    private final int LOGIN_REQUEST_CODE = 1;
-
-    private ListView chatsListView;
+    
+    private ListView channelsList;
     private SwipeRefreshLayout swipeRefreshLayout;
+
     private ArrayAdapter<String> chatsAdapter;
     private ChatApplication application;
-    private boolean loggedIn = false;
-    private String username;
+    private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.fragment_chat_channels);
+        application = (ChatApplication) getApplication();
+        firebaseAuth = FirebaseAuth.getInstance();
+        initialize();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initialize();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i(TAG, "onDestroy()");
+        application.deleteObserver(this);
+        super.onDestroy();
     }
 
     private void findChannels() {
@@ -42,12 +61,14 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
         List<String> channels = application.getFoundChannels();
         if (channels.isEmpty()) {
             chatsAdapter.add("Nothing to show...");
+            channelsList.setClickable(false);
         }
         for (String channel : channels) {
             int lastDot = channel.lastIndexOf('.');
             if (lastDot < 0) {
                 continue;
             }
+            channelsList.setClickable(true);
             chatsAdapter.add(channel.substring(lastDot + 1));
         }
         chatsAdapter.notifyDataSetChanged();
@@ -55,36 +76,55 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
 
     private void setUpChannel() {
         Log.i(TAG, "setUpChannel()");
+        String username = firebaseAuth.getCurrentUser().getDisplayName();
+        username = Normalizer
+                .normalize(username, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replaceAll("\\s+", "_");
         application.hostSetChannelName(username);
         application.hostInitChannel();
         application.hostStartChannel();
     }
 
-    private void setChatListViewListener() {
-        Log.i(TAG, "setChatListViewListener");
-        chatsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent newChat = new Intent(getApplicationContext(), ChatDetailActivity.class);
-                newChat.putExtra("username", username);
-                startActivity(newChat);
-            }
-        });
-    }
-
-    public void startLogin(View view) {
-        Log.i(TAG, "startLogin()");
-        Intent logIn = new Intent(this, LoginActivity.class);
-        startActivityForResult(logIn, LOGIN_REQUEST_CODE);
-    }
-
-    private void isLoggedInInitialize() {
-        Log.i(TAG, "isLoggedInInitialize()");
-        application = (ChatApplication) getApplication();
+    private void initialize() {
         application.checkin();
         application.addObserver(this);
 
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
+        setSwipeRefreshLayoutListener();
+
+        channelsList = (ListView) findViewById(R.id.channels_list_view);
+        setChatListViewListener();
+
+        //TODO set up proper list_item_view
+        chatsAdapter = new ArrayAdapter<>(this, android.R.layout.test_list_item);
+        channelsList.setAdapter(chatsAdapter);
+        if (chatsAdapter.isEmpty()) {
+            channelsList.setClickable(false);
+            chatsAdapter.add("Nothing to show...");
+        }
+
+        if (application.hostGetChannelName() == null) {
+            setUpChannel();
+        }
+
+        findChannels();
+    }
+
+    private void setChatListViewListener() {
+        Log.i(TAG, "setChatListViewListener");
+        channelsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent();
+                intent.putExtra("channelToJoin", parent.getItemIdAtPosition(position));
+                setResult(RESULT_OK, intent);
+                finish();
+            }
+        });
+    }
+
+    private void setSwipeRefreshLayoutListener() {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -92,19 +132,6 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
                 swipeRefreshLayout.setRefreshing(false);
             }
         });
-
-        chatsListView = (ListView) findViewById(R.id.chatListView);
-        setChatListViewListener();
-        chatsAdapter = new ArrayAdapter<>(this, android.R.layout.test_list_item); //TODO
-        chatsListView.setAdapter(chatsAdapter);
-        if (chatsAdapter.isEmpty()) {
-            chatsAdapter.add("Nothing to show...");
-        }
-
-        if (application.hostGetChannelName() == null) {
-            setUpChannel();
-        }
-        findChannels();
     }
 
     @Override
@@ -131,7 +158,6 @@ public class ChannelsActivity extends AppCompatActivity implements Observer {
     private static final int HANDLE_APPLICATION_QUIT_EVENT = 0;
     private static final int HANDLE_CHANNEL_STATE_CHANGED_EVENT = 1;
     private static final int HANDLE_ALLJOYN_ERROR_EVENT = 2;
-
     public static final int DIALOG_ALLJOYN_ERROR_ID = 3;
 
     private Handler mHandler = new Handler() {
