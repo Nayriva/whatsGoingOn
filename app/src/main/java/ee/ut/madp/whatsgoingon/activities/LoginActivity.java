@@ -91,6 +91,10 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        facebookButton.setCompoundDrawablePadding(getResources().getDimensionPixelOffset(R.dimen.spacing_large));
+
+       // customizeFacebookButton();
+
         application = (ChatApplication) getApplication();
         res = getResources();
         context = getApplicationContext();
@@ -230,6 +234,15 @@ public class LoginActivity extends AppCompatActivity {
                         DialogHelper.hideProgressDialog();
                     }
                 });
+    }
+
+
+    private void customizeFacebookButton() {
+        facebookButton.setBackgroundResource(R.drawable.ic_facebook);
+        facebookButton.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+        facebookButton.setCompoundDrawablePadding(0);
+        facebookButton.setPadding(0, 0, 0, 0);
+        facebookButton.setText("");
     }
 
 }

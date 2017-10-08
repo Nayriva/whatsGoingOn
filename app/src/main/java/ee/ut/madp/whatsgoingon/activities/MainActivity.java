@@ -61,7 +61,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        //setupDrawerContent(navigationView);
 
         navigationView.setCheckedItem(R.id.nav_chat);
     }
@@ -82,18 +81,6 @@ public class MainActivity extends AppCompatActivity
             super.onBackPressed();
         }
     }
-
-//    private void setupDrawerContent(NavigationView navigationView) {
-//        navigationView.setNavigationItemSelectedListener(
-//                new NavigationView.OnNavigationItemSelectedListener() {
-//                    @Override
-//                    public boolean onNavigationItemSelected(MenuItem menuItem) {
-//                        selectDrawerItem(menuItem);
-//                        return true;
-//
-//                    }
-//                });
-//    }
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
