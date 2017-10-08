@@ -1,6 +1,7 @@
 package ee.ut.madp.whatsgoingon.activities;
 
 import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -15,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.Normalizer;
@@ -30,9 +32,13 @@ import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    @BindView(R.id.nav_view) NavigationView navigationView;
-    @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
-    @BindView(R.id.toolbar) Toolbar toolbar;
+    private static final String TAG = MainActivity.class.getSimpleName();
+    @BindView(R.id.nav_view)
+    NavigationView navigationView;
+    @BindView(R.id.drawer_layout)
+    DrawerLayout drawerLayout;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
 
     private ChatApplication application;
     private FirebaseAuth firebaseAuth;
@@ -62,6 +68,10 @@ public class MainActivity extends AppCompatActivity
         };
         drawer.setDrawerListener(toggle);
         toggle.syncState();
+
+        //setupDrawerContent(navigationView);
+
+        navigationView.setCheckedItem(R.id.nav_chat);
     }
 
     private void setUpChannel() {
@@ -85,6 +95,17 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+//    private void setupDrawerContent(NavigationView navigationView) {
+//        navigationView.setNavigationItemSelectedListener(
+//                new NavigationView.OnNavigationItemSelectedListener() {
+//                    @Override
+//                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+//                        selectDrawerItem(menuItem);
+//                        return true;
+//
+//                    }
+//                });
+//    }
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         selectDrawerItem(item);
@@ -109,7 +130,7 @@ public class MainActivity extends AppCompatActivity
         Class fragmentClass = null;
         Class activityClass = null;
         int classRequestCode = -1;
-        switch(menuItem.getItemId()) {
+        switch(menuItem.getItemId()){
             case R.id.nav_chat:
                 fragmentClass = ChatChannelsFragment.class;
                 activityClass = ChannelsActivity.class;
@@ -127,6 +148,9 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_help:
                 //fragmentClass = HelpFragment.class;
                 break;
+            case R.id.nav_logout:
+                signOutUser(this);
+                break;
             default:
                 fragmentClass = ChatChannelsFragment.class;
                 break;
@@ -135,14 +159,14 @@ public class MainActivity extends AppCompatActivity
         try {
             fragment = (Fragment) fragmentClass.newInstance();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Failed to obtain the fragment " + e.getMessage());
+
         }
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
         startActivityForResult(new Intent(this, activityClass), classRequestCode);
 
-        // Highlight the selected item has been done by NavigationView
         menuItem.setChecked(true);
         setTitle(menuItem.getTitle());
         drawerLayout.closeDrawers();
@@ -164,5 +188,23 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
         application.hostStopChannel();
         application.quit();
+    }
+    /**
+     * Provides sign out of users
+     *
+     * @param context
+     */
+    public void signOutUser(Context context) {
+        FirebaseAuth.getInstance().signOut();
+        LoginManager.getInstance().logOut();
+        context.startActivity(new Intent(context, LoginActivity.class));
+
+    }
+
+    /**
+     * Setups the navigation header, if data is not available from shared preferences and external storage, it downloads it from firebase database and storage.
+     */
+    public void setupNavigationHeader() {
+
     }
 }
