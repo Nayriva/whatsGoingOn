@@ -6,11 +6,11 @@
     <string name="log_in_with_facebook">Log in with Facebook</string>
     <string name="sign_in_with_google">Sign in with Google</string>
     <string name="or">or</string>
-    <string name="reg_link">No account? Register here!</string>
+    <string name="reg_link">No account? Sign up <b>here!</b></string>
     <string name="create_acc">Create new account</string>
     <string name="rep_pass">Repeat password</string>
     <string name="sign_up">Sign up</string>
-    <string name="log_in_link">Already have an account? Log in!</string>
+    <string name="log_in_link">Already have an account? <b>Log in!</b></string>
     <string name="event_name">Event name</string>
     <string name="date">Date</string>
     <string name="time">Time</string>

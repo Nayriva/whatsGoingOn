@@ -80,6 +80,7 @@
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/btn_register"
             style="@style/ButtonStyle"
+            android:layout_marginTop="@dimen/spacing_xlarge"
             android:background="@color/colorPrimary"
             android:text="@string/sign_up" />
 
@@ -90,9 +91,7 @@
             android:clickable="true"
             android:layout_margin="@dimen/spacing_medium"
             android:text="@string/log_in_link"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center_horizontal"
-            android:textStyle="bold" />
+            android:layout_gravity="center_horizontal" />
 
     </LinearLayout>
 </ScrollView>

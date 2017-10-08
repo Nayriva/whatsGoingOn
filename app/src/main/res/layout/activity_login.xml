@@ -14,7 +14,9 @@
         <TextView
             android:id="@+id/login_title"
             style="@style/AppTheme.Title"
-            android:text="@string/login_title" />
+            android:text="@string/login_title"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:layout_marginBottom="@dimen/spacing_medium"/>
 
         <!-- Email -->
         <android.support.design.widget.TextInputLayout
@@ -51,7 +53,7 @@
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/btn_login"
             style="@style/ButtonStyle"
-            android:layout_marginTop="@dimen/spacing_xxlarge"
+            android:layout_marginTop="@dimen/spacing_xlarge"
             android:background="@color/colorPrimary"
             android:text="@string/btn_login" />
 
@@ -85,7 +87,7 @@
             android:drawableStart="@drawable/ic_google_plus"
             android:text="@string/sign_in_with_google" />
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -95,21 +97,19 @@
                 android:id="@+id/register_link"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
+                android:layout_alignParentStart="true"
                 android:clickable="true"
-                android:gravity="start"
                 android:text="@string/reg_link" />
 
             <TextView
                 android:id="@+id/forgotten_password_link"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
                 android:clickable="true"
-                android:gravity="end"
+                android:layout_alignParentEnd="true"
                 android:text="@string/forgotten_password" />
 
-        </LinearLayout>
+        </RelativeLayout>
 
 
 
