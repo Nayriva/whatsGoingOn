@@ -11,6 +11,13 @@ import android.util.Log;
 import android.view.Window;
 import android.widget.TextView;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -20,6 +27,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
 
@@ -36,34 +44,59 @@ import ee.ut.madp.whatsgoingon.helpers.FontHelper;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
+    private final int GOOGLE_SIGN_IN_REQUEST_CODE = 1;
     private ChatApplication application;
 
     @BindView(R.id.input_email) TextInputEditText emailInput;
     @BindView(R.id.input_password) TextInputEditText passwordInput;
     @BindView(R.id.login_title) TextView loginTitle;
+    @BindView(R.id.btn_facebook)
+    LoginButton facebookButton;
 
     private GoogleApiClient mGoogleApiClient;
     private Context context;
     private FirebaseAuth firebaseAuth;
     private Resources res;
+    private CallbackManager callbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "onCreate()");
-
         super.onCreate(savedInstanceState);
+        FacebookSdk.sdkInitialize(getApplicationContext());
 
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
         FontHelper.setFont(this, loginTitle, SettingsConstants.CUSTOM_FONT);
 
+        callbackManager = CallbackManager.Factory.create();
+        facebookButton.setReadPermissions("email", "public_profile");
+        facebookButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Log.d(TAG, "facebook:onSuccess:" + loginResult);
+                handleFacebookAccessToken(loginResult.getAccessToken());
+            }
+
+            @Override
+            public void onCancel() {
+                Log.d(TAG, "facebook:onCancel");
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                Log.d(TAG, "facebook:onError", error);
+                DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.occur_error));
+            }
+        });
 
         application = (ChatApplication) getApplication();
         res = getResources();
         context = getApplicationContext();
         initializeAuth();
     }
+
 
     @Override
     public void onStart() {
@@ -78,6 +111,8 @@ public class LoginActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "onActivityResult");
         super.onActivityResult(requestCode, resultCode, data);
+
+        callbackManager.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == GOOGLE_SIGN_IN_REQUEST_CODE) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
@@ -123,7 +158,7 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void firebaseAuthWithEmail(String email, String password) {
+    private void firebaseAuthWithEmail(String email, String password) {
         DialogHelper.showProgressDialog(context, res.getString(R.string.progress_dialog_title_login));
 
         firebaseAuth.signInWithEmailAndPassword(email, password)
@@ -173,50 +208,28 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
 
+    private void handleFacebookAccessToken(AccessToken token) {
+        Log.d(TAG, "handleFacebookAccessToken:" + token);
 
+        DialogHelper.showProgressDialog(this, getString(R.string.progress_dialog_title_login));
+        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+        firebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
+                        if (!task.isSuccessful()) {
+                            Log.d(TAG, "signInWithCredential", task.getException());
+                            DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.unsuccessful_login));
+                        } else {
+                            if (checkUserLogin()) {
+                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                            }
+                        }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private void loggedInContinue(String username) {
-        Log.i(TAG, "loggedInContinue( " + username + " )");
-        application.hostSetChannelName(username);
-        application.hostInitChannel();
-        application.hostStartChannel();
-
-        Intent finishedIntent = new Intent();
-        finishedIntent.putExtra("loggedIn", true);
-        finishedIntent.putExtra("username", username);
-        setResult(RESULT_OK, finishedIntent);
-        finish();
+                        DialogHelper.hideProgressDialog();
+                    }
+                });
     }
 
-    private final int GOOGLE_SIGN_IN_REQUEST_CODE = 1;
 }

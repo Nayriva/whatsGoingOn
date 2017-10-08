@@ -55,5 +55,6 @@
     <string name="header_name">Your name</string>
 
     <string name="facebook_app_id">753013854886290</string>
+    <string name="unsuccessful_login">Login wasn\'t successful.</string>
 
 </resources>

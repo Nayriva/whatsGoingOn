@@ -1,17 +1,20 @@
 package ee.ut.madp.whatsgoingon.activities;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 
+import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 
 import butterknife.BindView;
@@ -24,9 +27,13 @@ import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    @BindView(R.id.nav_view) NavigationView navigationView;
-    @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
-    @BindView(R.id.toolbar) Toolbar toolbar;
+    private static final String TAG = MainActivity.class.getSimpleName();
+    @BindView(R.id.nav_view)
+    NavigationView navigationView;
+    @BindView(R.id.drawer_layout)
+    DrawerLayout drawerLayout;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
 
     CircleImageView profilePhoto;
     private FrameLayout frameLayout;
@@ -53,6 +60,10 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        //setupDrawerContent(navigationView);
+
+        navigationView.setCheckedItem(R.id.nav_chat);
     }
 
     private void setUpChannel() {
@@ -72,7 +83,18 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
+//    private void setupDrawerContent(NavigationView navigationView) {
+//        navigationView.setNavigationItemSelectedListener(
+//                new NavigationView.OnNavigationItemSelectedListener() {
+//                    @Override
+//                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+//                        selectDrawerItem(menuItem);
+//                        return true;
+//
+//                    }
+//                });
+//    }
+
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         selectDrawerItem(item);
@@ -82,7 +104,7 @@ public class MainActivity extends AppCompatActivity
     public void selectDrawerItem(MenuItem menuItem) {
         Fragment fragment = null;
         Class fragmentClass = null;
-        switch(menuItem.getItemId()) {
+        switch (menuItem.getItemId()) {
             case R.id.nav_chat:
                 fragmentClass = ChatChannelsFragment.class;
                 break;
@@ -98,6 +120,9 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_help:
                 //fragmentClass = HelpFragment.class;
                 break;
+            case R.id.nav_logout:
+                signOutUser(this);
+                break;
             default:
                 fragmentClass = ChatChannelsFragment.class;
                 break;
@@ -106,15 +131,36 @@ public class MainActivity extends AppCompatActivity
         try {
             fragment = (Fragment) fragmentClass.newInstance();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Failed to obtain the fragment " + e.getMessage());
+
         }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
+        if (fragment != null && fragmentClass != null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
+        }
 
-        // Highlight the selected item has been done by NavigationView
         menuItem.setChecked(true);
         setTitle(menuItem.getTitle());
         drawerLayout.closeDrawers();
     }
+
+    /**
+     * Provides sign out of users
+     *
+     * @param context
+     */
+    public void signOutUser(Context context) {
+        FirebaseAuth.getInstance().signOut();
+        LoginManager.getInstance().logOut();
+        context.startActivity(new Intent(context, LoginActivity.class));
+
+    }
+
+    /**
+     * Setups the navigation header, if data is not available from shared preferences and external storage, it downloads it from firebase database and storage.
+     */
+    public void setupNavigationHeader() {
+
+    }
+
 }
