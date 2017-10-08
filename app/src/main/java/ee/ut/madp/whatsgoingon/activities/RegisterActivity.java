@@ -23,9 +23,11 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import ee.ut.madp.whatsgoingon.FirebaseApplication;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.constants.SettingsConstants;
 import ee.ut.madp.whatsgoingon.helpers.FontHelper;
+import ee.ut.madp.whatsgoingon.helpers.ModelHelper;
 import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
 
 public class RegisterActivity extends AppCompatActivity implements Validator.ValidationListener{
@@ -109,8 +111,15 @@ public class RegisterActivity extends AppCompatActivity implements Validator.Val
         }
     }
 
+    @OnClick(R.id.dog_profile_photo)
+    public void addUserProfilePhoto() {
+        ImagePicker.pickImage(this, imagePickerMessage);
+    }
+
     @OnClick(R.id.btn_register)
     void registerNewUser() {
         validator.validate();
+        ((FirebaseApplication) getApplication()).createNewUser(RegisterActivity.this, ModelHelper.getProperty(email),
+                ModelHelper.getProperty(password), ModelHelper.getProperty(name), profilePhoto);
     }
 }
