@@ -145,5 +145,11 @@
     <string name="reset_password_instructions_not_sent">The email for reseting the old password hasn\'t been sent</string>
     <string name="profile_photo_updated">The profile photo has been updated</string>
     <string name="success_signup">Sign up has been successful</string>
+    <string name="hint_user_info">Info about you</string>
+    <string name="hint_nationality">Nationality</string>
+    <string name="hint_phone">Phone number</string>
+    <string name="hint_university">School</string>
+    <string name="hint_work">Work</string>
+    <string name="hint_birthday">Birthday</string>
 
 </resources>

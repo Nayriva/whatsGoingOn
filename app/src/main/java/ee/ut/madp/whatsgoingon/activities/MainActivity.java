@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -36,7 +35,6 @@ import ee.ut.madp.whatsgoingon.chat.ChatDetailActivity;
 import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
 import ee.ut.madp.whatsgoingon.fragments.EventsFragment;
 import ee.ut.madp.whatsgoingon.fragments.HelpFragment;
-import ee.ut.madp.whatsgoingon.fragments.MyProfileFragment;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.User;
@@ -149,7 +147,7 @@ public class MainActivity extends AppCompatActivity
                 fragmentClass = EventsFragment.class;
                 break;
             case R.id.nav_profile:
-                fragmentClass = MyProfileFragment.class;
+                startActivity(new Intent(MainActivity.this, MyProfileActivity.class));
                 break;
             case R.id.nav_settings:
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
@@ -166,6 +164,12 @@ public class MainActivity extends AppCompatActivity
                 break;
         }
 
+//        if (fragment != null && fragmentClass != null) {
+//            FragmentManager fragmentManager = getSupportFragmentManager();
+//            fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
+//            startActivityForResult(new Intent(this, activityClass), classRequestCode);
+//        }
+
         try {
             fragment = (Fragment) fragmentClass.newInstance();
         } catch (Exception e) {
@@ -174,10 +178,12 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (fragment != null && fragmentClass != null) {
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
-            startActivityForResult(new Intent(this, activityClass), classRequestCode);
+            getSupportFragmentManager().beginTransaction().replace(R.id.content_main, fragment).addToBackStack(null).commit();
         }
+
+//        if (fragment != null) {
+//            getSupportFragmentManager().beginTransaction().replace(R.id.containerView, fragment).addToBackStack(null).commit();
+//        }
 
 
 

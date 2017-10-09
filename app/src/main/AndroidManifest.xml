@@ -55,6 +55,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
         </activity>
+        <activity android:name=".activities.MyProfileActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

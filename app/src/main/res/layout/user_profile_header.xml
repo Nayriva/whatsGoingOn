@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/user_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_medium"
+    android:orientation="horizontal"
+    android:background="@color/colorPrimary"
+    android:padding="@dimen/spacing_large">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/user_profile_photo"
+        android:layout_width="@dimen/profile_photo_large_size"
+        android:layout_height="@dimen/profile_photo_large_size"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/user"
+        app:civ_border_color="@color/colorWhite"
+        app:civ_border_width="1dp" />
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/user_profile_photo"
+        android:layout_centerHorizontal="true">
+
+        <LinearLayout
+            android:id="@+id/user_properties"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/user_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textColor="@color/colorWhite" />
+
+            <TextView
+                android:id="@+id/user_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                android:textColor="@color/colorWhite" />
+
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+</RelativeLayout>
