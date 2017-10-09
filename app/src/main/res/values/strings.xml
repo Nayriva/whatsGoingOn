@@ -41,7 +41,7 @@
     <string name="occur_error">Error has been occured.</string>
     <string name="error">Error!</string>
     <string name="progress_dialog_wait">Please wait...</string>
-    <string name="progress_dialog_title_signup">Registration</string>
+    <string name="progress_dialog_title_signup">Sign up</string>
     <string name="invalid_password_format">Password must be at least 6 characters long</string>
     <string name="login_title">Wanna login???</string>
     <string name="choose_photo">Choose photo</string>
@@ -128,7 +128,7 @@
         <item>3</item>
     </string-array>
 
-    <string-array name="multi_select_list_preference_default_value" />
+    <string-array name="multi_select_list_preference_default_value"/>
 
     <string name="pref_title_system_sync_settings">System sync settings</string>
 
@@ -144,5 +144,9 @@
     <string name="reset_password_instructions_sent">The email for reseting the old password has been sent</string>
     <string name="reset_password_instructions_not_sent">The email for reseting the old password hasn\'t been sent</string>
     <string name="profile_photo_updated">The profile photo has been updated</string>
+    <string name="success_signup">Sign up has been successful</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

@@ -74,11 +74,13 @@ import ee.ut.madp.whatsgoingon.models.ChatMessage;
 public class ChatApplication extends Application implements Observable {
     private static final String TAG = "chat.ChatApplication";
     public static String PACKAGE_NAME;
+
     /**
      * When created, the application fires an intent to create the AllJoyn
      * service.  This acts as sort of a combined view/controller in the
      * overall architecture.
      */
+    @Override
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "onCreate()");
@@ -88,6 +90,12 @@ public class ChatApplication extends Application implements Observable {
         if (mRunningService == null) {
             Log.i(TAG, "onCreate(): failed to startService()");
         }
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        quit();
     }
 
     ComponentName mRunningService = null;

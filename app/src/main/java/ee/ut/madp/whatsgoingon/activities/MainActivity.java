@@ -3,6 +3,7 @@ package ee.ut.madp.whatsgoingon.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -14,22 +15,35 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
-
-import java.text.Normalizer;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
+import ee.ut.madp.whatsgoingon.fragments.ChatFragment;
+import ee.ut.madp.whatsgoingon.fragments.SettingsFragment;
+import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
+import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
+import ee.ut.madp.whatsgoingon.models.User;
+
+import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int SETTINGS_REQUEST_CODE = 1 ;
     @BindView(R.id.nav_view)
     NavigationView navigationView;
     @BindView(R.id.drawer_layout)
@@ -39,6 +53,8 @@ public class MainActivity extends AppCompatActivity
 
     private ChatApplication application;
     private FirebaseAuth firebaseAuth;
+    private CircleImageView profilePhoto;
+    private DatabaseReference firebaseDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,15 +65,17 @@ public class MainActivity extends AppCompatActivity
 
         application = (ChatApplication) getApplication();
         firebaseAuth = FirebaseAuth.getInstance();
-        setUpChannel();
+        firebaseDatabase = FirebaseDatabase.getInstance().getReference();
 
-        setUpdNavigationView();
+        setUpChannel();
+        setUpNavigationView();
         setUpDrawer();
+        setupNavigationHeader();
 
         navigationView.setCheckedItem(R.id.nav_chat);
     }
 
-    private void setUpdNavigationView() {
+    private void setUpNavigationView() {
         final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
@@ -77,14 +95,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setUpChannel() {
-        String username = firebaseAuth.getCurrentUser().getDisplayName();
-        username = Normalizer
-                .normalize(username, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .replaceAll("\\s+", "_");
-        application.hostSetChannelName(username);
-        application.hostInitChannel();
-        application.hostStartChannel();
+        if (firebaseAuth.getCurrentUser().getEmail() != null) {
+            String username = firebaseAuth.getCurrentUser().getEmail();
+            username = username.split("@")[0];
+            application.hostSetChannelName(username);
+            application.hostInitChannel();
+            application.hostStartChannel();
+        }
+
     }
 
     @Override
@@ -98,7 +116,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         selectDrawerItem(item);
         return true;
     }
@@ -106,22 +124,21 @@ public class MainActivity extends AppCompatActivity
     public void selectDrawerItem(MenuItem menuItem) {
         Fragment fragment = null;
         Class fragmentClass = null;
+
         switch (menuItem.getItemId()) {
             case R.id.nav_chat:
                 fragmentClass = ChatChannelsFragment.class;
                 break;
             case R.id.nav_events:
-                //fragmentClass = EventsFragment.class;
                 break;
             case R.id.nav_profile:
-                //fragmentClass = MyProfileFragment.class;
                 break;
             case R.id.nav_settings:
+                fragmentClass = SettingsFragment.class;
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivityForResult(intent, SETTINGS_REQUEST_CODE);
                 break;
             case R.id.nav_help:
-                //fragmentClass = HelpFragment.class;
                 break;
             case R.id.nav_logout:
                 signOutUser(this);
@@ -137,7 +154,7 @@ public class MainActivity extends AppCompatActivity
             Log.e(TAG, "Failed to obtain the fragment " + e.getMessage());
         }
 
-        if (fragment != null && fragmentClass != null) {
+        if (fragment != null ) {
             FragmentManager fragmentManager = getSupportFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
         }
@@ -151,8 +168,63 @@ public class MainActivity extends AppCompatActivity
         FirebaseAuth.getInstance().signOut();
         LoginManager.getInstance().logOut();
         application.hostStopChannel();
-        application.quit();
-        context.startActivity(new Intent(context, LoginActivity.class));
+        startActivity(new Intent(context, LoginActivity.class));
+    }
 
+    /**
+     * Setups the navigation header, if data is not available from shared preferences and external storage, it downloads it from firebase database and storage.
+     */
+    private void setupNavigationHeader() {
+        // TODO get information from the shared prefences and storage
+        firebaseDatabase.child(FIREBASE_CHILD_USERS).child(getUserId()).addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "Retrieving user with uid " + getUserId());
+                User user = dataSnapshot.getValue(User.class);
+                //TODO - null pointer exception
+                //setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "Failed to read value ", databaseError.toException());
+                DialogHelper.showAlertDialog(MainActivity.this, databaseError.toString());
+
+            }
+
+        });
+    }
+
+
+    /**
+     * Setups data for the navigation drawer. If data is not available from shared preferences and external storage, it downloads it from firebase database and storage.
+     */
+    public void setupDataForDrawer(String name, String email, String photo) {
+        if (navigationView != null) {
+            View header = navigationView.getHeaderView(0);
+            profilePhoto = (CircleImageView) header.findViewById(R.id.user_photo);
+
+            if (photo != null) {
+                // TODO get photo from the external storage
+                if (photo.contains("https")) {
+                    //Picasso.with(this).load(photo).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).into(profilePhoto);
+                } else if (!photo.isEmpty()) {
+                    profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
+                }
+            }
+
+
+            TextView nameView = (TextView) header.findViewById(R.id.header_name);
+            nameView.setText(name);
+            TextView emailView = (TextView) header.findViewById(R.id.header_email);
+            emailView.setText(email);
+        }
+
+    }
+
+
+    private String getUserId() {
+        return FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 }

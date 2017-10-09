@@ -1,6 +1,6 @@
 package ee.ut.madp.whatsgoingon.activities;
 
-import android.app.ProgressDialog;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -149,8 +149,7 @@ public class SignupActivity extends AppCompatActivity implements Validator.Valid
     }
 
     private void createNewUser(String email, String password, final String name, final String photo) {
-        final ProgressDialog progressDialog = DialogHelper.createProgressDialog(getApplicationContext(), getString(R.string.progress_dialog_title_signup));
-        progressDialog.show();
+        DialogHelper.showProgressDialog(SignupActivity.this, getString(R.string.progress_dialog_title_signup));
 
         firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -159,22 +158,23 @@ public class SignupActivity extends AppCompatActivity implements Validator.Valid
                         Log.d(TAG, "createUserWithEmail: onComplete:" + task.isSuccessful());
                         if (!task.isSuccessful()) {
                             FirebaseExceptionsChecker.checkFirebaseAuth(context, task);
+                            DialogHelper.hideProgressDialog();
                         } else {
-                            onAuthSuccess(context, name, task.getResult().getUser(), photo);
+                            onAuthSuccess(name, task.getResult().getUser(), photo);
                         }
-                        finish();
-                        progressDialog.dismiss();
+
                     }
                 });
     }
 
-    private void onAuthSuccess(Context context, String name, FirebaseUser firebaseUser, String photo) {
+    private void onAuthSuccess( String name, FirebaseUser firebaseUser, String photo) {
         saveNewUser(name, firebaseUser, photo);
         if (firebaseUser != null) {
-            //Stores information to shared preferences
             // TODO store user information to shared prefences
         }
-        context.startActivity(new Intent(context, LoginActivity.class));
+        setResult(Activity.RESULT_OK);
+        DialogHelper.hideProgressDialog();
+        finish();
     }
 
     public void saveNewUser(String name, FirebaseUser firebaseUser, String photo) {
