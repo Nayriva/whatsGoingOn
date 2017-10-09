@@ -86,6 +86,7 @@ public class ChatFragment extends Fragment implements Observer {
             adapter.add(message);
         }
         adapter.notifyDataSetChanged();
+        messagesListView.smoothScrollToPosition(messages.size());
     }
 
     @Override
