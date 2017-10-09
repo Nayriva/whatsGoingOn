@@ -1,7 +1,7 @@
 package ee.ut.madp.whatsgoingon.activities;
 
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -14,7 +14,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.FrameLayout;
 
 import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
@@ -95,17 +94,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-//    private void setupDrawerContent(NavigationView navigationView) {
-//        navigationView.setNavigationItemSelectedListener(
-//                new NavigationView.OnNavigationItemSelectedListener() {
-//                    @Override
-//                    public boolean onNavigationItemSelected(MenuItem menuItem) {
-//                        selectDrawerItem(menuItem);
-//                        return true;
-//
-//                    }
-//                });
-//    }
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         selectDrawerItem(item);
@@ -143,7 +131,8 @@ public class MainActivity extends AppCompatActivity
                 //fragmentClass = MyProfileFragment.class;
                 break;
             case R.id.nav_settings:
-                //fragmentClass = SettingsFragment.class;
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivityForResult(intent, SETTINGS_REQUEST_CODE);
                 break;
             case R.id.nav_help:
                 //fragmentClass = HelpFragment.class;
@@ -163,9 +152,13 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
-        startActivityForResult(new Intent(this, activityClass), classRequestCode);
+        if (fragment != null && fragmentClass != null) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
+            startActivityForResult(new Intent(this, activityClass), classRequestCode);
+        }
+
+
 
         menuItem.setChecked(true);
         setTitle(menuItem.getTitle());

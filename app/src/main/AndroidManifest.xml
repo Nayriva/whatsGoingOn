@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".chat.ChatApplication"
@@ -15,37 +15,46 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
-        <activity android:name="com.facebook.FacebookActivity"
-            android:configChanges=
-                "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name" />
         <activity
             android:name=".activities.SplashActivity"
             android:theme="@style/AppTheme.FullScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activities.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".chat.ChannelsActivity" />
-
         <activity android:name=".chat.ChatDetailActivity" />
-
         <activity
-            android:name=".activities.RegisterActivity"
+            android:name=".activities.SignupActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".activities.MainActivity"
-            android:theme="@style/AppTheme.Activity"
-            android:label="@string/title_activity_main" />
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.Activity" />
 
         <service android:name=".AllJoynService" />
+
+        <activity
+            android:name=".activities.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".activities.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
