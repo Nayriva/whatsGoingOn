@@ -1223,7 +1223,7 @@ public class AllJoynService extends Service implements Observer {
         /*
          * Drop signals on the hosted session unless we are joined-to-self.
          */
-        if (mJoinedToSelf == false && ctx.sessionId == mHostSessionId) {
+        if (!mJoinedToSelf && ctx.sessionId == mHostSessionId) {
             Log.i(TAG, "Chat(): dropped signal received on hosted session " + ctx.sessionId + " when not joined-to-self");
             return;
         }

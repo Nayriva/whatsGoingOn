@@ -19,7 +19,6 @@ public class DialogHelper {
      * @param titleMessage
      */
     public static void showProgressDialog(Context context, String titleMessage) {
-        ProgressDialog progressDialog = null;
         if (context != null) {
             progressDialog = new ProgressDialog(context);
             progressDialog.setTitle(titleMessage);
@@ -36,8 +35,6 @@ public class DialogHelper {
         if (progressDialog != null) {
             progressDialog.dismiss();
         }
-
-
     }
 
     /**

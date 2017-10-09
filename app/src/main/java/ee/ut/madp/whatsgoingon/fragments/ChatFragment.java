@@ -21,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.text.Normalizer;
 import java.util.List;
 
+import butterknife.BindView;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.Observable;
 import ee.ut.madp.whatsgoingon.Observer;
@@ -85,6 +86,7 @@ public class ChatFragment extends Fragment implements Observer {
             adapter.add(message);
         }
         adapter.notifyDataSetChanged();
+        messagesListView.smoothScrollToPosition(messages.size());
     }
 
     @Override
