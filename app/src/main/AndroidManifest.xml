@@ -55,7 +55,8 @@
         </activity>
         <activity
             android:name=".activities.MyProfileActivity"
-            android:label="@string/title_activity_my_profile">
+            android:label="@string/title_activity_my_profile"
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.MainActivity" />

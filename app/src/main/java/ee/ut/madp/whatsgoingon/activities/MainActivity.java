@@ -24,6 +24,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,6 +35,7 @@ import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
 import ee.ut.madp.whatsgoingon.fragments.SettingsFragment;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
+import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
@@ -183,7 +185,7 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "Retrieving user with uid " + getUserId());
                 User user = dataSnapshot.getValue(User.class);
                 //TODO - null pointer exception
-                //setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
+                setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
             }
 
             @Override
@@ -208,7 +210,7 @@ public class MainActivity extends AppCompatActivity
             if (photo != null) {
                 // TODO get photo from the external storage
                 if (photo.contains("https")) {
-                    //Picasso.with(this).load(photo).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).into(profilePhoto);
+                    Picasso.with(this).load(UserHelper.getFacebookPhotoUrl(firebaseAuth.getCurrentUser())).into(profilePhoto);
                 } else if (!photo.isEmpty()) {
                     profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
                 }

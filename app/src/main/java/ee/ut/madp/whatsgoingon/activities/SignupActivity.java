@@ -40,15 +40,13 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.FirebaseExceptionsChecker;
-import ee.ut.madp.whatsgoingon.ModelFactory;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
-import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.activities.SplashActivity.TAG;
-import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
+import static ee.ut.madp.whatsgoingon.helpers.UserHelper.saveNewUser;
 
 public class SignupActivity extends AppCompatActivity implements Validator.ValidationListener{
 
@@ -177,10 +175,6 @@ public class SignupActivity extends AppCompatActivity implements Validator.Valid
         finish();
     }
 
-    public void saveNewUser(String name, FirebaseUser firebaseUser, String photo) {
-        User user = ModelFactory.createUser(firebaseUser.getUid(), photo, firebaseUser.getEmail(), name);
-        getFirebaseDatabase().child(FIREBASE_CHILD_USERS).child(firebaseUser.getUid()).setValue(user);
-    }
 
     public DatabaseReference getFirebaseDatabase() {
         if (firebaseDatabase == null) {

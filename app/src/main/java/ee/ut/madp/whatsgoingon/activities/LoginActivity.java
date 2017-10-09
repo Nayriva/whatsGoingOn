@@ -41,6 +41,7 @@ import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.FontHelper;
+import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.GOOGLE_SIGN_IN_REQUEST_CODE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SIGN_UP_REQUEST_CODE;
@@ -235,6 +236,7 @@ public class LoginActivity extends AppCompatActivity {
                             Log.d(TAG, "signInWithCredential", task.getException());
                             DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.unsuccessful_login));
                         } else {
+                            UserHelper.saveFacebookInfoAboutUser(LoginActivity.this, task.getResult().getUser());
                             if (checkUserLogin()) {
                                 startActivity(new Intent(LoginActivity.this, MainActivity.class));
                             }
