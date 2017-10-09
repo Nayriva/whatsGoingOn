@@ -32,9 +32,6 @@
         <activity
             android:name=".activities.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".chat.ChannelsActivity" />
-
-        <activity android:name=".chat.ChatDetailActivity" />
 
         <activity
             android:name=".activities.RegisterActivity"
