@@ -34,10 +34,10 @@
         </activity>
         <activity
             android:name=".activities.LoginActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/FormTheme" />
         <activity
             android:name=".activities.SignupActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/FormTheme" />
         <activity
             android:name=".activities.MainActivity"
             android:label="@string/title_activity_main"
@@ -53,8 +53,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
         </activity>
-        <activity android:name=".activities.MyProfileActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".activities.MyProfileActivity"
+            android:label="@string/title_activity_my_profile">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
