@@ -1,11 +1,11 @@
 package ee.ut.madp.whatsgoingon.activities;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -38,15 +38,20 @@ import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.FirebaseExceptionsChecker;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
-import ee.ut.madp.whatsgoingon.constants.SettingsConstants;
+import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.FontHelper;
+
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.GOOGLE_SIGN_IN_REQUEST_CODE;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SIGN_UP_REQUEST_CODE;
 
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
-    private final int GOOGLE_SIGN_IN_REQUEST_CODE = 1;
     private ChatApplication application;
+
+    @BindView(R.id.coordinator_layout)
+    CoordinatorLayout coordinatorLayout;
 
     @BindView(R.id.input_email) TextInputEditText emailInput;
     @BindView(R.id.input_password) TextInputEditText passwordInput;
@@ -69,7 +74,7 @@ public class LoginActivity extends AppCompatActivity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
-        FontHelper.setFont(this, loginTitle, SettingsConstants.CUSTOM_FONT);
+        FontHelper.setFont(this, loginTitle, GeneralConstants.CUSTOM_FONT);
 
         callbackManager = CallbackManager.Factory.create();
         facebookButton.setReadPermissions("email", "public_profile");
@@ -122,6 +127,12 @@ public class LoginActivity extends AppCompatActivity {
                 firebaseAuthWithGoogle(account);
             }
         }
+
+        if (requestCode == SIGN_UP_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.success_signup));
+            }
+        }
     }
 
     private void initializeAuth() {
@@ -155,14 +166,13 @@ public class LoginActivity extends AppCompatActivity {
 
     @OnClick(R.id.register_link)
     public void register() {
-        Intent intent = new Intent(getApplicationContext(), SignupActivity.class);
-        startActivity(intent);
+        Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
+        startActivityForResult(intent, SIGN_UP_REQUEST_CODE);
     }
 
     private void firebaseAuthWithEmail(String email, String password) {
 
-        final ProgressDialog progressDialog = DialogHelper.createProgressDialog(getApplicationContext(), getString(R.string.progress_dialog_title_signup));
-        progressDialog.show();
+        DialogHelper.showProgressDialog(getApplicationContext(), getString(R.string.progress_dialog_title_signup));
 
         firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener( new OnCompleteListener<AuthResult>() {
@@ -176,7 +186,7 @@ public class LoginActivity extends AppCompatActivity {
                             Log.d(TAG, "loginUser: user with id " + userId + "was logged");
                             startMainActivity();
                         }
-                       progressDialog.dismiss();
+                       DialogHelper.hideProgressDialog();
                     }
                 });
     }
@@ -206,7 +216,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void startMainActivity() {
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
         finish();
     }
@@ -214,8 +224,7 @@ public class LoginActivity extends AppCompatActivity {
     private void handleFacebookAccessToken(AccessToken token) {
         Log.d(TAG, "handleFacebookAccessToken:" + token);
 
-        final ProgressDialog progressDialog = DialogHelper.createProgressDialog(getApplicationContext(), getString(R.string.progress_dialog_title_login));
-        progressDialog.show();
+        DialogHelper.showProgressDialog(LoginActivity.this, getString(R.string.progress_dialog_title_login));
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
         firebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -231,8 +240,10 @@ public class LoginActivity extends AppCompatActivity {
                             }
                         }
 
-                        progressDialog.dismiss();
+                        DialogHelper.hideProgressDialog();
                     }
                 });
     }
+
+
 }

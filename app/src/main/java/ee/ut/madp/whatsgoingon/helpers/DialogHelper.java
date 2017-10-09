@@ -11,36 +11,34 @@ import ee.ut.madp.whatsgoingon.R;
 
 public class DialogHelper {
 
-    //private ProgressDialog progressDialog;
+    private static ProgressDialog progressDialog;
 
     /**
      * Shows the progress dialog
      * @param context
      * @param titleMessage
      */
-    public static ProgressDialog createProgressDialog(Context context, String titleMessage) {
+    public static void showProgressDialog(Context context, String titleMessage) {
         ProgressDialog progressDialog = null;
         if (context != null) {
             progressDialog = new ProgressDialog(context);
             progressDialog.setTitle(titleMessage);
             progressDialog.setMessage(context.getResources().getString(R.string.progress_dialog_wait));
             progressDialog.setCancelable(false);
+            progressDialog.show();
         }
-
-        return progressDialog;
-
     }
 
-//    /**
-//     * Hides the progress dialog
-//     */
-//    public void hideProgressDialog() {
-//        if (progressDialog != null) {
-//            progressDialog.dismiss();
-//        }
-//
-//
-//    }
+    /**
+     * Hides the progress dialog
+     */
+    public static void hideProgressDialog() {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+
+
+    }
 
     /**
      * Show alert dialog giving information that something went wrong

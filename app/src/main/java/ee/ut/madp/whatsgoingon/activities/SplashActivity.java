@@ -14,10 +14,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.constants.SettingsConstants;
+import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.FontHelper;
 
-import static ee.ut.madp.whatsgoingon.constants.SettingsConstants.SPLASH_DISPLAY_LENGTH;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SPLASH_DISPLAY_LENGTH;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -49,6 +49,6 @@ public class SplashActivity extends AppCompatActivity {
             }
         }, SPLASH_DISPLAY_LENGTH);
 
-        FontHelper.setFont(this, appName, SettingsConstants.CUSTOM_FONT);
+        FontHelper.setFont(this, appName, GeneralConstants.CUSTOM_FONT);
     }
 }
