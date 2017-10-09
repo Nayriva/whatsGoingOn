@@ -78,25 +78,6 @@ public class LoginActivity extends AppCompatActivity {
         FontHelper.setFont(this, loginTitle, GeneralConstants.CUSTOM_FONT);
 
         callbackManager = CallbackManager.Factory.create();
-        facebookButton.setReadPermissions("email", "public_profile");
-        facebookButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-                Log.d(TAG, "facebook:onSuccess:" + loginResult);
-                handleFacebookAccessToken(loginResult.getAccessToken());
-            }
-
-            @Override
-            public void onCancel() {
-                Log.d(TAG, "facebook:onCancel");
-            }
-
-            @Override
-            public void onError(FacebookException error) {
-                Log.d(TAG, "facebook:onError", error);
-                DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.occur_error));
-            }
-        });
 
         application = (ChatApplication) getApplication();
         res = getResources();
@@ -148,6 +129,26 @@ public class LoginActivity extends AppCompatActivity {
                 .enableAutoManage(this, null)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
+
+        facebookButton.setReadPermissions("email", "public_profile");
+        facebookButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Log.d(TAG, "facebook:onSuccess:" + loginResult);
+                handleFacebookAccessToken(loginResult.getAccessToken());
+            }
+
+            @Override
+            public void onCancel() {
+                Log.d(TAG, "facebook:onCancel");
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                Log.d(TAG, "facebook:onError", error);
+                DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.occur_error));
+            }
+        });
     }
 
     @OnClick(R.id.btn_login)
@@ -192,7 +193,7 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+    private void firebaseAuthWithGoogle(final GoogleSignInAccount acct) {
         Log.i(TAG, "firebaseAuthWithGoogle(" + acct + " )" );
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
 
@@ -204,8 +205,8 @@ public class LoginActivity extends AppCompatActivity {
                             Log.e(TAG, "signInWithEmail", task.getException());
                             FirebaseExceptionsChecker.checkFirebaseAuth(getApplicationContext(), task);
                         } else if (checkUserLogin()) {
-                            String userId = task.getResult().getUser().getUid();
-                            Log.d(TAG, "loginUser: user with id " + userId + "was logged");
+                            UserHelper.saveNewUser(task.getResult().getUser().getDisplayName(), task.getResult().getUser(), acct.getPhotoUrl().toString());
+                            Log.d(TAG, "loginUser: user with id " + task.getResult().getUser().getUid() + "was logged");
                             startMainActivity();
                         }
                     }
