@@ -1,7 +1,7 @@
 package ee.ut.madp.whatsgoingon.activities;
 
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -117,7 +117,8 @@ public class MainActivity extends AppCompatActivity
                 //fragmentClass = MyProfileFragment.class;
                 break;
             case R.id.nav_settings:
-                //fragmentClass = SettingsFragment.class;
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivityForResult(intent, SETTINGS_REQUEST_CODE);
                 break;
             case R.id.nav_help:
                 //fragmentClass = HelpFragment.class;
@@ -136,8 +137,10 @@ public class MainActivity extends AppCompatActivity
             Log.e(TAG, "Failed to obtain the fragment " + e.getMessage());
         }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
+        if (fragment != null && fragmentClass != null) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
+        }
 
         menuItem.setChecked(true);
         setTitle(menuItem.getTitle());

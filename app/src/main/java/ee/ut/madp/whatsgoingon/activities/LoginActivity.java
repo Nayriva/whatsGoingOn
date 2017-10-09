@@ -1,5 +1,6 @@
 package ee.ut.madp.whatsgoingon.activities;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -154,12 +155,14 @@ public class LoginActivity extends AppCompatActivity {
 
     @OnClick(R.id.register_link)
     public void register() {
-        Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
+        Intent intent = new Intent(getApplicationContext(), SignupActivity.class);
         startActivity(intent);
     }
 
     private void firebaseAuthWithEmail(String email, String password) {
-        DialogHelper.showProgressDialog(context, res.getString(R.string.progress_dialog_title_login));
+
+        final ProgressDialog progressDialog = DialogHelper.createProgressDialog(getApplicationContext(), getString(R.string.progress_dialog_title_signup));
+        progressDialog.show();
 
         firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener( new OnCompleteListener<AuthResult>() {
@@ -173,7 +176,7 @@ public class LoginActivity extends AppCompatActivity {
                             Log.d(TAG, "loginUser: user with id " + userId + "was logged");
                             startMainActivity();
                         }
-                        DialogHelper.hideProgressDialog();
+                       progressDialog.dismiss();
                     }
                 });
     }
@@ -211,7 +214,8 @@ public class LoginActivity extends AppCompatActivity {
     private void handleFacebookAccessToken(AccessToken token) {
         Log.d(TAG, "handleFacebookAccessToken:" + token);
 
-        DialogHelper.showProgressDialog(this, getString(R.string.progress_dialog_title_login));
+        final ProgressDialog progressDialog = DialogHelper.createProgressDialog(getApplicationContext(), getString(R.string.progress_dialog_title_login));
+        progressDialog.show();
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
         firebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -227,7 +231,7 @@ public class LoginActivity extends AppCompatActivity {
                             }
                         }
 
-                        DialogHelper.hideProgressDialog();
+                        progressDialog.dismiss();
                     }
                 });
     }

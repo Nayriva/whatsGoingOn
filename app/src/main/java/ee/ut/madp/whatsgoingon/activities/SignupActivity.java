@@ -1,5 +1,6 @@
 package ee.ut.madp.whatsgoingon.activities;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -49,7 +50,7 @@ import ee.ut.madp.whatsgoingon.models.User;
 import static ee.ut.madp.whatsgoingon.activities.SplashActivity.TAG;
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
 
-public class RegisterActivity extends AppCompatActivity implements Validator.ValidationListener{
+public class SignupActivity extends AppCompatActivity implements Validator.ValidationListener{
 
     @NotEmpty @Email @BindView(R.id.input_layout_email) TextInputLayout email;
     @NotEmpty @BindView(R.id.input_layout_username) TextInputLayout name;
@@ -74,7 +75,7 @@ public class RegisterActivity extends AppCompatActivity implements Validator.Val
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register);
+        setContentView(R.layout.activity_signup);
         ButterKnife.bind(this);
 
         Validator validator = new Validator(this);
@@ -147,8 +148,9 @@ public class RegisterActivity extends AppCompatActivity implements Validator.Val
         createNewUser(email, password, username, profilePhoto);
     }
 
-    public void createNewUser(String email, String password, final String name, final String photo) {
-        DialogHelper.showProgressDialog(getApplicationContext(), getString(R.string.progress_dialog_title_signup));
+    private void createNewUser(String email, String password, final String name, final String photo) {
+        final ProgressDialog progressDialog = DialogHelper.createProgressDialog(getApplicationContext(), getString(R.string.progress_dialog_title_signup));
+        progressDialog.show();
 
         firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -161,7 +163,7 @@ public class RegisterActivity extends AppCompatActivity implements Validator.Val
                             onAuthSuccess(context, name, task.getResult().getUser(), photo);
                         }
                         finish();
-                        DialogHelper.hideProgressDialog();
+                        progressDialog.dismiss();
                     }
                 });
     }
