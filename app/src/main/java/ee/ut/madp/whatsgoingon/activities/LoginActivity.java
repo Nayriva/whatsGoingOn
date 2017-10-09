@@ -172,7 +172,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void firebaseAuthWithEmail(String email, String password) {
 
-        DialogHelper.showProgressDialog(getApplicationContext(), getString(R.string.progress_dialog_title_signup));
+        DialogHelper.showProgressDialog(LoginActivity.this, getString(R.string.progress_dialog_title_signup));
 
         firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener( new OnCompleteListener<AuthResult>() {

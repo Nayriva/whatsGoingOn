@@ -14,19 +14,34 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.Normalizer;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.ChannelsActivity;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.chat.ChatDetailActivity;
 import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
+import ee.ut.madp.whatsgoingon.fragments.EventsFragment;
+import ee.ut.madp.whatsgoingon.fragments.HelpFragment;
+import ee.ut.madp.whatsgoingon.fragments.MyProfileFragment;
+import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
+import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
+import ee.ut.madp.whatsgoingon.models.User;
+
+import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -41,6 +56,8 @@ public class MainActivity extends AppCompatActivity
 
     private ChatApplication application;
     private FirebaseAuth firebaseAuth;
+    private CircleImageView profilePhoto;
+    DatabaseReference firebaseDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,20 +85,24 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        //setupDrawerContent(navigationView);
+        setupNavigationHeader();
 
         navigationView.setCheckedItem(R.id.nav_chat);
     }
 
     private void setUpChannel() {
-        String username = firebaseAuth.getCurrentUser().getDisplayName();
-        username = Normalizer
-                .normalize(username, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .replaceAll("\\s+", "_");
-        application.hostSetChannelName(username);
-        application.hostInitChannel();
-        application.hostStartChannel();
+        // by default user doesnt have set displayName
+        if (firebaseAuth.getCurrentUser().getEmail() != null) {
+            String username = firebaseAuth.getCurrentUser().getEmail();
+            username = Normalizer
+                    .normalize(username, Normalizer.Form.NFD)
+                    .replaceAll("\\p{M}", "")
+                    .replaceAll("\\s+", "_");
+            application.hostSetChannelName(username);
+            application.hostInitChannel();
+            application.hostStartChannel();
+        }
+
     }
 
     @Override
@@ -125,17 +146,17 @@ public class MainActivity extends AppCompatActivity
                 classRequestCode = CHAT_CHANNELS_REQUEST_CODE;
                 break;
             case R.id.nav_events:
-                //fragmentClass = EventsFragment.class;
+                fragmentClass = EventsFragment.class;
                 break;
             case R.id.nav_profile:
-                //fragmentClass = MyProfileFragment.class;
+                fragmentClass = MyProfileFragment.class;
                 break;
             case R.id.nav_settings:
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivityForResult(intent, SETTINGS_REQUEST_CODE);
                 break;
             case R.id.nav_help:
-                //fragmentClass = HelpFragment.class;
+                fragmentClass = HelpFragment.class;
                 break;
             case R.id.nav_logout:
                 signOutUser(this);
@@ -194,10 +215,71 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+
     /**
      * Setups the navigation header, if data is not available from shared preferences and external storage, it downloads it from firebase database and storage.
      */
-    public void setupNavigationHeader() {
+    private void setupNavigationHeader() {
+      // TODO get information from the shared prefences and storage
+          getFirebaseDatabase().child(FIREBASE_CHILD_USERS).child(getUserId()).addValueEventListener(new ValueEventListener() {
 
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Log.d(TAG, "Retrieving user with uid " + getUserId());
+                    User user = dataSnapshot.getValue(User.class);
+                    setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.w(TAG, "Failed to read value ", databaseError.toException());
+                    DialogHelper.showAlertDialog(MainActivity.this, databaseError.toString());
+
+                }
+
+            });
+        }
+
+    /**
+     * Return Firebase database reference
+     * @return DatabaseReference
+     */
+    private DatabaseReference getFirebaseDatabase() {
+        if (firebaseDatabase == null) {
+            firebaseDatabase = FirebaseDatabase.getInstance().getReference();
+        }
+        return firebaseDatabase;
+    }
+
+
+    /**
+     * Setups data for the navigation drawer. If data is not available from shared preferences and external storage, it downloads it from firebase database and storage.
+     */
+    public void setupDataForDrawer(String name, String email, String photo) {
+        if (navigationView != null) {
+            View header = navigationView.getHeaderView(0);
+            profilePhoto = (CircleImageView) header.findViewById(R.id.user_photo);
+
+            if (photo != null) {
+                // TODO get photo from the external storage
+                if (photo.contains("https")) {
+                    //Picasso.with(this).load(photo).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).into(profilePhoto);
+                } else if (!photo.isEmpty()) {
+                    profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
+                }
+            }
+
+
+            TextView nameView = (TextView) header.findViewById(R.id.header_name);
+            nameView.setText(name);
+            TextView emailView = (TextView) header.findViewById(R.id.header_email);
+            emailView.setText(email);
+        }
+
+    }
+
+
+    private String getUserId() {
+        return FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 }

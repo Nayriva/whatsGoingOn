@@ -158,21 +158,22 @@ public class SignupActivity extends AppCompatActivity implements Validator.Valid
                         Log.d(TAG, "createUserWithEmail: onComplete:" + task.isSuccessful());
                         if (!task.isSuccessful()) {
                             FirebaseExceptionsChecker.checkFirebaseAuth(context, task);
+                            DialogHelper.hideProgressDialog();
                         } else {
-                            onAuthSuccess(context, name, task.getResult().getUser(), photo);
+                            onAuthSuccess(name, task.getResult().getUser(), photo);
                         }
-                        DialogHelper.hideProgressDialog();
-                        finish();
+
                     }
                 });
     }
 
-    private void onAuthSuccess(Context context, String name, FirebaseUser firebaseUser, String photo) {
+    private void onAuthSuccess( String name, FirebaseUser firebaseUser, String photo) {
         saveNewUser(name, firebaseUser, photo);
         if (firebaseUser != null) {
             // TODO store user information to shared prefences
         }
         setResult(Activity.RESULT_OK);
+        DialogHelper.hideProgressDialog();
         finish();
     }
 
