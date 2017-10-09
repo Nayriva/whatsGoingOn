@@ -43,12 +43,9 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int SETTINGS_REQUEST_CODE = 1 ;
-    @BindView(R.id.nav_view)
-    NavigationView navigationView;
-    @BindView(R.id.drawer_layout)
-    DrawerLayout drawerLayout;
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
+    @BindView(R.id.nav_view) NavigationView navigationView;
+    @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
+    @BindView(R.id.toolbar) Toolbar toolbar;
 
     private ChatApplication application;
     private FirebaseAuth firebaseAuth;
@@ -62,21 +59,35 @@ public class MainActivity extends AppCompatActivity
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
 
-        application = (ChatApplication) getApplication();
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseDatabase = FirebaseDatabase.getInstance().getReference();
-
-        setUpChannel();
+        setUpVariables();
         setUpNavigationView();
         setUpDrawer();
         setupNavigationHeader();
+        setUpInitialFragment();
+    }
 
-        navigationView.setCheckedItem(R.id.nav_chat);
+    private void setUpVariables() {
+        application = (ChatApplication) getApplication();
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseDatabase = FirebaseDatabase.getInstance().getReference();
+    }
+
+    private void setUpInitialFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment fragment = null;
+        try {
+            fragment = ChatChannelsFragment.class.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            //this should never happen
+        }
+        fragmentManager.beginTransaction().replace(
+                R.id.containerView, fragment).commit();
     }
 
     private void setUpNavigationView() {
         final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setCheckedItem(R.id.nav_chat);
     }
 
     private void setUpDrawer() {
@@ -91,17 +102,6 @@ public class MainActivity extends AppCompatActivity
         };
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-    }
-
-    private void setUpChannel() {
-        if (firebaseAuth.getCurrentUser().getEmail() != null) {
-            String username = firebaseAuth.getCurrentUser().getEmail();
-            username = username.split("@")[0];
-            application.hostSetChannelName(username);
-            application.hostInitChannel();
-            application.hostStartChannel();
-        }
-
     }
 
     @Override

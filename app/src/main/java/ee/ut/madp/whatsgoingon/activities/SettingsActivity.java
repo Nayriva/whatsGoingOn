@@ -78,7 +78,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
         if (key.equals(PREFERENCE_MESSAGE_NOTIFICATION)) {
             boolean isAllowed = sharedPreferences.getBoolean(key, true);
             editor.putBoolean(PREFERENCE_MESSAGE_NOTIFICATION, isAllowed);
-            editor.commit();
+            editor.apply();
         }
 
         if (key.equals(PREFERENCE_NOTIFICATION_VIBRATE)) {
