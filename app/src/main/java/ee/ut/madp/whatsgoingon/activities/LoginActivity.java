@@ -61,9 +61,7 @@ public class LoginActivity extends AppCompatActivity {
     LoginButton facebookButton;
 
     private GoogleApiClient mGoogleApiClient;
-    private Context context;
     private FirebaseAuth firebaseAuth;
-    private Resources res;
     private CallbackManager callbackManager;
 
     @Override
@@ -80,8 +78,6 @@ public class LoginActivity extends AppCompatActivity {
         callbackManager = CallbackManager.Factory.create();
 
         application = (ChatApplication) getApplication();
-        res = getResources();
-        context = getApplicationContext();
         initializeAuth();
     }
 
@@ -218,6 +214,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void startMainActivity() {
+        application.startAdvertise();
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
         finish();
@@ -247,6 +244,4 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
-
-
 }

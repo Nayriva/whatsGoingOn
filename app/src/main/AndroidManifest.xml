@@ -43,8 +43,6 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.Activity" />
 
-        <service android:name=".AllJoynService" />
-
         <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/title_activity_settings"

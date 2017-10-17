@@ -1,8 +1,4 @@
-/**
- * AllJoyn Chat Android Sample code
- *
- * Implementation of AllJoyn interface.
- *
+/*
  * Copyright AllSeen Alliance. All rights reserved.
  *
  *    Permission to use, copy, modify, and/or distribute this software for any
@@ -17,20 +13,31 @@
  *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-package ee.ut.madp.whatsgoingon;
+
+package ee.ut.madp.whatsgoingon.chat;
 
 import org.alljoyn.bus.BusException;
 import org.alljoyn.bus.annotation.BusInterface;
 import org.alljoyn.bus.annotation.BusSignal;
 
-@BusInterface (name = "org.alljoyn.bus.samples.chat")
+/*
+ * The BusInterface annotation is used to tell the code that this interface is an AllJoyn interface.
+ *
+ * The 'name' value is used to specify by which name this interface will be known.  If the name is
+ * not given the fully qualified name of the Java interface is be used.  In most instances its best
+ * to assign an interface name since it helps promote code reuse.
+ */
+@BusInterface(name = "ee.ut.madp.whatisgoingon.chat")
 public interface ChatInterface {
+
     /*
-     * The BusSignal annotation signifies that this function should be used as
-     * part of the AllJoyn interface.  The runtime is smart enough to figure
-     * out that this is a used as a signal emitter and is only called to send
-     * signals and not to receive signals.
+     * The BusMethod annotation signifies that this function should be used as part of the AllJoyn
+     * interface.  The runtime is smart enough to figure out what the input and output of the method
+     * is based on the input/output arguments of the Ping method.
+     *
+     * All methods that use the BusMethod annotation can throw a BusException and should indicate
+     * this fact.
      */
     @BusSignal
-    public void Chat(String str) throws BusException;
+    void Chat(String message) throws BusException;
 }

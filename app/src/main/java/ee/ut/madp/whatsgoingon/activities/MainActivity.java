@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
         setSupportActionBar(toolbar);
 
         setUpVariables();
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity
 
     private void setUpVariables() {
         application = (ChatApplication) getApplication();
+
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
     }
@@ -167,9 +169,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void signOutUser(Context context) {
+        application.stopAdvertise();
         FirebaseAuth.getInstance().signOut();
         LoginManager.getInstance().logOut();
-        application.hostStopChannel();
         startActivity(new Intent(context, LoginActivity.class));
     }
 
@@ -184,8 +186,8 @@ public class MainActivity extends AppCompatActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG, "Retrieving user with uid " + getUserId());
                 User user = dataSnapshot.getValue(User.class);
-                //TODO - null pointer exception
-                setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
+
+                //setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
             }
 
             @Override
