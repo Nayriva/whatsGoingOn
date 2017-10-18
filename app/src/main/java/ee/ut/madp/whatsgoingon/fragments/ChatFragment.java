@@ -2,6 +2,7 @@ package ee.ut.madp.whatsgoingon.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -13,10 +14,13 @@ import android.widget.ListView;
 
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.List;
+
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.chat.ChatMessageAdapter;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
+import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 public class ChatFragment extends Fragment {
 
@@ -24,6 +28,7 @@ public class ChatFragment extends Fragment {
     private String channelDisplayName;
     private ListView messagesListView;
     private ChatMessageAdapter adapter;
+    private FloatingActionButton fab;
     private EditText messageET;
     private FirebaseAuth firebaseAuth;
     private boolean isGroup;
@@ -49,7 +54,14 @@ public class ChatFragment extends Fragment {
         messagesListView.setAdapter(adapter);
 
         messageET = (EditText) view.findViewById(R.id.messageEditText);
-        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.sendFloatingActionButton);
+        fab = (FloatingActionButton) view.findViewById(R.id.sendFloatingActionButton);
+        setFABListener();
+        updateHistory();
+
+        return view;
+    }
+
+    private void setFABListener() {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -62,20 +74,25 @@ public class ChatFragment extends Fragment {
                     message = ChatHelper.oneToOneMessage(sender, channelDisplayName, messageText);
                 }
                 application.sendMessage(message);
+                updateHistory();
             }
         });
-        updateHistory();
-
-        return view;
     }
 
     private void updateHistory() {
-        application.getHistory(channelDisplayName);
+        adapter.clear();
+        List<ChatMessage> history = application.getHistory(channelDisplayName);
+        for (ChatMessage message: history) {
+            adapter.add(message);
+        }
+        adapter.notifyDataSetChanged();
+        messagesListView.smoothScrollToPosition(history.size() - 1);
     }
 
     public void setData(String channelDisplayName, boolean isGroup, String[] receivers) {
         this.channelDisplayName = channelDisplayName;
-
+        this.isGroup = isGroup;
+        this.receivers = receivers;
     }
 
 }

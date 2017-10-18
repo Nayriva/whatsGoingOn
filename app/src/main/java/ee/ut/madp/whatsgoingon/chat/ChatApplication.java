@@ -52,13 +52,12 @@ public class ChatApplication extends Application {
         timer = new Thread() {
             public void run () {
                 for (;;) {
-                    // do stuff in a separate thread
                     String msg = ChatHelper.advertiseMessage(firebaseAuth.getCurrentUser().getEmail());
                     Message message = mBusHandler.obtainMessage(BusHandlerCallback.CHAT, msg);
                     mBusHandler.sendMessage(message);
 
                     try {
-                        sleep(30000);    // sleep for 3 seconds
+                        sleep(5000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -90,14 +89,22 @@ public class ChatApplication extends Application {
                     switch (messageType) {
                         case "S": {
                             String messageReceiver = ChatHelper.oneToOneMessageReceiver(receivedMsg);
-                            if (! messageReceiver.equals(firebaseAuth.getCurrentUser().getEmail())) {
+                            String sender = ChatHelper.oneToOneMessageSender(receivedMsg);
+                            if (sender.equals(firebaseAuth.getCurrentUser().getEmail())) {
+                                return true;
+                            } else if (! messageReceiver.equals(firebaseAuth.getCurrentUser().getEmail())) {
                                 return true;
                             }
                             storeOneToOneMessage(receivedMsg);
                         } break;
                         case "G": {
                             String[] messageReceivers = ChatHelper.groupMessageReceivers(receivedMsg);
-                            boolean found = false;
+                            String sender = ChatHelper.groupMessageSender(receivedMsg);
+                            if (sender.equals(firebaseAuth.getCurrentUser().getEmail())) {
+                                return true;
+                            }
+
+                                boolean found = false;
                             for (int i = 0; i < messageReceivers.length; i++) {
                                 if (messageReceivers[i].equals(firebaseAuth.getCurrentUser().getEmail())) {
                                     found = true;
@@ -171,12 +178,26 @@ public class ChatApplication extends Application {
     }
 
     public void sendMessage(String message) {
+        String type = ChatHelper.getMessageType(message);
+        switch (type) {
+            case "S": {
+                storeOneToOneMessage(message);
+            } break;
+            case "G": {
+                storeGroupMessage(message);
+            } break;
+        }
         Message msg = mBusHandler.obtainMessage(BusHandlerCallback.CHAT, message);
         mBusHandler.sendMessage(msg);
     }
 
     public List<ChatMessage> getHistory(String key) {
-        return chatHistory.get(key);
+        List<ChatMessage> orig = chatHistory.get(key);
+        List<ChatMessage> copy = new ArrayList<>();
+        for (ChatMessage message: orig) {
+            copy.add(message);
+        }
+        return copy;
     }
 
     public Set<String> getChannels() {

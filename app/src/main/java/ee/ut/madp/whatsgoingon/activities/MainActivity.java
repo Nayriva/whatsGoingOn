@@ -61,7 +61,6 @@ public class MainActivity extends AppCompatActivity
         ButterKnife.bind(this);
 
         setSupportActionBar(toolbar);
-
         setUpVariables();
         setUpNavigationView();
         setUpDrawer();
@@ -71,7 +70,6 @@ public class MainActivity extends AppCompatActivity
 
     private void setUpVariables() {
         application = (ChatApplication) getApplication();
-
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
     }
@@ -86,6 +84,7 @@ public class MainActivity extends AppCompatActivity
         }
         fragmentManager.beginTransaction().replace(
                 R.id.containerView, fragment).commit();
+        setTitle("Chat");
     }
 
     private void setUpNavigationView() {
@@ -187,7 +186,7 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "Retrieving user with uid " + getUserId());
                 User user = dataSnapshot.getValue(User.class);
 
-                //setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
+                setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
             }
 
             @Override
@@ -200,7 +199,6 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-
     /**
      * Setups data for the navigation drawer. If data is not available from shared preferences and external storage, it downloads it from firebase database and storage.
      */
@@ -212,7 +210,11 @@ public class MainActivity extends AppCompatActivity
             if (photo != null) {
                 // TODO get photo from the external storage
                 if (photo.contains("https")) {
-                    Picasso.with(this).load(UserHelper.getFacebookPhotoUrl(firebaseAuth.getCurrentUser())).into(profilePhoto);
+                    if (photo.contains("facebook")) {
+                        Picasso.with(this).load(UserHelper.getFacebookPhotoUrl(firebaseAuth.getCurrentUser())).into(profilePhoto);
+                    } else {
+                        Picasso.with(this).load(UserHelper.getGooglePhotoUrl(firebaseAuth.getCurrentUser().getPhotoUrl())).into(profilePhoto);
+                    }
                 } else if (!photo.isEmpty()) {
                     profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
                 }
@@ -226,7 +228,6 @@ public class MainActivity extends AppCompatActivity
         }
 
     }
-
 
     private String getUserId() {
         return FirebaseAuth.getInstance().getCurrentUser().getUid();

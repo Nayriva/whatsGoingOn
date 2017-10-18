@@ -160,5 +160,6 @@
     <string name="stop_hosting">Stop hosting</string>
     <string name="no_channels_found">No channels found... Swipe to refresh</string>
     <string name="join_channel">Pick one of these:</string>
+    <string name="web_client_id">350683107593-o0f11033mp22vlbjqh5oepdu9014hq5d.apps.googleusercontent.com</string>
 
 </resources>

@@ -1,8 +1,6 @@
 package ee.ut.madp.whatsgoingon.activities;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
@@ -23,6 +21,7 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -46,7 +45,8 @@ import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.GOOGLE_SIGN_IN_REQUEST_CODE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SIGN_UP_REQUEST_CODE;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity
+        implements GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
     private ChatApplication application;
@@ -57,6 +57,7 @@ public class LoginActivity extends AppCompatActivity {
     @BindView(R.id.input_email) TextInputEditText emailInput;
     @BindView(R.id.input_password) TextInputEditText passwordInput;
     @BindView(R.id.login_title) TextView loginTitle;
+
     @BindView(R.id.btn_facebook)
     LoginButton facebookButton;
 
@@ -116,13 +117,16 @@ public class LoginActivity extends AppCompatActivity {
     private void initializeAuth() {
         Log.i(TAG, "initializeAuth()");
         firebaseAuth = FirebaseAuth.getInstance();
+
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getResources().getString(R.string.default_web_client_id))
+                .requestIdToken(getString(R.string.web_client_id))
                 .requestEmail()
+                .requestId()
+                .requestProfile()
                 .build();
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, null)
+                .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
@@ -131,7 +135,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.d(TAG, "facebook:onSuccess:" + loginResult);
-                handleFacebookAccessToken(loginResult.getAccessToken());
+                firebaseAuthWithFacebook(loginResult.getAccessToken());
             }
 
             @Override
@@ -189,22 +193,55 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    private void firebaseAuthWithGoogle(final GoogleSignInAccount acct) {
-        Log.i(TAG, "firebaseAuthWithGoogle(" + acct + " )" );
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+    private void firebaseAuthWithGoogle(final GoogleSignInAccount acc) {
+        Log.i(TAG, "firebaseAuthWithGoogle: " + acc );
+
+        DialogHelper.showProgressDialog(LoginActivity.this, getString(R.string.progress_dialog_title_login));
+        AuthCredential credential = GoogleAuthProvider.getCredential(acc.getIdToken(), null);
 
         firebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
                         if (!task.isSuccessful()) {
-                            Log.e(TAG, "signInWithEmail", task.getException());
-                            FirebaseExceptionsChecker.checkFirebaseAuth(getApplicationContext(), task);
-                        } else if (checkUserLogin()) {
-                            UserHelper.saveNewUser(task.getResult().getUser().getDisplayName(), task.getResult().getUser(), acct.getPhotoUrl().toString());
-                            Log.d(TAG, "loginUser: user with id " + task.getResult().getUser().getUid() + "was logged");
-                            startMainActivity();
+                            Log.d(TAG, "signInWithCredential", task.getException());
+                            DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.unsuccessful_login));
+                        } else {
+                            UserHelper.saveGoogleInfoAboutUser(LoginActivity.this, task.getResult().getUser(),
+                                    acc.getPhotoUrl().toString());
+                            if (checkUserLogin()) {
+                                startMainActivity();
+                            }
                         }
+
+                        DialogHelper.hideProgressDialog();
+                    }
+                });
+    }
+
+    private void firebaseAuthWithFacebook(AccessToken token) {
+        Log.d(TAG, "firebaseAuthWithFacebook:" + token);
+
+        DialogHelper.showProgressDialog(LoginActivity.this, getString(R.string.progress_dialog_title_login));
+        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+
+        firebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
+                        if (!task.isSuccessful()) {
+                            Log.d(TAG, "signInWithCredential", task.getException());
+                            DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.unsuccessful_login));
+                        } else {
+                            UserHelper.saveFacebookInfoAboutUser(LoginActivity.this, task.getResult().getUser());
+                            if (checkUserLogin()) {
+                                startMainActivity();
+                            }
+                        }
+
+                        DialogHelper.hideProgressDialog();
                     }
                 });
     }
@@ -220,28 +257,8 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
 
-    private void handleFacebookAccessToken(AccessToken token) {
-        Log.d(TAG, "handleFacebookAccessToken:" + token);
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
-        DialogHelper.showProgressDialog(LoginActivity.this, getString(R.string.progress_dialog_title_login));
-        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
-                        if (!task.isSuccessful()) {
-                            Log.d(TAG, "signInWithCredential", task.getException());
-                            DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.unsuccessful_login));
-                        } else {
-                            UserHelper.saveFacebookInfoAboutUser(LoginActivity.this, task.getResult().getUser());
-                            if (checkUserLogin()) {
-                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                            }
-                        }
-
-                        DialogHelper.hideProgressDialog();
-                    }
-                });
     }
 }

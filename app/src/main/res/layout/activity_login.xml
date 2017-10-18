@@ -88,7 +88,7 @@
             facebook:com_facebook_login_text="@string/log_in_with_facebook"
             facebook:com_facebook_logout_text="@string/log_in_with_facebook" />
 
-        <android.support.v7.widget.AppCompatButton
+        <com.google.android.gms.common.SignInButton
             android:id="@+id/btn_google"
             style="@style/ButtonStyle"
             android:background="@color/colorGoogle"
