@@ -1,5 +1,6 @@
 package ee.ut.madp.whatsgoingon;
 
+
 import android.content.Context;
 
 import com.google.android.gms.tasks.Task;

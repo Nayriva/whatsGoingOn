@@ -13,10 +13,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/spacing_xxxlarge"
-        android:layout_centerHorizontal="true">
+        android:layout_centerHorizontal="true"
+        android:id="@+id/relativeLayout">
 
         <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/user_profile_photo"
+            android:id="@+id/iw_profile_photo"
             android:layout_width="@dimen/profile_photo_large_size"
             android:layout_height="@dimen/profile_photo_large_size"
             android:layout_centerHorizontal="true"
@@ -29,30 +30,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:layout_below="@id/user_profile_photo"
+            android:layout_below="@id/iw_profile_photo"
             android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/user_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title"
-                android:textColor="@color/colorWhite"
-                android:text="@string/username"/>
-
-
-            <TextView
-                android:id="@+id/gender"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:textColor="@color/colorWhite"
-                android:text="@string/gender"/>
 
 
         </LinearLayout>
 
 
     </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tw_username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="23dp"
+        android:text="@string/username"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        android:textColor="@color/colorWhite"
+        android:layout_below="@+id/relativeLayout"
+        android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>

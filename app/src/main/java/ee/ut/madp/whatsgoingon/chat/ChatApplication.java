@@ -38,44 +38,39 @@ public class ChatApplication extends Application {
     private Map<String, String[]> groupChats;
 
     private Handler mBusHandler;
+    private Handler advertiseHandler;
+    private Runnable advertiseCode;
+
     private final int HISTORY_MAX = 20;
     private static final int MESSAGE_CHAT = 1;
-
-    private Thread timer;
 
     public void checkIn() {
         chatHistory = new HashMap<>();
         groupChats = new HashMap<>();
         FirebaseApp.initializeApp(this);
         firebaseAuth = FirebaseAuth.getInstance();
+        setUpAdvertising();
+    }
 
-        timer = new Thread() {
-            public void run () {
-                for (;;) {
-                    String msg = ChatHelper.advertiseMessage(firebaseAuth.getCurrentUser().getEmail());
-                    Message message = mBusHandler.obtainMessage(BusHandlerCallback.CHAT, msg);
-                    mBusHandler.sendMessage(message);
-
-                    try {
-                        sleep(5000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
+    private void setUpAdvertising() {
+        advertiseHandler = new Handler();
+        advertiseCode = new Runnable() {
+            @Override
+            public void run() {
+                String msg = ChatHelper.advertiseMessage(firebaseAuth.getCurrentUser().getEmail());
+                Message message = mBusHandler.obtainMessage(BusHandlerCallback.CHAT, msg);
+                mBusHandler.sendMessage(message);
+                advertiseHandler.postDelayed(this, 2000);
             }
         };
     }
 
     public void startAdvertise() {
-        timer.start();
+        advertiseHandler.post(advertiseCode);
     }
 
     public void stopAdvertise() {
-        try {
-            timer.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        advertiseHandler.removeCallbacks(advertiseCode);
     }
 
     private Handler mHandler = new Handler(new Handler.Callback() {

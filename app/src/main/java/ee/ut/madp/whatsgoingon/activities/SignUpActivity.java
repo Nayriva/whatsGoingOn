@@ -1,10 +1,9 @@
 package ee.ut.madp.whatsgoingon.activities;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
@@ -20,8 +19,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.mobsandgeeks.saripaar.ValidationError;
 import com.mobsandgeeks.saripaar.Validator;
 import com.mobsandgeeks.saripaar.adapter.ViewDataAdapter;
@@ -44,20 +41,20 @@ import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
+import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 
 import static ee.ut.madp.whatsgoingon.activities.SplashActivity.TAG;
-import static ee.ut.madp.whatsgoingon.helpers.UserHelper.saveNewUser;
 
-public class SignupActivity extends AppCompatActivity implements Validator.ValidationListener{
+public class SignUpActivity extends AppCompatActivity implements Validator.ValidationListener{
 
     @NotEmpty @Email @BindView(R.id.input_layout_email) TextInputLayout email;
     @NotEmpty @BindView(R.id.input_layout_username) TextInputLayout name;
     @NotEmpty @Password(min = 6, scheme = Password.Scheme.ANY, messageResId = R.string.invalid_password_format)
     @BindView(R.id.input_layout_password) TextInputLayout password;
-
     @NotEmpty @ConfirmPassword @BindView(R.id.input_layout_repeat_password) TextInputLayout passwordAgain;
     @BindView(R.id.btn_register) Button signUpButton;
-    @BindView(R.id.user_profile_photo) CircleImageView photo;
+
+    @BindView(R.id.iw_profile_photo) CircleImageView photo;
     @BindView(R.id.input_username) TextInputEditText usernameInput;
     @BindView(R.id.input_email) TextInputEditText emailInput;
     @BindView(R.id.input_password) TextInputEditText passwordInput;
@@ -66,9 +63,6 @@ public class SignupActivity extends AppCompatActivity implements Validator.Valid
 
     private List<TextInputLayout> inputLayoutList;
     private FirebaseAuth firebaseAuth;
-    private DatabaseReference firebaseDatabase;
-    private Resources res;
-    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +77,11 @@ public class SignupActivity extends AppCompatActivity implements Validator.Valid
                 new ViewDataAdapter<TextInputLayout, String>() {
                     @Override
                     public String getData(TextInputLayout flet) throws ConversionException {
-                        return flet.getEditText().getText().toString();
+                        if (flet.getEditText() != null) {
+                            return flet.getEditText().getText().toString();
+                        } else {
+                            return null;
+                        }
                     }
                 }
         );
@@ -96,8 +94,6 @@ public class SignupActivity extends AppCompatActivity implements Validator.Valid
 
         ImagePicker.setMinQuality(600, 600);
         firebaseAuth = FirebaseAuth.getInstance();
-        res = getResources();
-        context = getApplicationContext();
     }
 
     @Override
@@ -123,7 +119,7 @@ public class SignupActivity extends AppCompatActivity implements Validator.Valid
         }
     }
 
-    @OnClick(R.id.user_profile_photo)
+    @OnClick(R.id.iw_profile_photo)
     public void addUserProfilePhoto() {
         ImagePicker.pickImage(this, getString(R.string.choose_photo));
     }
@@ -132,6 +128,10 @@ public class SignupActivity extends AppCompatActivity implements Validator.Valid
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Bitmap bitmap = ImagePicker.getImageFromResult(this, requestCode, resultCode, data);
         if (bitmap != null) {
+            photo.setImageBitmap(bitmap);
+            profilePhoto = ImageHelper.encodeBitmap(bitmap);
+        } else {
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.user);
             photo.setImageBitmap(bitmap);
             profilePhoto = ImageHelper.encodeBitmap(bitmap);
         }
@@ -147,7 +147,7 @@ public class SignupActivity extends AppCompatActivity implements Validator.Valid
     }
 
     private void createNewUser(String email, String password, final String name, final String photo) {
-        DialogHelper.showProgressDialog(SignupActivity.this, getString(R.string.progress_dialog_title_signup));
+        DialogHelper.showProgressDialog(SignUpActivity.this, getString(R.string.progress_dialog_title_signup));
 
         firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -155,7 +155,7 @@ public class SignupActivity extends AppCompatActivity implements Validator.Valid
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         Log.d(TAG, "createUserWithEmail: onComplete:" + task.isSuccessful());
                         if (!task.isSuccessful()) {
-                            FirebaseExceptionsChecker.checkFirebaseAuth(context, task);
+                            FirebaseExceptionsChecker.checkFirebaseAuth(SignUpActivity.this, task);
                             DialogHelper.hideProgressDialog();
                         } else {
                             onAuthSuccess(name, task.getResult().getUser(), photo);
@@ -165,21 +165,16 @@ public class SignupActivity extends AppCompatActivity implements Validator.Valid
                 });
     }
 
-    private void onAuthSuccess( String name, FirebaseUser firebaseUser, String photo) {
-        saveNewUser(name, firebaseUser, photo);
+    private void onAuthSuccess(String displayName, FirebaseUser firebaseUser, String photo) {
+        if (photo == null || photo.isEmpty()) {
+            photo = ImageHelper.encodeBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.user));
+        }
+        UserHelper.saveNewUserToDB(displayName, firebaseUser, photo);
         if (firebaseUser != null) {
             // TODO store user information to shared prefences
         }
         setResult(Activity.RESULT_OK);
         DialogHelper.hideProgressDialog();
         finish();
-    }
-
-
-    public DatabaseReference getFirebaseDatabase() {
-        if (firebaseDatabase == null) {
-            firebaseDatabase = FirebaseDatabase.getInstance().getReference();
-        }
-        return firebaseDatabase;
     }
 }

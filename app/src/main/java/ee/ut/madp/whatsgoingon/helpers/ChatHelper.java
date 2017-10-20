@@ -9,6 +9,8 @@ package ee.ut.madp.whatsgoingon.helpers;
  *  GROUP_MESSAGE: G~&&~sender~&&~groupName~&&~receiver1~&~&~receiver2~&~&~...~&~&~receiverX~&&~message_text
  *
  * Created by dominikf on 16. 10. 2017.
+ *
+ * //TODO add javaDoc
  */
 
 public class ChatHelper {
@@ -17,6 +19,13 @@ public class ChatHelper {
 
     //ONE TO ONE
 
+    /**
+     * Constructs one-to-one chat message with defined format
+     * @param sender sender display name of message
+     * @param receiver receiver display name of message
+     * @param text content of message
+     * @return one-to-one message for chat in correct format
+     */
     public static String oneToOneMessage(String sender, String receiver, String text) {
         return "S" +
                 delimiter +
@@ -27,21 +36,41 @@ public class ChatHelper {
                 text;
     }
 
+    /**
+     * Validator for one-to-one messages
+     * @param receivedMessage message to be validated
+     * @return true if message is in one-to-one format, false otherwise
+     */
     public static boolean isOneToOneMessage(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
         return "S".equals(parts[0]);
     }
 
+    /**
+     * Extractor of sender from one-to-one message
+     * @param receivedMessage message from which the sender should be extracted
+     * @return sender of message if found, null otherwise
+     */
     public static String oneToOneMessageSender(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
         return parts[1];
     }
 
+    /**
+     * Extractor of receiver from one-to-one message
+     * @param receivedMessage message from which the receiver should be extracted
+     * @return receiver of message if found, null otherwise
+     */
     public static String oneToOneMessageReceiver(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
         return parts[2];
     }
 
+    /**
+     * Extractor of message text from one-to-one message
+     * @param receivedMessage message from which the text should be extracted
+     * @return text of message, null otherwise
+     */
     public static String oneToOneMessageText(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
         return parts[3];

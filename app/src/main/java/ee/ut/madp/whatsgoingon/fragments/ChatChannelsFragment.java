@@ -83,6 +83,7 @@ public class ChatChannelsFragment extends Fragment {
         //TODO set up proper list_item_view
         chatsAdapter = new ArrayAdapter<>(getContext(), android.R.layout.test_list_item);
         channelsList.setAdapter(chatsAdapter);
+        getChannels();
     }
 
     private void setChatListViewListener() {

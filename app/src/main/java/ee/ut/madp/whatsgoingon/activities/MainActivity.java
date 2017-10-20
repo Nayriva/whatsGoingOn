@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity
 
     private ChatApplication application;
     private FirebaseAuth firebaseAuth;
-    private CircleImageView profilePhoto;
     private DatabaseReference firebaseDatabase;
 
     @Override
@@ -66,6 +65,22 @@ public class MainActivity extends AppCompatActivity
         setUpDrawer();
         setupNavigationHeader();
         setUpInitialFragment();
+    }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        selectDrawerItem(item);
+        return true;
     }
 
     private void setUpVariables() {
@@ -105,22 +120,6 @@ public class MainActivity extends AppCompatActivity
         };
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-    }
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        selectDrawerItem(item);
-        return true;
     }
 
     public void selectDrawerItem(MenuItem menuItem) {
@@ -174,11 +173,8 @@ public class MainActivity extends AppCompatActivity
         startActivity(new Intent(context, LoginActivity.class));
     }
 
-    /**
-     * Setups the navigation header, if data is not available from shared preferences and external storage, it downloads it from firebase database and storage.
-     */
     private void setupNavigationHeader() {
-        // TODO get information from the shared prefences and storage
+        // TODO get information from the shared preferences and storage
         firebaseDatabase.child(FIREBASE_CHILD_USERS).child(getUserId()).addValueEventListener(new ValueEventListener() {
 
             @Override
@@ -195,17 +191,13 @@ public class MainActivity extends AppCompatActivity
                 DialogHelper.showAlertDialog(MainActivity.this, databaseError.toString());
 
             }
-
         });
     }
 
-    /**
-     * Setups data for the navigation drawer. If data is not available from shared preferences and external storage, it downloads it from firebase database and storage.
-     */
     public void setupDataForDrawer(String name, String email, String photo) {
         if (navigationView != null) {
             View header = navigationView.getHeaderView(0);
-            profilePhoto = (CircleImageView) header.findViewById(R.id.user_photo);
+            CircleImageView profilePhoto = (CircleImageView) header.findViewById(R.id.user_photo);
 
             if (photo != null) {
                 // TODO get photo from the external storage
@@ -219,7 +211,6 @@ public class MainActivity extends AppCompatActivity
                     profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
                 }
             }
-
 
             TextView nameView = (TextView) header.findViewById(R.id.header_name);
             nameView.setText(name);

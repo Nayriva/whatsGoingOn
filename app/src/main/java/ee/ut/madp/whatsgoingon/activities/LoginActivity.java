@@ -15,6 +15,7 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
@@ -69,6 +70,7 @@ public class LoginActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
+        //TODO check if works without initialization
         FacebookSdk.sdkInitialize(getApplicationContext());
 
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -81,7 +83,6 @@ public class LoginActivity extends AppCompatActivity
         application = (ChatApplication) getApplication();
         initializeAuth();
     }
-
 
     @Override
     public void onStart() {
@@ -112,6 +113,27 @@ public class LoginActivity extends AppCompatActivity
                 DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.success_signup));
             }
         }
+    }
+
+    @OnClick(R.id.btn_login)
+    public void signIn() {
+        Log.i(TAG, "signIn()");
+        String email = String.valueOf(emailInput.getText());
+        String password = String.valueOf(passwordInput.getText());
+        firebaseAuthWithEmail(email, password);
+    }
+
+    @OnClick(R.id.btn_google)
+    public void signInGoogle() {
+        Log.i(TAG, "signInGoogle()");
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, GOOGLE_SIGN_IN_REQUEST_CODE);
+    }
+
+    @OnClick(R.id.register_link)
+    public void register() {
+        Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
+        startActivityForResult(intent, SIGN_UP_REQUEST_CODE);
     }
 
     private void initializeAuth() {
@@ -151,27 +173,6 @@ public class LoginActivity extends AppCompatActivity
         });
     }
 
-    @OnClick(R.id.btn_login)
-    public void signIn() {
-        Log.i(TAG, "signIn()");
-        String email = String.valueOf(emailInput.getText());
-        String password = String.valueOf(passwordInput.getText());
-        firebaseAuthWithEmail(email, password);
-    }
-
-    @OnClick(R.id.btn_google)
-    public void signInGoogle() {
-        Log.i(TAG, "signInGoogle()");
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        startActivityForResult(signInIntent, GOOGLE_SIGN_IN_REQUEST_CODE);
-    }
-
-    @OnClick(R.id.register_link)
-    public void register() {
-        Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
-        startActivityForResult(intent, SIGN_UP_REQUEST_CODE);
-    }
-
     private void firebaseAuthWithEmail(String email, String password) {
 
         DialogHelper.showProgressDialog(LoginActivity.this, getString(R.string.progress_dialog_title_signup));
@@ -182,7 +183,7 @@ public class LoginActivity extends AppCompatActivity
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (!task.isSuccessful()) {
                             Log.e(TAG, "signInWithEmail", task.getException());
-                            FirebaseExceptionsChecker.checkFirebaseAuth(getApplicationContext(), task);
+                            FirebaseExceptionsChecker.checkFirebaseAuth(LoginActivity.this, task);
                         } else if (checkUserLogin()) {
                             String userId = task.getResult().getUser().getUid();
                             Log.d(TAG, "loginUser: user with id " + userId + "was logged");
@@ -259,6 +260,6 @@ public class LoginActivity extends AppCompatActivity
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        //left blank intentionally
     }
 }
