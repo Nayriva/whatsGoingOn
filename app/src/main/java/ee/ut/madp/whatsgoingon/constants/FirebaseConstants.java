@@ -6,4 +6,5 @@ package ee.ut.madp.whatsgoingon.constants;
 
 public class FirebaseConstants {
     public static final String FIREBASE_CHILD_USERS = "users";
+    public static final String FIREBASE_CHILD_GROUPS = "groups";
 }

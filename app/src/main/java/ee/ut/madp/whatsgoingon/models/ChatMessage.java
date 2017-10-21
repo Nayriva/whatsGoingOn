@@ -1,5 +1,6 @@
 package ee.ut.madp.whatsgoingon.models;
 
+
 import java.util.Date;
 
 /**
@@ -11,11 +12,13 @@ import java.util.Date;
 public class ChatMessage {
 
     private String messageText;
+    private String displayName;
     private String messageAuthor;
     private long messageTime;
 
-    public ChatMessage(String messageText, String messageAuthor) {
+    public ChatMessage(String messageText, String displayName, String messageAuthor) {
         this.messageText = messageText;
+        this.displayName = displayName;
         this.messageAuthor = messageAuthor;
         this.messageTime = new Date().getTime();
     }
@@ -45,5 +48,13 @@ public class ChatMessage {
 
     public void setMessageTime(long messageTime) {
         this.messageTime = messageTime;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 }

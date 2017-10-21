@@ -20,17 +20,19 @@ import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.chat.ChatMessageAdapter;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
+import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 public class ChatFragment extends Fragment {
 
     private ChatApplication application;
-    private String channelDisplayName;
     private ListView messagesListView;
     private ChatMessageAdapter adapter;
     private FloatingActionButton fab;
     private EditText messageET;
     private FirebaseAuth firebaseAuth;
+
+    private ChatChannel chatChannel;
     private boolean isGroup;
     private String[] receivers;
 
@@ -50,13 +52,15 @@ public class ChatFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
         messagesListView = (ListView) view.findViewById(R.id.messagesListView);
-        adapter = new ChatMessageAdapter(getContext(), R.layout.message_list_item, application.getHistory(channelDisplayName));
+        adapter = new ChatMessageAdapter(getContext(), R.layout.message_list_item,
+                application.getHistory(chatChannel.getId()));
         messagesListView.setAdapter(adapter);
 
         messageET = (EditText) view.findViewById(R.id.messageEditText);
         fab = (FloatingActionButton) view.findViewById(R.id.sendFloatingActionButton);
         setFABListener();
         updateHistory();
+        getActivity().setTitle(chatChannel.getName());
 
         return view;
     }
@@ -66,14 +70,17 @@ public class ChatFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 String messageText = String.valueOf(messageET.getText());
-                String sender = firebaseAuth.getCurrentUser().getEmail();
+                String sender = firebaseAuth.getCurrentUser().getUid();
                 String message;
                 if (isGroup) {
-                    message = ChatHelper.groupMessage(sender, channelDisplayName, receivers, messageText);
+                    message = ChatHelper.groupMessage(sender, firebaseAuth.getCurrentUser().getDisplayName(),
+                            chatChannel.getId(), receivers, messageText);
                 } else {
-                    message = ChatHelper.oneToOneMessage(sender, channelDisplayName, messageText);
+                    message = ChatHelper.oneToOneMessage(sender, firebaseAuth.getCurrentUser().getDisplayName(),
+                            chatChannel.getId(), messageText);
                 }
                 application.sendMessage(message);
+                messageET.setText("");
                 updateHistory();
             }
         });
@@ -81,7 +88,7 @@ public class ChatFragment extends Fragment {
 
     private void updateHistory() {
         adapter.clear();
-        List<ChatMessage> history = application.getHistory(channelDisplayName);
+        List<ChatMessage> history = application.getHistory(chatChannel.getId());
         for (ChatMessage message: history) {
             adapter.add(message);
         }
@@ -89,8 +96,8 @@ public class ChatFragment extends Fragment {
         messagesListView.smoothScrollToPosition(history.size() - 1);
     }
 
-    public void setData(String channelDisplayName, boolean isGroup, String[] receivers) {
-        this.channelDisplayName = channelDisplayName;
+    public void setData(ChatChannel chatChannel, boolean isGroup, String[] receivers) {
+        this.chatChannel = chatChannel;
         this.isGroup = isGroup;
         this.receivers = receivers;
     }

@@ -53,7 +53,7 @@ public class ChatMessageAdapter extends ArrayAdapter<ChatMessage> {
         }
 
         ChatMessage item = data.get(position);
-        holder.author.setText(item.getMessageAuthor());
+        holder.author.setText(item.getDisplayName());
         holder.message.setText(item.getMessageText());
         holder.time.setText(DateFormat.format("HH:mm:ss", item.getMessageTime()));
 

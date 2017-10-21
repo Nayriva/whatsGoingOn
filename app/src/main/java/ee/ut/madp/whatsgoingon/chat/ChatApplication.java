@@ -35,7 +35,7 @@ public class ChatApplication extends Application {
     private FirebaseAuth firebaseAuth;
 
     private Map<String, List<ChatMessage>> chatHistory;
-    private Map<String, String[]> groupChats;
+    private Map<String, String[]> groupChatsReceiversMap;
 
     private Handler mBusHandler;
     private Handler advertiseHandler;
@@ -46,7 +46,7 @@ public class ChatApplication extends Application {
 
     public void checkIn() {
         chatHistory = new HashMap<>();
-        groupChats = new HashMap<>();
+        groupChatsReceiversMap = new HashMap<>();
         FirebaseApp.initializeApp(this);
         firebaseAuth = FirebaseAuth.getInstance();
         setUpAdvertising();
@@ -57,7 +57,7 @@ public class ChatApplication extends Application {
         advertiseCode = new Runnable() {
             @Override
             public void run() {
-                String msg = ChatHelper.advertiseMessage(firebaseAuth.getCurrentUser().getEmail());
+                String msg = ChatHelper.advertiseMessage(firebaseAuth.getCurrentUser().getUid());
                 Message message = mBusHandler.obtainMessage(BusHandlerCallback.CHAT, msg);
                 mBusHandler.sendMessage(message);
                 advertiseHandler.postDelayed(this, 2000);
@@ -85,9 +85,9 @@ public class ChatApplication extends Application {
                         case "S": {
                             String messageReceiver = ChatHelper.oneToOneMessageReceiver(receivedMsg);
                             String sender = ChatHelper.oneToOneMessageSender(receivedMsg);
-                            if (sender.equals(firebaseAuth.getCurrentUser().getEmail())) {
+                            if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
                                 return true;
-                            } else if (! messageReceiver.equals(firebaseAuth.getCurrentUser().getEmail())) {
+                            } else if (! messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
                                 return true;
                             }
                             storeOneToOneMessage(receivedMsg);
@@ -95,13 +95,13 @@ public class ChatApplication extends Application {
                         case "G": {
                             String[] messageReceivers = ChatHelper.groupMessageReceivers(receivedMsg);
                             String sender = ChatHelper.groupMessageSender(receivedMsg);
-                            if (sender.equals(firebaseAuth.getCurrentUser().getEmail())) {
+                            if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
                                 return true;
                             }
 
                                 boolean found = false;
-                            for (int i = 0; i < messageReceivers.length; i++) {
-                                if (messageReceivers[i].equals(firebaseAuth.getCurrentUser().getEmail())) {
+                            for (String messageReceiver : messageReceivers) {
+                                if (messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
                                     found = true;
                                     break;
                                 }
@@ -112,9 +112,9 @@ public class ChatApplication extends Application {
                             storeGroupMessage(receivedMsg);
                         } break;
                         case "A": {
-                            String displayName = ChatHelper.advertiseMessageDisplayName(receivedMsg);
-                            if (! chatHistory.containsKey(displayName)) {
-                                chatHistory.put(displayName, new ArrayList<ChatMessage>());
+                            String uid = ChatHelper.advertiseMessageDisplayName(receivedMsg);
+                            if (! chatHistory.containsKey(uid)) {
+                                chatHistory.put(uid, new ArrayList<ChatMessage>());
                             }
                         }
                         default:
@@ -135,9 +135,10 @@ public class ChatApplication extends Application {
             chatHistory.put(sender, new ArrayList<ChatMessage>());
         }
         String text = ChatHelper.oneToOneMessageText(receivedMsg);
+        String senderName = ChatHelper.oneToOneMessageSenderDisplayName(receivedMsg);
         List<ChatMessage> hist = chatHistory.get(sender);
 
-        ChatMessage newMessage = new ChatMessage(text, sender);
+        ChatMessage newMessage = new ChatMessage(text, senderName, sender);
         if (hist.size() > HISTORY_MAX) {
             hist.remove(0);
             //TODO store messages to DB
@@ -150,13 +151,14 @@ public class ChatApplication extends Application {
         if (! chatHistory.containsKey(group)) {
             chatHistory.put(group, new ArrayList<ChatMessage>());
             String[] receivers = ChatHelper.groupMessageReceivers(receivedMsg);
-            groupChats.put(group, receivers);
+            groupChatsReceiversMap.put(group, receivers);
         }
         String text = ChatHelper.groupMessageText(receivedMsg);
         String sender = ChatHelper.groupMessageSender(receivedMsg);
+        String displayName = ChatHelper.groupMessageSenderDisplayName(receivedMsg);
         List<ChatMessage> hist = chatHistory.get(group);
 
-        ChatMessage newMessage = new ChatMessage(text, sender);
+        ChatMessage newMessage = new ChatMessage(text, displayName, sender);
         if (hist.size() > HISTORY_MAX) {
             hist.remove(0);
             //TODO store messages to DB
@@ -165,11 +167,11 @@ public class ChatApplication extends Application {
     }
 
     public boolean isGroup(String groupName) {
-        return groupChats.containsKey(groupName);
+        return groupChatsReceiversMap.containsKey(groupName);
     }
 
     public String[] getGroupReceivers(String groupName) {
-        return groupChats.get(groupName);
+        return groupChatsReceiversMap.get(groupName);
     }
 
     public void sendMessage(String message) {

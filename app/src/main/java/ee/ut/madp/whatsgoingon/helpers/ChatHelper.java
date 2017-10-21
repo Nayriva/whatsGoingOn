@@ -4,9 +4,10 @@ package ee.ut.madp.whatsgoingon.helpers;
  * Helper for generating and parsing chat messages.
  *
  * Structure of messages:
- *  ADVERTISE_MESSAGE: A~&&~displayName
- *  ONE_TO_ONE_MESSAGE: S~&&~sender~&&~receiver~&&~message_text
- *  GROUP_MESSAGE: G~&&~sender~&&~groupName~&&~receiver1~&~&~receiver2~&~&~...~&~&~receiverX~&&~message_text
+ *  ADVERTISE_MESSAGE: A~&&~id
+ *  ONE_TO_ONE_MESSAGE: S~&&~senderId~&&~senderDisplayName~&&~receiverId~&&~message_text
+ *  GROUP_MESSAGE: G~&&~senderId~&&~senderDisplazName~&&~groupName~&&~
+ *                  receiver1~&~&~receiver2~&~&~...~&~&~receiverX~&&~message_text
  *
  * Created by dominikf on 16. 10. 2017.
  *
@@ -26,10 +27,12 @@ public class ChatHelper {
      * @param text content of message
      * @return one-to-one message for chat in correct format
      */
-    public static String oneToOneMessage(String sender, String receiver, String text) {
+    public static String oneToOneMessage(String sender, String senderDisplayName, String receiver, String text) {
         return "S" +
                 delimiter +
                 sender +
+                delimiter +
+                senderDisplayName +
                 delimiter +
                 receiver +
                 delimiter +
@@ -56,6 +59,11 @@ public class ChatHelper {
         return parts[1];
     }
 
+    public static String oneToOneMessageSenderDisplayName(String receivedMessage) {
+        String[] parts = receivedMessage.split(delimiter);
+        return parts[2];
+    }
+
     /**
      * Extractor of receiver from one-to-one message
      * @param receivedMessage message from which the receiver should be extracted
@@ -63,7 +71,7 @@ public class ChatHelper {
      */
     public static String oneToOneMessageReceiver(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
-        return parts[2];
+        return parts[3];
     }
 
     /**
@@ -73,16 +81,19 @@ public class ChatHelper {
      */
     public static String oneToOneMessageText(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
-        return parts[3];
+        return parts[4];
     }
 
     //GROUP
 
-    public static String groupMessage(String sender, String displayName, String[] receivers, String text ) {
+    public static String groupMessage(String sender, String authorDisplayName,
+                                      String displayName, String[] receivers, String text ) {
         StringBuilder message = new StringBuilder();
         message.append("G");
         message.append(delimiter);
         message.append(sender);
+        message.append(delimiter);
+        message.append(authorDisplayName);
         message.append(delimiter);
         message.append(displayName);
         message.append(delimiter);
@@ -106,19 +117,24 @@ public class ChatHelper {
         return parts[1];
     }
 
-    public static String groupMessageDisplayName(String receivedMessage) {
+    public static String groupMessageSenderDisplayName(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
         return parts[2];
     }
 
+    public static String groupMessageDisplayName(String receivedMessage) {
+        String[] parts = receivedMessage.split(delimiter);
+        return parts[3];
+    }
+
     public static String[] groupMessageReceivers(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
-        return parts[3].split(groupReceiversDelimiter);
+        return parts[4].split(groupReceiversDelimiter);
     }
 
     public static String groupMessageText(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
-        return parts[4];
+        return parts[5];
     }
 
     //ADVERTISE

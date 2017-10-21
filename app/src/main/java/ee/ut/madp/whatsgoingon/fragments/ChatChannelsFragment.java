@@ -18,19 +18,36 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.chat.ChatChannelAdapter;
+import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.models.ChatChannel;
+import ee.ut.madp.whatsgoingon.models.Group;
+import ee.ut.madp.whatsgoingon.models.User;
 
 public class ChatChannelsFragment extends Fragment {
 
     private static final String TAG = "chat.ChannelsActivity";
 
-    private ArrayAdapter<String> chatsAdapter;
     private ChatApplication application;
     private FirebaseAuth firebaseAuth;
+    private DatabaseReference usersRef;
+    private DatabaseReference groupsRef;
+    private ChatChannelAdapter chatChannelAdapter;
+
     private SwipeRefreshLayout swipeRefreshLayout;
     private ListView channelsList;
     private TextView channelsStatus;
@@ -40,6 +57,8 @@ public class ChatChannelsFragment extends Fragment {
         super.onAttach(context);
         application = (ChatApplication) context.getApplicationContext();
         firebaseAuth = FirebaseAuth.getInstance();
+        usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
+        groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
     }
 
     @Nullable
@@ -56,19 +75,47 @@ public class ChatChannelsFragment extends Fragment {
 
     private void getChannels() {
         Log.i(TAG, "findChannels()");
-        chatsAdapter.clear();
+        chatChannelAdapter.clear();
         Set<String> channels = application.getChannels();
+        for (final String channel: channels) {
+            usersRef.child(channel).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    User channelOwner = dataSnapshot.getValue(User.class);
+                    if (channelOwner != null) {
+                        chatChannelAdapter.add(new ChatChannel(channel,
+                                channelOwner.getName(), channelOwner.getPhoto()));
+                    }
+                }
 
-        for (String channel : channels) {
-            chatsAdapter.add(channel);
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+            groupsRef.child(channel).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Group groupChannel = dataSnapshot.getValue(Group.class);
+                    if (groupChannel != null) {
+                        chatChannelAdapter.add(new ChatChannel(channel,
+                                groupChannel.getDisplayName(), groupChannel.getPhoto()));
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
         }
 
-        if (chatsAdapter.isEmpty()) {
+        if (chatChannelAdapter.isEmpty()) {
             channelsStatus.setText(R.string.no_channels_found);
         } else {
             channelsStatus.setText(R.string.join_channel);
         }
-        chatsAdapter.notifyDataSetChanged();
+        chatChannelAdapter.notifyDataSetChanged();
     }
 
     private void initialize(View view) {
@@ -81,8 +128,8 @@ public class ChatChannelsFragment extends Fragment {
         channelsStatus = (TextView) view.findViewById(R.id.tw_channels_status);
 
         //TODO set up proper list_item_view
-        chatsAdapter = new ArrayAdapter<>(getContext(), android.R.layout.test_list_item);
-        channelsList.setAdapter(chatsAdapter);
+        chatChannelAdapter = new ChatChannelAdapter(getContext(), R.layout.chat_list_item, new ArrayList<ChatChannel>());
+        channelsList.setAdapter(chatChannelAdapter);
         getChannels();
     }
 
@@ -92,13 +139,13 @@ public class ChatChannelsFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ChatFragment fragment = new ChatFragment();
-                String displayName = (String) parent.getItemAtPosition(position);
-                boolean isGroup = application.isGroup(displayName);
+                ChatChannel channel = (ChatChannel) parent.getItemAtPosition(position);
+                boolean isGroup = application.isGroup(channel.getId());
                 if (isGroup) {
-                    String[] receivers = application.getGroupReceivers(displayName);
-                    fragment.setData(displayName, true, receivers);
+                    String[] receivers = application.getGroupReceivers(channel.getId());
+                    fragment.setData(channel, true, receivers);
                 } else {
-                    fragment.setData(displayName, false, null);
+                    fragment.setData(channel, false, null);
                 }
 
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
