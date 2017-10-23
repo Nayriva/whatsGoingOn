@@ -16,6 +16,10 @@ public class Group {
         this.id = id;
         this.displayName = displayName;
         this.receivers = receivers;
+        this.photo = photo;
+    }
+
+    public Group() {
     }
 
     public String getId() {

@@ -161,5 +161,12 @@
     <string name="no_channels_found">No channels found... Swipe to refresh</string>
     <string name="join_channel">Pick one of these:</string>
     <string name="web_client_id">350683107593-o0f11033mp22vlbjqh5oepdu9014hq5d.apps.googleusercontent.com</string>
+    <string name="select_participants">Select participants</string>
+    <string name="create_group">Create group</string>
+    <string name="cancel">Cancel</string>
+    <string name="group_name">Group name</string>
+    <string name="no_group_name">Add name for the group</string>
+    <string name="group_too_small">Group needs at least 3 members</string>
+    <string name="pick_group_photo">Pick group photo</string>
 
 </resources>

@@ -5,8 +5,9 @@ package ee.ut.madp.whatsgoingon.helpers;
  *
  * Structure of messages:
  *  ADVERTISE_MESSAGE: A~&&~id
+ *  GROUP_ADVERTISE_MESSAGE: AG~&&~groupId~&&~groupDisplayName~&&~receiver1~&~&~receiver2~&~&~...~&~&~receiverX
  *  ONE_TO_ONE_MESSAGE: S~&&~senderId~&&~senderDisplayName~&&~receiverId~&&~message_text
- *  GROUP_MESSAGE: G~&&~senderId~&&~senderDisplazName~&&~groupName~&&~
+ *  GROUP_MESSAGE: G~&&~senderId~&&~senderDisplayName~&&~groupName~&&~
  *                  receiver1~&~&~receiver2~&~&~...~&~&~receiverX~&&~message_text
  *
  * Created by dominikf on 16. 10. 2017.
@@ -154,10 +155,35 @@ public class ChatHelper {
         return parts[1];
     }
 
+    //GROUP ADVERTISE
+    public static String groupAdvertiseMessage(String id, String[] receivers) {
+        String msg = "AG" +
+                delimiter +
+                id +
+                delimiter +
+                receivers [0];
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 1; i < receivers.length; i++) {
+            stringBuilder.append(groupReceiversDelimiter);
+            stringBuilder.append(receivers[i]);
+        }
+        msg = msg + stringBuilder.toString();
+        return msg;
+    }
     //COMMON
 
     public static String getMessageType(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
         return parts[0];
+    }
+
+    public static String groupAdvertiseMessageId(String receivedMsg) {
+        String[] parts = receivedMsg.split(delimiter);
+        return parts[1];
+    }
+
+    public static String[] groupAdvertiseMessageReceivers(String receivedMsg) {
+        String[] parts = receivedMsg.split(delimiter);
+        return parts[2].split(groupReceiversDelimiter);
     }
 }

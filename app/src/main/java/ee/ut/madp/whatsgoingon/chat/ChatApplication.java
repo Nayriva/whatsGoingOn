@@ -77,55 +77,69 @@ public class ChatApplication extends Application {
 
         @Override
         public boolean handleMessage(Message msg) {
-            switch (msg.what) {
-                case MESSAGE_CHAT: {
-                    String receivedMsg = (String) msg.obj;
-                    String messageType = ChatHelper.getMessageType(receivedMsg);
-                    switch (messageType) {
-                        case "S": {
-                            String messageReceiver = ChatHelper.oneToOneMessageReceiver(receivedMsg);
-                            String sender = ChatHelper.oneToOneMessageSender(receivedMsg);
-                            if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
-                                return true;
-                            } else if (! messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
-                                return true;
-                            }
-                            storeOneToOneMessage(receivedMsg);
-                        } break;
-                        case "G": {
-                            String[] messageReceivers = ChatHelper.groupMessageReceivers(receivedMsg);
-                            String sender = ChatHelper.groupMessageSender(receivedMsg);
-                            if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
-                                return true;
-                            }
+            if (msg.what == MESSAGE_CHAT) {
+                String receivedMsg = (String) msg.obj;
+                String messageType = ChatHelper.getMessageType(receivedMsg);
+                switch (messageType) {
+                    case "S": {
+                        String messageReceiver = ChatHelper.oneToOneMessageReceiver(receivedMsg);
+                        String sender = ChatHelper.oneToOneMessageSender(receivedMsg);
+                        if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
+                            return true;
+                        } else if (!messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
+                            return true;
+                        }
+                        storeOneToOneMessage(receivedMsg);
+                    }
+                    break;
+                    case "G": {
+                        String[] messageReceivers = ChatHelper.groupMessageReceivers(receivedMsg);
+                        String sender = ChatHelper.groupMessageSender(receivedMsg);
+                        if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
+                            return true;
+                        }
 
-                                boolean found = false;
-                            for (String messageReceiver : messageReceivers) {
-                                if (messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found) {
-                                return true;
-                            }
-                            storeGroupMessage(receivedMsg);
-                        } break;
-                        case "A": {
-                            String uid = ChatHelper.advertiseMessageDisplayName(receivedMsg);
-                            if (! chatHistory.containsKey(uid)) {
-                                chatHistory.put(uid, new ArrayList<ChatMessage>());
+                        boolean found = false;
+                        for (String messageReceiver : messageReceivers) {
+                            if (messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
+                                found = true;
                             }
                         }
-                        default:
+                        if (!found) {
                             return true;
+                        }
+                        storeGroupMessage(receivedMsg);
                     }
-                } break;
-                default:
                     break;
+                    case "A": {
+                        String uid = ChatHelper.advertiseMessageDisplayName(receivedMsg);
+                        if (!chatHistory.containsKey(uid)) {
+                            chatHistory.put(uid, new ArrayList<ChatMessage>());
+                        }
+                    }
+                    break;
+                    case "AG": {
+                        String gid = ChatHelper.groupAdvertiseMessageId(receivedMsg);
+                        chatHistory.put(gid, new ArrayList<ChatMessage>());
+                        String[] receivers = ChatHelper.groupAdvertiseMessageReceivers(receivedMsg);
+                        boolean found = false;
+                        for (String messageReceiver : receivers) {
+                            if (messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
+                                found = true;
+                            }
+                        }
+                        if (!found) {
+                            return true;
+                        }
+                        groupChatsReceiversMap.put(gid, receivers);
+                    }
+                    break;
+                    default:
+                        return true;
+                }
+                return true;
             }
-
-            return true;
+            return false;
         }
     });
 
@@ -215,6 +229,12 @@ public class ChatApplication extends Application {
     public void onTerminate() {
         super.onTerminate();
         mBusHandler.sendEmptyMessage(BusHandlerCallback.DISCONNECT);
+    }
+
+    public void createGroup(String gId, String[] receivers) {
+        sendMessage(ChatHelper.groupAdvertiseMessage(
+                gId, receivers
+        ));
     }
 
     /* The class that is our AllJoyn service.  It implements the ChatInterface. */

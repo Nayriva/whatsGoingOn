@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,21 +17,21 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
+import ee.ut.madp.whatsgoingon.models.GroupParticipant;
 
 /**
  * Created by dominikf on 3. 10. 2017.
  */
 
-public class ChatChannelAdapter extends ArrayAdapter<ChatChannel> {
+public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
     private Context context;
     private int layoutResourceId;
-    private ArrayList<ChatChannel> data = null;
+    private ArrayList<GroupParticipant> data = null;
 
-    public ChatChannelAdapter(Context context, int resource, List<ChatChannel> objects) {
+    public GroupParticipantsAdapter(Context context, int resource, List<GroupParticipant> objects) {
         super(context, resource, objects);
         this.layoutResourceId = resource;
         this.context = context;
@@ -38,7 +40,7 @@ public class ChatChannelAdapter extends ArrayAdapter<ChatChannel> {
 
     @NonNull
     @Override
-    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+    public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
         View row = convertView;
         ChatChannelHolder holder;
 
@@ -47,24 +49,31 @@ public class ChatChannelAdapter extends ArrayAdapter<ChatChannel> {
             row = inflater.inflate(layoutResourceId, parent, false);
 
             holder = new ChatChannelHolder();
-            holder.photo = (ImageView) row.findViewById(R.id.iw_chat_channel_picture);
-            holder.channelName = (TextView) row.findViewById(R.id.tw_chat_channel_name);
+            holder.photo = (ImageView) row.findViewById(R.id.iw_group_participant_picture);
+            holder.channelName = (TextView) row.findViewById(R.id.tw_group_participant_name);
+            holder.isSelected = (CheckBox) row.findViewById(R.id.chb_group_participant);
+
+            holder.isSelected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    data.get(position).setSelected(b);
+                }
+            });
 
             row.setTag(holder);
         } else {
             holder = (ChatChannelHolder) row.getTag();
         }
 
-        ChatChannel item = data.get(position);
+        GroupParticipant item = data.get(position);
         String photo = item.getPhoto();
-        if (photo != null) {
-            if (photo.contains("http")) {
-                Picasso.with(getContext()).load(photo).into(holder.photo);
-            } else {
-                holder.photo.setImageBitmap(ImageHelper.decodeBitmap(photo));
-            }
+        if (photo.contains("http")) {
+            Picasso.with(getContext()).load(photo).into(holder.photo);
+        } else {
+            holder.photo.setImageBitmap(ImageHelper.decodeBitmap(photo));
         }
         holder.channelName.setText(item.getName());
+        holder.isSelected.setChecked(item.isSelected());
 
         return row;
     }
@@ -72,6 +81,7 @@ public class ChatChannelAdapter extends ArrayAdapter<ChatChannel> {
     private class ChatChannelHolder {
         ImageView photo;
         TextView channelName;
+        CheckBox isSelected;
     }
 
     @Override
@@ -79,7 +89,7 @@ public class ChatChannelAdapter extends ArrayAdapter<ChatChannel> {
         return data.isEmpty();
     }
 
-    public List<ChatChannel> getItems() {
+    public List<GroupParticipant> getItems() {
         return data;
     }
 }
