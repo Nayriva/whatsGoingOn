@@ -3,12 +3,14 @@ package ee.ut.madp.whatsgoingon.helpers;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
@@ -24,9 +26,7 @@ import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD
 public class UserHelper {
 
     public static final String TAG = UserHelper.class.getSimpleName();
-
     private static DatabaseReference firebaseDatabase;
-
 
     private static DatabaseReference getFirebaseDatabase() {
         if (firebaseDatabase == null) {
@@ -35,14 +35,7 @@ public class UserHelper {
         return firebaseDatabase;
     }
 
-
-    /**
-     * Saves a new user to the firebase database
-     * @param name
-     * @param firebaseUser
-     * @param photo
-     */
-    public static void saveNewUser(String name, FirebaseUser firebaseUser, String photo) {
+    public static void saveNewUserToDB(String name, FirebaseUser firebaseUser, String photo) {
         User user = ModelFactory.createUser(firebaseUser.getUid(), photo, firebaseUser.getEmail(), name);
         getFirebaseDatabase().child(FIREBASE_CHILD_USERS).child(firebaseUser.getUid()).setValue(user);
     }
@@ -55,16 +48,13 @@ public class UserHelper {
             }
         }
 
-        final String photoUrl = "https://graph.facebook.com/" + facebookUserId + "/picture?type=large";
-
-        return photoUrl;
+        return "https://graph.facebook.com/" + facebookUserId + "/picture?type=large";
     }
 
-    /**
-     * Gets facebook profile photo and saves all info about the user to the Firebase database
-     *
-     * @param firebaseUser
-     */
+    public static String getGooglePhotoUrl(Uri photoUrl) {
+        return photoUrl.toString();
+    }
+
     public static void saveFacebookInfoAboutUser(final Context context, final FirebaseUser firebaseUser) {
         final String photoUrl = getFacebookPhotoUrl(firebaseUser);
         Picasso.with(context)
@@ -73,7 +63,7 @@ public class UserHelper {
                           @Override
                           public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                               try {
-                                  saveNewUser(firebaseUser.getDisplayName(), firebaseUser, photoUrl);
+                                  saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser, photoUrl);
                                   LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                   View view = inflater.inflate(R.layout.nav_header_main, null);
                                   CircleImageView profilePhoto = (CircleImageView) view.findViewById(R.id.user_photo);
@@ -85,10 +75,42 @@ public class UserHelper {
 
                           @Override
                           public void onBitmapFailed(Drawable errorDrawable) {
+                              //left blank intentionally
                           }
 
                           @Override
                           public void onPrepareLoad(Drawable placeHolderDrawable) {
+                              //left blank intentionally
+                          }
+                      }
+                );
+    }
+
+    public static void saveGoogleInfoAboutUser(final Context context, final FirebaseUser firebaseUser, final String photoUrl) {
+        Picasso.with(context)
+                .load(photoUrl)
+                .into(new Target() {
+                          @Override
+                          public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                              try {
+                                  saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser, photoUrl);
+                                  LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                                  View view = inflater.inflate(R.layout.nav_header_main, null);
+                                  CircleImageView profilePhoto = (CircleImageView) view.findViewById(R.id.user_photo);
+                                  profilePhoto.setImageBitmap(bitmap);
+                              } catch (Exception e) {
+                                  Log.e(TAG, "onBitmapLoaded " + e.getMessage());
+                              }
+                          }
+
+                          @Override
+                          public void onBitmapFailed(Drawable errorDrawable) {
+                              //left blank intentionally
+                          }
+
+                          @Override
+                          public void onPrepareLoad(Drawable placeHolderDrawable) {
+                              //left blank intentionally
                           }
                       }
                 );

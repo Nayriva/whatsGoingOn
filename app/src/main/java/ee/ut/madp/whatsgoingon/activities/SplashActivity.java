@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.FontHelper;
 
@@ -23,12 +24,17 @@ public class SplashActivity extends AppCompatActivity {
 
     public static final String TAG = SplashActivity.class.getSimpleName();
     private FirebaseAuth firebaseAuth;
+    private ChatApplication application;
     @BindView(R.id.app_name) TextView appName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        application = (ChatApplication) getApplication();
+        application.checkIn();
+
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_splash);
@@ -40,7 +46,8 @@ public class SplashActivity extends AppCompatActivity {
             public void run() {
                 // TODO check if the user is really logged in
                 if (firebaseAuth.getCurrentUser() != null) {
-                    startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                    firebaseAuth.signOut();
+                    startActivity(new Intent(SplashActivity.this, LoginActivity.class));
                     finish();
                 } else {
                     startActivity(new Intent(SplashActivity.this, LoginActivity.class));

@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity
 
     private ChatApplication application;
     private FirebaseAuth firebaseAuth;
-    private CircleImageView profilePhoto;
     private DatabaseReference firebaseDatabase;
 
     @Override
@@ -59,13 +58,29 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        setSupportActionBar(toolbar);
 
+        setSupportActionBar(toolbar);
         setUpVariables();
         setUpNavigationView();
         setUpDrawer();
         setupNavigationHeader();
         setUpInitialFragment();
+    }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        selectDrawerItem(item);
+        return true;
     }
 
     private void setUpVariables() {
@@ -84,6 +99,7 @@ public class MainActivity extends AppCompatActivity
         }
         fragmentManager.beginTransaction().replace(
                 R.id.containerView, fragment).commit();
+        setTitle("Chat");
     }
 
     private void setUpNavigationView() {
@@ -104,22 +120,6 @@ public class MainActivity extends AppCompatActivity
         };
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-    }
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        selectDrawerItem(item);
-        return true;
     }
 
     public void selectDrawerItem(MenuItem menuItem) {
@@ -167,24 +167,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void signOutUser(Context context) {
+        application.stopAdvertise();
         FirebaseAuth.getInstance().signOut();
         LoginManager.getInstance().logOut();
-        application.hostStopChannel();
         startActivity(new Intent(context, LoginActivity.class));
     }
 
-    /**
-     * Setups the navigation header, if data is not available from shared preferences and external storage, it downloads it from firebase database and storage.
-     */
     private void setupNavigationHeader() {
-        // TODO get information from the shared prefences and storage
+        // TODO get information from the shared preferences and storage
         firebaseDatabase.child(FIREBASE_CHILD_USERS).child(getUserId()).addValueEventListener(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG, "Retrieving user with uid " + getUserId());
                 User user = dataSnapshot.getValue(User.class);
-                //TODO - null pointer exception
+
                 setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
             }
 
@@ -194,28 +191,26 @@ public class MainActivity extends AppCompatActivity
                 DialogHelper.showAlertDialog(MainActivity.this, databaseError.toString());
 
             }
-
         });
     }
 
-
-    /**
-     * Setups data for the navigation drawer. If data is not available from shared preferences and external storage, it downloads it from firebase database and storage.
-     */
     public void setupDataForDrawer(String name, String email, String photo) {
         if (navigationView != null) {
             View header = navigationView.getHeaderView(0);
-            profilePhoto = (CircleImageView) header.findViewById(R.id.user_photo);
+            CircleImageView profilePhoto = (CircleImageView) header.findViewById(R.id.user_photo);
 
             if (photo != null) {
                 // TODO get photo from the external storage
                 if (photo.contains("https")) {
-                    Picasso.with(this).load(UserHelper.getFacebookPhotoUrl(firebaseAuth.getCurrentUser())).into(profilePhoto);
+                    if (photo.contains("facebook")) {
+                        Picasso.with(this).load(UserHelper.getFacebookPhotoUrl(firebaseAuth.getCurrentUser())).into(profilePhoto);
+                    } else {
+                        Picasso.with(this).load(UserHelper.getGooglePhotoUrl(firebaseAuth.getCurrentUser().getPhotoUrl())).into(profilePhoto);
+                    }
                 } else if (!photo.isEmpty()) {
                     profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
                 }
             }
-
 
             TextView nameView = (TextView) header.findViewById(R.id.header_name);
             nameView.setText(name);
@@ -224,7 +219,6 @@ public class MainActivity extends AppCompatActivity
         }
 
     }
-
 
     private String getUserId() {
         return FirebaseAuth.getInstance().getCurrentUser().getUid();

@@ -11,7 +11,7 @@
         android:padding="@dimen/activity_horizontal_margin">
 
         <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/user_profile_photo"
+            android:id="@+id/iw_profile_photo"
             style="@style/ProfilePhotoLargeStyle"/>
 
         <!-- Username -->

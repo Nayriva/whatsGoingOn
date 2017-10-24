@@ -6,7 +6,7 @@ android {
     defaultConfig {
         applicationId "ee.ut.madp.whatsgoingon"
         minSdkVersion 19
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -30,21 +30,21 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile files('src/main/jniLibs/alljoyn.jar')
+    compile 'com.android.support:design:25.3.1'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.android.support:support-v4:25.3.1'
     compile 'com.android.support:design:25.3.1'
-    compile 'com.google.firebase:firebase-auth:11.0.4'
+    compile 'com.android.support:support-vector-drawable:25.3.1'
     compile 'com.google.android.gms:play-services-auth:11.0.4'
+    compile 'com.google.firebase:firebase-auth:11.0.4'
     compile 'com.google.firebase:firebase-database:11.0.4'
+    compile 'com.facebook.android:facebook-android-sdk:[4,5)'
     compile 'com.mobsandgeeks:android-saripaar:2.0.3'
     compile 'com.jakewharton:butterknife:8.8.1'
-    compile 'com.android.support:design:25.3.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.Mariovc:ImagePicker:1.2.0'
-    compile 'com.android.support:support-v4:25.3.1'
-    compile 'com.facebook.android:facebook-android-sdk:[4,5)'
-    compile 'com.android.support:support-vector-drawable:25.3.1'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 }

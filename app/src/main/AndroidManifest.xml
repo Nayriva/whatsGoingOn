@@ -36,14 +36,12 @@
             android:name=".activities.LoginActivity"
             android:theme="@style/FormTheme" />
         <activity
-            android:name=".activities.SignupActivity"
+            android:name=".activities.SignUpActivity"
             android:theme="@style/FormTheme" />
         <activity
             android:name=".activities.MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.Activity" />
-
-        <service android:name=".AllJoynService" />
 
         <activity
             android:name=".activities.SettingsActivity"
