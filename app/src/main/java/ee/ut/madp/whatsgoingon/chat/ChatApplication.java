@@ -18,11 +18,14 @@ import org.alljoyn.bus.annotation.BusSignalHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
+import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 /**
@@ -43,6 +46,7 @@ public class ChatApplication extends Application {
 
     private final int HISTORY_MAX = 20;
     private static final int MESSAGE_CHAT = 1;
+    public static final int MESSAGE_RECEIVED = 2;
 
     public void checkIn() {
         chatHistory = new HashMap<>();
@@ -89,6 +93,7 @@ public class ChatApplication extends Application {
                         } else if (!messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
                             return true;
                         }
+                        mHandler.sendEmptyMessage(MESSAGE_RECEIVED);
                         storeOneToOneMessage(receivedMsg);
                     }
                     break;
@@ -120,7 +125,6 @@ public class ChatApplication extends Application {
                     break;
                     case "AG": {
                         String gid = ChatHelper.groupAdvertiseMessageId(receivedMsg);
-                        chatHistory.put(gid, new ArrayList<ChatMessage>());
                         String[] receivers = ChatHelper.groupAdvertiseMessageReceivers(receivedMsg);
                         boolean found = false;
                         for (String messageReceiver : receivers) {
@@ -131,6 +135,7 @@ public class ChatApplication extends Application {
                         if (!found) {
                             return true;
                         }
+                        chatHistory.put(gid, new ArrayList<ChatMessage>());
                         groupChatsReceiversMap.put(gid, receivers);
                     }
                     break;
@@ -192,7 +197,19 @@ public class ChatApplication extends Application {
         String type = ChatHelper.getMessageType(message);
         switch (type) {
             case "S": {
-                storeOneToOneMessage(message);
+                String channel = ChatHelper.oneToOneMessageReceiver(message);
+                String name = ChatHelper.oneToOneMessageSenderDisplayName(message);
+                String text = ChatHelper.oneToOneMessageText(message);
+                if (! chatHistory.containsKey(channel)) {
+                    chatHistory.put(channel, new ArrayList<ChatMessage>());
+                }
+                List<ChatMessage> hist = chatHistory.get(channel);
+                ChatMessage newMessage = new ChatMessage(text, name, channel);
+                if (hist.size() > HISTORY_MAX) {
+                    hist.remove(0);
+                    //TODO store messages to DB
+                }
+                hist.add(newMessage);
             } break;
             case "G": {
                 storeGroupMessage(message);
@@ -212,7 +229,21 @@ public class ChatApplication extends Application {
     }
 
     public Set<String> getChannels() {
-        return chatHistory.keySet();
+        Set<String> channelsCopy = new HashSet<>();
+        for (String channel : chatHistory.keySet()) {
+            channelsCopy.add(new String(channel.getBytes()));
+        }
+        return channelsCopy;
+    }
+
+    public void deleteGroup(String groupId) {
+        Iterator<Map.Entry<String,List<ChatMessage>>> iter = chatHistory.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry<String, List<ChatMessage>> entry = iter.next();
+            if(groupId.equals(entry.getKey())){
+                iter.remove();
+            }
+        }
     }
 
     @Override

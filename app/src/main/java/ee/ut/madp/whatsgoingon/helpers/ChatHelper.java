@@ -17,7 +17,7 @@ package ee.ut.madp.whatsgoingon.helpers;
 
 public class ChatHelper {
     private static String delimiter = "~&&~";
-    private static String groupReceiversDelimiter = "~&&~&&~";
+    private static String groupReceiversDelimiter = "~&&&~";
 
     //ONE TO ONE
 

@@ -32,7 +32,6 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
-import ee.ut.madp.whatsgoingon.fragments.SettingsFragment;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
@@ -136,7 +135,6 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(MainActivity.this, MyProfileActivity.class));
                 break;
             case R.id.nav_settings:
-                fragmentClass = SettingsFragment.class;
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivityForResult(intent, SETTINGS_REQUEST_CODE);
                 break;
