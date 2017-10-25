@@ -40,7 +40,10 @@ import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.chat.ChatChannelAdapter;
 import ee.ut.madp.whatsgoingon.chat.GroupParticipantsAdapter;
+import ee.ut.madp.whatsgoingon.chat.Observable;
+import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.Group;
@@ -49,7 +52,7 @@ import ee.ut.madp.whatsgoingon.models.User;
 
 import static android.widget.AdapterView.*;
 
-public class ChatChannelsFragment extends Fragment {
+public class ChatChannelsFragment extends Fragment implements Observer {
 
     private static final String TAG = "chat.ChannelsActivity";
 
@@ -70,6 +73,7 @@ public class ChatChannelsFragment extends Fragment {
         super.onAttach(context);
         application = (ChatApplication) context.getApplicationContext();
         firebaseAuth = FirebaseAuth.getInstance();
+        application.addObserver(this);
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
 
@@ -192,7 +196,7 @@ public class ChatChannelsFragment extends Fragment {
                 Button pickGroupPhoto = (Button) dialog.findViewById(R.id.btn_pick_group_photo);
                 Button dialogConfirm = (Button) dialog.findViewById(R.id.btn_pick_participants_ok);
                 Button dialogDismiss = (Button) dialog.findViewById(R.id.btn_pick_participants_dismiss);
-                ListView participantsList = (ListView) dialog.findViewById(R.id.lw_group_dialog_options_list);
+                ListView participantsList = (ListView) dialog.findViewById(R.id.lv_group_dialog_options_list);
                 final EditText groupName = (EditText) dialog.findViewById(R.id.et_group_dialog_group_name);
 
                 List<ChatChannel> channels = chatChannelAdapter.getItems();
@@ -271,7 +275,7 @@ public class ChatChannelsFragment extends Fragment {
                 } else {
                     fragment.setData(channel, false, null);
                 }
-
+                channel.setNewMessage(false);
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.replace(R.id.containerView, fragment);
@@ -289,5 +293,32 @@ public class ChatChannelsFragment extends Fragment {
                 swipeRefreshLayout.setRefreshing(false);
             }
         });
+    }
+
+    @Override
+    public void update(Observable o, String qualifier, String data) {
+        switch (qualifier) {
+            case ChatApplication.GROUP_RECEIVERS_CHANGED:
+            case ChatApplication.GROUP_DELETED: {
+                getChannels();
+            } break;
+            case ChatApplication.MESSAGE_RECEIVED: {
+                String type = ChatHelper.getMessageType(data);
+                String sender = null;
+                if (type.equals("S")) {
+                    sender = ChatHelper.oneToOneMessageSender(data);
+                } else if (type.equals("G")) {
+                    sender = ChatHelper.groupMessageSender(data);
+                }
+
+                for (ChatChannel channel : chatChannelAdapter.getItems()) {
+                    if (channel.getId().equals(sender)) {
+                        channel.setNewMessage(true);
+                        break;
+                        //TODO maybe show notification
+                    }
+                }
+            }
+        }
     }
 }

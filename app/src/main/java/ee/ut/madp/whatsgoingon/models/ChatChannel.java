@@ -8,6 +8,7 @@ public class ChatChannel {
     private String id;
     private String name;
     private String photo;
+    private boolean newMessage = false;
 
     public ChatChannel(String id, String name, String photo) {
         this.id = id;
@@ -37,5 +38,13 @@ public class ChatChannel {
 
     public void setPhoto(String photo) {
         this.photo = photo;
+    }
+
+    public boolean isNewMessage() {
+        return newMessage;
+    }
+
+    public void setNewMessage(boolean newMessage) {
+        this.newMessage = newMessage;
     }
 }

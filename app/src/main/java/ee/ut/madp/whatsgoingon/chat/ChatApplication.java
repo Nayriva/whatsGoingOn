@@ -32,7 +32,7 @@ import ee.ut.madp.whatsgoingon.models.ChatMessage;
  * Created by dominikf on 16. 10. 2017.
  */
 
-public class ChatApplication extends Application {
+public class ChatApplication extends Application implements Observable {
 
     public static final String TAG = "chat.ChatApp";
     private FirebaseAuth firebaseAuth;
@@ -46,13 +46,18 @@ public class ChatApplication extends Application {
 
     private final int HISTORY_MAX = 20;
     private static final int MESSAGE_CHAT = 1;
-    public static final int MESSAGE_RECEIVED = 2;
+    public static final String MESSAGE_RECEIVED = "MESSAGE RECEIVED";
+    public static final String GROUP_RECEIVERS_CHANGED = "GROUP_RECEIVERS_CHANGED";
+    public static final String GROUP_DELETED = "GROUP_DELETED";
+
+    private List<Observer> mObservers;
 
     public void checkIn() {
         chatHistory = new HashMap<>();
         groupChatsReceiversMap = new HashMap<>();
         FirebaseApp.initializeApp(this);
         firebaseAuth = FirebaseAuth.getInstance();
+        mObservers = new ArrayList<>();
         setUpAdvertising();
     }
 
@@ -93,8 +98,8 @@ public class ChatApplication extends Application {
                         } else if (!messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
                             return true;
                         }
-                        mHandler.sendEmptyMessage(MESSAGE_RECEIVED);
                         storeOneToOneMessage(receivedMsg);
+                        notifyObservers(MESSAGE_RECEIVED, sender);
                     }
                     break;
                     case "G": {
@@ -114,6 +119,7 @@ public class ChatApplication extends Application {
                             return true;
                         }
                         storeGroupMessage(receivedMsg);
+                        notifyObservers(MESSAGE_RECEIVED, sender);
                     }
                     break;
                     case "A": {
@@ -137,6 +143,7 @@ public class ChatApplication extends Application {
                         }
                         chatHistory.put(gid, new ArrayList<ChatMessage>());
                         groupChatsReceiversMap.put(gid, receivers);
+                        notifyObservers(GROUP_RECEIVERS_CHANGED, receivedMsg);
                     }
                     break;
                     default:
@@ -189,7 +196,7 @@ public class ChatApplication extends Application {
         return groupChatsReceiversMap.containsKey(groupName);
     }
 
-    public String[] getGroupReceivers(String groupName) {
+    public synchronized String[] getGroupReceivers(String groupName) {
         return groupChatsReceiversMap.get(groupName);
     }
 
@@ -219,7 +226,7 @@ public class ChatApplication extends Application {
         mBusHandler.sendMessage(msg);
     }
 
-    public List<ChatMessage> getHistory(String key) {
+    public synchronized List<ChatMessage> getHistory(String key) {
         List<ChatMessage> orig = chatHistory.get(key);
         List<ChatMessage> copy = new ArrayList<>();
         for (ChatMessage message: orig) {
@@ -228,7 +235,7 @@ public class ChatApplication extends Application {
         return copy;
     }
 
-    public Set<String> getChannels() {
+    public synchronized Set<String> getChannels() {
         Set<String> channelsCopy = new HashSet<>();
         for (String channel : chatHistory.keySet()) {
             channelsCopy.add(new String(channel.getBytes()));
@@ -236,13 +243,16 @@ public class ChatApplication extends Application {
         return channelsCopy;
     }
 
-    public void deleteGroup(String groupId) {
+    public synchronized void deleteGroup(String groupId, boolean onlyDelete) {
         Iterator<Map.Entry<String,List<ChatMessage>>> iter = chatHistory.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry<String, List<ChatMessage>> entry = iter.next();
             if(groupId.equals(entry.getKey())){
                 iter.remove();
             }
+        }
+        if (onlyDelete) {
+            notifyObservers(GROUP_DELETED, groupId);
         }
     }
 
@@ -363,5 +373,21 @@ public class ChatApplication extends Application {
     /* Load the native alljoyn_java library. */
     static {
         System.loadLibrary("alljoyn_java");
+    }
+
+    @Override
+    public synchronized void addObserver(Observer obs) {
+        mObservers.add(obs);
+    }
+
+    @Override
+    public synchronized void deleteObserver(Observer obs) {
+        mObservers.remove(obs);
+    }
+
+    private void notifyObservers(String arg, String data) {
+        for (Observer obs : mObservers) {
+            obs.update(this, arg, data);
+        }
     }
 }

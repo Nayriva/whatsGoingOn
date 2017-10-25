@@ -9,4 +9,5 @@
     <color name="colorGoogle">#d62d20</color>
     <color name="colorGreyLine">#565555</color>
     <color name="colorRedEnd">#ff766a</color>
+    <color name="colorNewMessage">#ffffaa</color>
 </resources>

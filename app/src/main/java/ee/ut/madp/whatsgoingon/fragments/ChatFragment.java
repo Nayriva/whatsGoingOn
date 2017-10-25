@@ -38,6 +38,8 @@ import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.chat.ChatMessageAdapter;
 import ee.ut.madp.whatsgoingon.chat.GroupParticipantsAdapter;
+import ee.ut.madp.whatsgoingon.chat.Observable;
+import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
@@ -49,7 +51,7 @@ import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.R.string.add_members;
 
-public class ChatFragment extends Fragment {
+public class ChatFragment extends Fragment implements Observer {
 
     private ChatApplication application;
     private ListView messagesListView;
@@ -59,7 +61,6 @@ public class ChatFragment extends Fragment {
     private FirebaseAuth firebaseAuth;
     private DatabaseReference groupsRef;
     private DatabaseReference usersRef;
-    private Handler mHandler;
 
     private ChatChannel chatChannel;
     private boolean isGroup;
@@ -76,16 +77,8 @@ public class ChatFragment extends Fragment {
         firebaseAuth = FirebaseAuth.getInstance();
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
+        application.addObserver(this);
         setHasOptionsMenu(true);
-
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                if (msg.what == ChatApplication.MESSAGE_RECEIVED) {
-                    updateHistory();
-                }
-            }
-        };
     }
 
     @Nullable
@@ -94,7 +87,7 @@ public class ChatFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
         getActivity().setTitle(chatChannel.getName());
 
-        messagesListView = (ListView) view.findViewById(R.id.messagesListView);
+        messagesListView = (ListView) view.findViewById(R.id.lv_chat_messages);
         adapter = new ChatMessageAdapter(getContext(), R.layout.message_list_item, application.getHistory(chatChannel.getId()));
         messagesListView.setAdapter(adapter);
 
@@ -104,6 +97,12 @@ public class ChatFragment extends Fragment {
         updateHistory();
 
         return view;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        application.deleteObserver(this);
     }
 
     @Override
@@ -207,7 +206,7 @@ public class ChatFragment extends Fragment {
         for (GroupParticipant participant: selected) {
             newParticipants.add(participant.getId());
         }
-        application.deleteGroup(groupId);
+        application.deleteGroup(groupId, false);
         application.createGroup(groupId, newParticipants.toArray(new String[0]));
         Group updatedGroup = new Group(groupId, chatChannel.getName(), chatChannel.getPhoto(), newParticipants);
         groupsRef.child(groupId).setValue(updatedGroup);
@@ -240,7 +239,7 @@ public class ChatFragment extends Fragment {
                 newReceivers.add(receiver);
             }
         }
-        application.deleteGroup(groupId);
+        application.deleteGroup(groupId, true);
         if (newReceivers.size() < 3) {
             groupsRef.child(groupId).removeValue();
         } else {
@@ -290,4 +289,34 @@ public class ChatFragment extends Fragment {
         this.receivers = receivers;
     }
 
+    @Override
+    public synchronized void update(Observable o, String qualifier, String data) {
+        switch (qualifier) {
+            case ChatApplication.MESSAGE_RECEIVED: {
+                String type = ChatHelper.getMessageType(data);
+                String sender = null;
+                if (type.equals("S")) {
+                    sender = ChatHelper.oneToOneMessageSender(data);
+                } else if (type.equals("G")) {
+                    sender = ChatHelper.groupMessageSender(data);
+                }
+
+                if (data.equals(chatChannel.getId())) {
+                    updateHistory();
+                } else {
+                    //display notification
+                }
+            } break;
+            case ChatApplication.GROUP_RECEIVERS_CHANGED: {
+                receivers = ChatHelper.groupAdvertiseMessageReceivers(data);
+            } break;
+            case ChatApplication.GROUP_DELETED: {
+                application.deleteGroup(chatChannel.getId(), true);
+                Fragment fragment = new ChatChannelsFragment();
+                FragmentManager fragmentManager = getFragmentManager();
+                fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
+                Toast.makeText(getContext(), "Group has been deleted", Toast.LENGTH_SHORT).show();
+            } break;
+        }
+    }
 }

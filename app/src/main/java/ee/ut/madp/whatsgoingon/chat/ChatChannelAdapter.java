@@ -2,12 +2,14 @@ package ee.ut.madp.whatsgoingon.chat;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -47,7 +49,8 @@ public class ChatChannelAdapter extends ArrayAdapter<ChatChannel> {
 
             holder = new ChatChannelHolder();
             holder.photo = (ImageView) row.findViewById(R.id.iw_chat_channel_picture);
-            holder.channelName = (TextView) row.findViewById(R.id.tw_chat_channel_name);
+            holder.channelName = (TextView) row.findViewById(R.id.tv_chat_channel_name);
+            holder.newMessage = (RelativeLayout) row.findViewById(R.id.rl_chat_channel) ;
 
             row.setTag(holder);
         } else {
@@ -64,13 +67,18 @@ public class ChatChannelAdapter extends ArrayAdapter<ChatChannel> {
             }
         }
         holder.channelName.setText(item.getName());
-
+        if (item.isNewMessage()) {
+            holder.newMessage.setBackgroundColor(getContext().getResources().getColor(R.color.colorNewMessage));
+        } else {
+            holder.newMessage.setBackgroundColor(0x00000000);
+        }
         return row;
     }
 
     private class ChatChannelHolder {
         ImageView photo;
         TextView channelName;
+        RelativeLayout newMessage;
     }
 
     @Override
