@@ -8,7 +8,7 @@
     android:layout_height="match_parent">
 
     <EditText
-        android:id="@+id/messageEditText"
+        android:id="@+id/et_message_to_send"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -16,20 +16,20 @@
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_toStartOf="@+id/sendFloatingActionButton"
+        android:layout_toStartOf="@+id/fab_send_message"
         android:ems="10"
         android:inputType="textPersonName"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/sendFloatingActionButton"
+        app:layout_constraintRight_toLeftOf="@+id/fab_send_message"
         app:layout_constraintHorizontal_bias="0.0"/>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/sendFloatingActionButton"
+        android:id="@+id/fab_send_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_alignTop="@+id/messageEditText"
+        android:layout_alignTop="@+id/et_message_to_send"
         android:clickable="true"
         app:backgroundTint="@color/colorPrimary"
         app:fabSize="mini"
@@ -40,19 +40,19 @@
         android:layout_marginBottom="8dp"/>
 
     <ListView
-        android:id="@+id/messagesListView"
+        android:id="@+id/lv_chat_messages"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_above="@+id/messageEditText"
+        android:layout_above="@+id/et_message_to_send"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="8dp"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/messageEditText"/>
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/et_message_to_send"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 
 </android.support.constraint.ConstraintLayout>

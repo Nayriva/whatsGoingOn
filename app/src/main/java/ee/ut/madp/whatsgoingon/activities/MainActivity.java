@@ -173,7 +173,8 @@ public class MainActivity extends AppCompatActivity
 
     private void setupNavigationHeader() {
         // TODO get information from the shared preferences and storage
-        firebaseDatabase.child(FIREBASE_CHILD_USERS).child(getUserId()).addValueEventListener(new ValueEventListener() {
+        firebaseDatabase.child(FIREBASE_CHILD_USERS).child(getUserId()).addListenerForSingleValueEvent(
+                new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

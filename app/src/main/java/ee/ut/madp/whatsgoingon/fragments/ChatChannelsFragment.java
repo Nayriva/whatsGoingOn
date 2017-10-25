@@ -76,8 +76,92 @@ public class ChatChannelsFragment extends Fragment {
         downloadGroups();
     }
 
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_chat_channels, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getActivity().setTitle(R.string.chat_item);
+        initialize(view);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Bitmap bitmap = ImagePicker.getImageFromResult(getActivity(), requestCode, resultCode, data);
+        if (bitmap != null) {
+            groupPhotoResult = ImageHelper.encodeBitmap(bitmap);
+        }
+
+    }
+
+    private void initialize(View view) {
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swiperefresh);
+        channelsList = (ListView) view.findViewById(R.id.lw_channels_list);
+        addGroupButton = (FloatingActionButton) view.findViewById(R.id.fab_add_channel);
+        channelsStatus = (TextView) view.findViewById(R.id.tw_channels_status);
+
+        chatChannelAdapter = new ChatChannelAdapter(getContext(), R.layout.chat_list_item, new ArrayList<ChatChannel>());
+        channelsList.setAdapter(chatChannelAdapter);
+        getChannels();
+        setSwipeRefreshLayoutListener();
+        setChatListViewListener();
+        setAddGroupButtonListener();
+    }
+
+    private void getChannels() {
+        chatChannelAdapter.clear();
+        Set<String> channels = application.getChannels();
+        for (final String channel: channels) {
+            if (application.isGroup(channel)) {
+                groupsRef.child(channel).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Group groupChannel = dataSnapshot.getValue(Group.class);
+                        if (groupChannel != null) {
+                            chatChannelAdapter.add(new ChatChannel(channel,
+                                    groupChannel.getDisplayName(), groupChannel.getPhoto()));
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        //intentionally left blank
+                    }
+                });
+            } else {
+                usersRef.child(channel).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        User channelOwner = dataSnapshot.getValue(User.class);
+                        if (channelOwner != null) {
+                            chatChannelAdapter.add(new ChatChannel(channel,
+                                    channelOwner.getName(), channelOwner.getPhoto()));
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        //intentionally left blank
+                    }
+                });
+            }
+        }
+
+        if (channels.isEmpty()) {
+            channelsStatus.setText(R.string.no_channels_found);
+        } else {
+            channelsStatus.setText(R.string.join_channel);
+        }
+        chatChannelAdapter.notifyDataSetChanged();
+    }
+
     private void downloadGroups() {
-        groupsRef.addValueEventListener(new ValueEventListener() {
+        groupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot groupSnapshot: dataSnapshot.getChildren()) {
@@ -92,94 +176,9 @@ public class ChatChannelsFragment extends Fragment {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                //left blank intentionally
             }
         });
-
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_chat_channels, container, false);
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        initialize(view);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Bitmap bitmap = ImagePicker.getImageFromResult(getActivity(), requestCode, resultCode, data);
-        if (bitmap != null) {
-            groupPhotoResult = ImageHelper.encodeBitmap(bitmap);
-        }
-
-    }
-
-    private void getChannels() {
-        Log.i(TAG, "findChannels()");
-        chatChannelAdapter.clear();
-        Set<String> channels = application.getChannels();
-        for (final String channel: channels) {
-            usersRef.child(channel).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    User channelOwner = dataSnapshot.getValue(User.class);
-                    if (channelOwner != null) {
-                        chatChannelAdapter.add(new ChatChannel(channel,
-                                channelOwner.getName(), channelOwner.getPhoto()));
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    //intentionally left blank
-                }
-            });
-            groupsRef.child(channel).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Group groupChannel = dataSnapshot.getValue(Group.class);
-                    if (groupChannel != null) {
-                        chatChannelAdapter.add(new ChatChannel(channel,
-                                groupChannel.getDisplayName(), groupChannel.getPhoto()));
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    //intentionally left blank
-                }
-            });
-        }
-
-        if (chatChannelAdapter.isEmpty()) {
-            channelsStatus.setText(R.string.no_channels_found);
-        } else {
-            channelsStatus.setText(R.string.join_channel);
-        }
-        chatChannelAdapter.notifyDataSetChanged();
-    }
-
-    private void initialize(View view) {
-        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swiperefresh);
-        setSwipeRefreshLayoutListener();
-
-        channelsList = (ListView) view.findViewById(R.id.lw_channels_list);
-        setChatListViewListener();
-
-        addGroupButton = (FloatingActionButton) view.findViewById(R.id.fab_add_channel);
-
-        channelsStatus = (TextView) view.findViewById(R.id.tw_channels_status);
-
-        chatChannelAdapter = new ChatChannelAdapter(getContext(), R.layout.chat_list_item, new ArrayList<ChatChannel>());
-        channelsList.setAdapter(chatChannelAdapter);
-        getChannels();
-        setAddGroupButtonListener();
     }
 
     private void setAddGroupButtonListener() {
@@ -203,6 +202,7 @@ public class ChatChannelsFragment extends Fragment {
                         participants.add(new GroupParticipant(tmp.getId(), tmp.getName(), tmp.getPhoto(), false));
                     }
                 }
+
                 final GroupParticipantsAdapter dialogAdapter = new GroupParticipantsAdapter(getContext(),
                         R.layout.dialog_group_list_item, participants);
                 participantsList.setAdapter(dialogAdapter);
@@ -251,13 +251,9 @@ public class ChatChannelsFragment extends Fragment {
             return false;
         }
         String gid =  UUID.randomUUID().toString().replaceAll("-", "");
-        String[] receivers = new String[selected.size()];
-        for (int i = 0; i < selected.size(); i++) {
-            receivers[i] = selected.get(i);
-        }
         Group group = new Group(gid, groupName, groupPhotoResult, selected);
         FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS).child(gid).setValue(group);
-        application.createGroup(gid, receivers);
+        application.createGroup(gid, selected.toArray(new String[0]));
         return true;
     }
 
@@ -266,8 +262,8 @@ public class ChatChannelsFragment extends Fragment {
         channelsList.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ChatFragment fragment = new ChatFragment();
                 ChatChannel channel = (ChatChannel) parent.getItemAtPosition(position);
+                ChatFragment fragment = new ChatFragment();
                 boolean isGroup = application.isGroup(channel.getId());
                 if (isGroup) {
                     String[] receivers = application.getGroupReceivers(channel.getId());

@@ -18,15 +18,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/et_group_dialog_group_name"
+        android:background="@color/colorPrimary"
         android:text="@string/pick_group_photo"
-        android:background="@color/colorPrimary" />
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:textColor="@android:color/white"/>
 
     <ListView
-        android:id="@+id/lw_group_dialog_options_list"
+        android:id="@+id/lv_group_dialog_options_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/btn_pick_group_photo"
-        android:layout_above="@+id/ll_group_dialog_buttons"/>
+        android:layout_above="@+id/ll_group_dialog_buttons"
+        android:layout_below="@+id/btn_pick_group_photo"/>
 
     <LinearLayout
         android:id="@+id/ll_group_dialog_buttons"

@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -55,7 +54,7 @@ public class ChatFragment extends Fragment {
     private ChatApplication application;
     private ListView messagesListView;
     private ChatMessageAdapter adapter;
-    private FloatingActionButton fab;
+    private FloatingActionButton sendMessageBtn;
     private EditText messageET;
     private FirebaseAuth firebaseAuth;
     private DatabaseReference groupsRef;
@@ -93,16 +92,16 @@ public class ChatFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
+        getActivity().setTitle(chatChannel.getName());
+
         messagesListView = (ListView) view.findViewById(R.id.messagesListView);
-        adapter = new ChatMessageAdapter(getContext(), R.layout.message_list_item,
-                application.getHistory(chatChannel.getId()));
+        adapter = new ChatMessageAdapter(getContext(), R.layout.message_list_item, application.getHistory(chatChannel.getId()));
         messagesListView.setAdapter(adapter);
 
-        messageET = (EditText) view.findViewById(R.id.messageEditText);
-        fab = (FloatingActionButton) view.findViewById(R.id.sendFloatingActionButton);
+        messageET = (EditText) view.findViewById(R.id.et_message_to_send);
+        sendMessageBtn = (FloatingActionButton) view.findViewById(R.id.fab_send_message);
         setFABListener();
         updateHistory();
-        getActivity().setTitle(chatChannel.getName());
 
         return view;
     }
@@ -255,7 +254,7 @@ public class ChatFragment extends Fragment {
     }
 
     private void setFABListener() {
-        fab.setOnClickListener(new View.OnClickListener() {
+        sendMessageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String messageText = String.valueOf(messageET.getText());
