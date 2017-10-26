@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_toEndOf="@id/iw_email"
-                android:text="@string/hint_email"
+                android:hint="@string/hint_email"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="#212121"/>
 
@@ -64,9 +64,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_toEndOf="@id/iw_nationality"
-                android:text="@string/hint_nationality"
+                android:hint="@string/hint_nationality"
+                android:background="@android:color/transparent"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="#212121"
+                android:textColorHint="#212121"
                 android:inputType="text"/>
 
 
@@ -94,9 +96,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_toEndOf="@id/iw_phone"
-                android:text="@string/hint_phone"
+                android:hint="@string/hint_phone"
+                android:background="@android:color/transparent"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="#212121"
+                android:textColorHint="#212121"
                 android:inputType="phone"/>
 
         </RelativeLayout>
@@ -124,9 +128,11 @@
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_toEndOf="@id/iw_school"
                 android:ellipsize="end"
-                android:text="@string/hint_university"
+                android:background="@android:color/transparent"
+                android:hint="@string/hint_university"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="#212121"
+                android:textColorHint="#212121"
                 android:inputType="text"/>
 
         </RelativeLayout>
@@ -154,9 +160,11 @@
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_toEndOf="@id/iw_work"
                 android:ellipsize="end"
-                android:text="@string/hint_work"
+                android:background="@android:color/transparent"
+                android:hint="@string/hint_work"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="#212121"
+                android:textColorHint="#212121"
                 android:inputType="text"/>
 
         </RelativeLayout>
@@ -184,9 +192,11 @@
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_toEndOf="@id/iw_birthday"
                 android:ellipsize="end"
-                android:text="@string/hint_birthday"
+                android:background="@android:color/transparent"
+                android:hint="@string/hint_birthday"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="#212121"
+                android:textColorHint="#212121"
                 android:inputType="date"/>
 
 

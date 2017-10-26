@@ -4,6 +4,8 @@ package ee.ut.madp.whatsgoingon.helpers;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.design.widget.Snackbar;
 import android.view.View;
 
@@ -24,6 +26,7 @@ public class DialogHelper {
             progressDialog.setTitle(titleMessage);
             progressDialog.setMessage(context.getResources().getString(R.string.progress_dialog_wait));
             progressDialog.setCancelable(false);
+            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             progressDialog.show();
         }
     }

@@ -31,10 +31,10 @@ dependencies {
     })
     compile files('src/main/jniLibs/alljoyn.jar')
     compile 'com.android.support:design:25.3.1'
+    compile 'com.android.support:design:25.3.1'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:support-v4:25.3.1'
-    compile 'com.android.support:design:25.3.1'
     compile 'com.android.support:support-vector-drawable:25.3.1'
     compile 'com.google.android.gms:play-services-auth:11.0.4'
     compile 'com.google.firebase:firebase-auth:11.0.4'
@@ -45,6 +45,7 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.Mariovc:ImagePicker:1.2.0'
+    compile 'com.github.npanigrahy:Custom-Calendar-View:v1.0'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 }

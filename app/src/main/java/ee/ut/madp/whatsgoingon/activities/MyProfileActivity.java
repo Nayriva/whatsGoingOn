@@ -141,15 +141,15 @@ public class MyProfileActivity extends AppCompatActivity {
             profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
         }
         nationality.setText(user.getNationality() == null
-                ? res.getString(R.string.hint_nationality) : backupValues.get("nationality"));
+                ? "" : backupValues.get("nationality"));
         phoneNumber.setText(user.getPhoneNumber() == null
-                ? res.getString(R.string.hint_phone) : backupValues.get("phoneNumber"));
+                ? "" : backupValues.get("phoneNumber"));
         work.setText(user.getWork() == null
-                ? res.getString(R.string.hint_work) : backupValues.get("work"));
+                ? "" : backupValues.get("work"));
         school.setText(user.getSchool() == null
-                ? res.getString(R.string.hint_university) : backupValues.get("school"));
+                ? "" : backupValues.get("school"));
         birthday.setText(user.getBirthday() == null
-                ? res.getString(R.string.hint_birthday) : backupValues.get("birthday"));
+                ? "" : backupValues.get("birthday"));
     }
 
     private void backupValues() {
