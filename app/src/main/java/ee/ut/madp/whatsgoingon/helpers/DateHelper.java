@@ -19,7 +19,7 @@ public class DateHelper {
     private static final String FULL_DATE_TIME_FORMAT = "MMM dd, yyyy HH:mm";
     private static final String TIME_FORMAT = "HH:mm";
     private static final String DATE_TIME = "MMM dd HH:mm";
-    
+
     /**
      * Creates message timestamp. For today AT 5:20 pm, for yesterday YESTERDAY AT 5:20 otherwise date
      *

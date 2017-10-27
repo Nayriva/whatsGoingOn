@@ -177,5 +177,9 @@
     <string name="btn_add_event">Add event</string>
     <string name="new_event_label">New event</string>
     <string name="yesterday_sent">Yesterday at</string>
+    <string name="hint_eventname">Event name</string>
+    <string name="hint_date">Date</string>
+    <string name="hint_time">Time</string>
+    <string name="hint_description">Description</string>
 
 </resources>
