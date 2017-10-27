@@ -210,11 +210,15 @@ public class ChatApplication extends Application implements Observable {
                 String channel = ChatHelper.oneToOneMessageReceiver(message);
                 String name = ChatHelper.oneToOneMessageSenderDisplayName(message);
                 String text = ChatHelper.oneToOneMessageText(message);
+                String senderId = ChatHelper.oneToOneMessageSender(message);
                 if (! chatHistory.containsKey(channel)) {
                     chatHistory.put(channel, new ArrayList<ChatMessage>());
                 }
                 List<ChatMessage> hist = chatHistory.get(channel);
                 ChatMessage newMessage = new ChatMessage(text, name, channel);
+                if (firebaseAuth.getCurrentUser().getUid().equals(senderId)) {
+                    newMessage.setMe(true);
+                }
                 if (hist.size() > HISTORY_MAX) {
                     hist.remove(0);
                     //TODO store messages to DB

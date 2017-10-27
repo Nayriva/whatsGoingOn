@@ -14,21 +14,25 @@ public class ChatChannel implements Parcelable {
     private String lastMessage;
     private String timeMessage;
     private boolean isOnline;
+    private boolean isGroup;
+    private String[] receivers;
 
-    public ChatChannel(String id, String name, String photo) {
+    public ChatChannel(String id, String name, String photo, boolean isGroup) {
         this.id = id;
         this.name = name;
         this.photo = photo;
+        this.isGroup = isGroup;
     }
 
     protected ChatChannel(Parcel in) {
         id = in.readString();
         name = in.readString();
-        photo = in.readString();
+        if (photo != null) photo = in.readString();
+        if (receivers != null) receivers = in.createStringArray();
         newMessage = in.readByte() != 0;
-        lastMessage = in.readString();
-        timeMessage = in.readString();
         isOnline = in.readByte() != 0;
+        isGroup = in.readByte() != 0;
+
     }
 
     public static final Creator<ChatChannel> CREATOR = new Creator<ChatChannel>() {
@@ -99,6 +103,22 @@ public class ChatChannel implements Parcelable {
         isOnline = online;
     }
 
+    public boolean isGroup() {
+        return isGroup;
+    }
+
+    public void setGroup(boolean group) {
+        isGroup = group;
+    }
+
+    public String[] getReceivers() {
+        return receivers;
+    }
+
+    public void setReceivers(String[] receivers) {
+        this.receivers = receivers;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -108,10 +128,11 @@ public class ChatChannel implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(id);
         dest.writeString(name);
-        dest.writeString(photo);
+        if (photo != null) dest.writeString(photo);
+        if (receivers != null) dest.writeArray(receivers);
         dest.writeByte((byte) (newMessage ? 1 : 0));
-        dest.writeString(lastMessage);
-        dest.writeString(timeMessage);
         dest.writeByte((byte) (isOnline ? 1 : 0));
+        dest.writeByte((byte) (isGroup ? 1 : 0));
+
     }
 }

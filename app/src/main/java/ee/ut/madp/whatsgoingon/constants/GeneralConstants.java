@@ -8,5 +8,6 @@ public class GeneralConstants {
     public static final int SETTINGS_REQUEST_CODE = 1 ;
     public static final int EVENTS_REQUEST_CODE = 2 ;
     public static final String EXTRA_CURRENT_FRAGMENT = "currentFragment";
+    public static final String PARCEL_CHAT_CHANNEL = "chatChannel";
 
 }

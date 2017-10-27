@@ -39,7 +39,6 @@ import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_CURRENT_FRAGMENT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SETTINGS_REQUEST_CODE;
 
 public class MainActivity extends AppCompatActivity
@@ -70,22 +69,6 @@ public class MainActivity extends AppCompatActivity
         application.startAdvertise();
 
     }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.getString(EXTRA_CURRENT_FRAGMENT);
-    }
-
-    // invoked when the activity may be temporarily destroyed, save the instance state here
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putString(EXTRA_CURRENT_FRAGMENT, "neco");
-
-        // call superclass to save any view hierarchy
-        super.onSaveInstanceState(outState);
-    }
-
-
 
 
     @Override

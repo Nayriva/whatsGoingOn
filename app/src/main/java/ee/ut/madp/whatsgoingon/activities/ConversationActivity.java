@@ -45,8 +45,10 @@ import ee.ut.madp.whatsgoingon.models.GroupParticipant;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.R.string.add_members;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_CHAT_CHANNEL;
 
 public class ConversationActivity extends AppCompatActivity implements Observer {
+    public static final String TAG = ConversationActivity.class.getSimpleName();
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -69,12 +71,16 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         setContentView(R.layout.activity_conversation);
         ButterKnife.bind(this);
 
-        if (getIntent().hasExtra("channel") && getIntent().hasExtra("isGroup")) {
-            setData((ChatChannel) getIntent().getParcelableExtra("channel"), getIntent().getBooleanExtra("isGroup", false), null);
+        if (getIntent().hasExtra(PARCEL_CHAT_CHANNEL)) {
+            chatChannel = getIntent().getParcelableExtra(PARCEL_CHAT_CHANNEL);
+            // tODo every time true
+            isGroup = !chatChannel.isGroup();
+            setTitle(chatChannel.getName());
+            if (chatChannel.getReceivers() != null) this.receivers = chatChannel.getReceivers();
+
         }
 
         setupRecyclerView();
-
 
         application = (ChatApplication) getApplication();
         firebaseAuth = FirebaseAuth.getInstance();
@@ -82,14 +88,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
 
-
-
-//        chatMessageList.add(new ChatMessage("ja jsem rekla", "eiemsmeie", "eieeei"));
-//        chatMessageList.add(new ChatMessage("ty jsi rekl", "eiemsmeie", "eieeei"));
-//        chatMessageList.add(new ChatMessage("ja opet", "eiemsmeie", "eieeei"));
-//        chatMessageList.add(new ChatMessage("ty", "eiemsmeie", "eieeei"));
         updateHistory();
-
 
     }
 
@@ -116,24 +115,16 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
                     chatChannel.getId(), messageText);
         }
         application.sendMessage(message);
+        editTextMessage.setText("");
         updateHistory();
     }
 
     private void updateHistory() {
-//        messageAdapter.clear();
-        chatMessageList = application.getHistory(chatChannel.getId());
-//        for (ChatMessage message: history) {
-//            adapter.add(message);
-//        }
+        chatMessageList.clear();
+        chatMessageList.addAll(application.getHistory(chatChannel.getId()));
         messageAdapter.notifyDataSetChanged();
-//        messagesListView.smoothScrollToPosition(history.size() - 1);
     }
 
-    public void setData(ChatChannel chatChannel, boolean isGroup, String[] receivers) {
-        this.chatChannel = chatChannel;
-        this.isGroup = isGroup;
-        this.receivers = receivers;
-    }
 
     @Override
     public void update(Observable o, String qualifier, String data) {
@@ -158,9 +149,6 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
             } break;
             case ChatApplication.GROUP_DELETED: {
                 application.deleteGroup(chatChannel.getId(), true);
-//                Fragment fragment = new ChatChannelsFragment();
-//                FragmentManager fragmentManager = getFragmentManager();
-//                fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
                 Toast.makeText(ConversationActivity.this, "Group has been deleted", Toast.LENGTH_SHORT).show();
             } break;
         }
@@ -302,8 +290,5 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
             groupsRef.child(groupId).setValue(newGroup);
             application.createGroup(groupId, newReceivers.toArray(new String[0]));
         }
-//        Fragment fragment = new ChatChannelsFragment();
-//        FragmentManager fragmentManager = getFragmentManager();
-//        fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
     }
 }

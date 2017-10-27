@@ -18,6 +18,8 @@ import ee.ut.madp.whatsgoingon.activities.ConversationActivity;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_CHAT_CHANNEL;
+
 /**
  * Created by admin on 27.10.2017.
  */
@@ -80,17 +82,9 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
         @Override
         public void onClick(View v) {
             ChatChannel chatChannel = channelList.get(getAdapterPosition());
-            //boolean isGroup = application.isGroup(channel.getId());
-//            if (isGroup) {
-//                String[] receivers = application.getGroupReceivers(channel.getId());
-//                fragment.setData(channel, true, receivers);
-//            } else {
-//                fragment.setData(channel, false, null);
-//            }
             chatChannel.setNewMessage(false);
             Intent intent = new Intent(v.getContext(), ConversationActivity.class);
-            intent.putExtra("isGroup", false);
-            intent.putExtra("channel", chatChannel);
+            intent.putExtra(PARCEL_CHAT_CHANNEL, chatChannel);
             context.startActivity(intent);
         }
     }

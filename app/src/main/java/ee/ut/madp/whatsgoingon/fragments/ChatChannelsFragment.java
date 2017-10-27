@@ -139,16 +139,18 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void getChannels() {
-        Set<String> channels = application.getChannels();
-        for (final String channel: channels) {
-            if (application.isGroup(channel)) {
-                groupsRef.child(channel).addListenerForSingleValueEvent(new ValueEventListener() {
+        Set<String> channelNames = application.getChannels();
+        for (final String channelName: channelNames) {
+            if (application.isGroup(channelName)) {
+                groupsRef.child(channelName).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Group groupChannel = dataSnapshot.getValue(Group.class);
                         if (groupChannel != null) {
-                            channelsList.add(new ChatChannel(channel,
-                                    groupChannel.getDisplayName(), groupChannel.getPhoto()));
+                            ChatChannel chatChannel = new ChatChannel(channelName,
+                                    groupChannel.getDisplayName(), groupChannel.getPhoto(), true);
+                            chatChannel.setReceivers(application.getGroupReceivers(channelName));
+                            channelsList.add(chatChannel);
                         }
                     }
 
@@ -158,13 +160,13 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                     }
                 });
             } else {
-                usersRef.child(channel).addListenerForSingleValueEvent(new ValueEventListener() {
+                usersRef.child(channelName).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         User channelOwner = dataSnapshot.getValue(User.class);
                         if (channelOwner != null) {
-                            channelsList.add(new ChatChannel(channel,
-                                    channelOwner.getName(), channelOwner.getPhoto()));
+                            channelsList.add(new ChatChannel(channelName,
+                                    channelOwner.getName(), channelOwner.getPhoto(), false));
                         }
                     }
 
@@ -177,7 +179,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
             chatChannelAdapter.notifyDataSetChanged();
         }
 
-        if (channels.isEmpty()) {
+        if (channelNames.isEmpty()) {
             channelsStatus.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
         } else {
