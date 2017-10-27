@@ -8,8 +8,6 @@ import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.text.SimpleDateFormat;
-
 import ee.ut.madp.whatsgoingon.R;
 
 /**
@@ -23,14 +21,7 @@ public class DateHelper {
     private static final String DATE_TIME = "MMM dd HH:mm";
 
     private static DateTimeFormatter dateTimeFormatter;
-
-    public static String convertTimeToString(long time) {
-        DateTime date = new DateTime(time);
-        // TODO if the same day return just time, if the same year just date, otherwise with year
-        SimpleDateFormat df2 = new SimpleDateFormat("dd/MM/yy");
-        return df2.format(date);
-    }
-
+    
     /**
      * Creates message timestamp. For today AT 5:20 pm, for yesterday YESTERDAY AT 5:20 otherwise date
      *
@@ -62,29 +53,5 @@ public class DateHelper {
         return messageTime;
     }
 
-    /**
-     * Converts the given date string with time to Joda DateTime
-     *
-     * @param dateWithTime
-     * @return
-     */
-    public static DateTime convertStringToDateTime(String dateWithTime) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(FULL_DATE_TIME_FORMAT);
-        DateTime dateTime = formatter.parseDateTime(dateWithTime);
-
-        return dateTime;
-    }
-
-    public boolean isToday(DateTime time) {
-        return LocalDate.now().compareTo(new LocalDate(time)) == 0;
-    }
-
-    public boolean isTomorrow(DateTime time) {
-        return LocalDate.now().plusDays(1).compareTo(new LocalDate(time)) == 0;
-    }
-
-    public boolean isYesterday(DateTime time) {
-        return LocalDate.now().minusDays(1).compareTo(new LocalDate(time)) == 0;
-    }
 
 }
