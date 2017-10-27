@@ -65,6 +65,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
         </activity>
+        <activity android:name=".activities.ConversationActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

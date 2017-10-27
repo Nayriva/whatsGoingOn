@@ -12,6 +12,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -68,17 +69,16 @@ public class MainActivity extends AppCompatActivity
         setupNavigationHeader();
         setUpInitialFragment("Chat");
         application.startAdvertise();
-        if (!lastOpenedItem.isEmpty()) {
-            Log.i(TAG, "jooo " + lastOpenedItem);
-        }
+
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        Bundle bundle = new Bundle();
-        bundle.putString("novy", "novy");
-        onSaveInstanceState(bundle);
+    public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
+                if (!lastOpenedItem.isEmpty()) {
+
+        }
+        return super.onCreateView(parent, name, context, attrs);
+
     }
 
     @Override

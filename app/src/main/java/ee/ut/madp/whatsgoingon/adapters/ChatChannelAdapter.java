@@ -14,7 +14,7 @@ import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.activities.NewEventActivity;
+import ee.ut.madp.whatsgoingon.activities.ConversationActivity;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 
@@ -74,12 +74,13 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
             lastMessage = (TextView) view.findViewById(R.id.tv_last_chat);
             messageTime = (TextView) view.findViewById(R.id.tv_time);
             onlineIndicator =  view.findViewById(R.id.online_indicator);
+            view.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
-            ChatChannel contact = channelList.get(getAdapterPosition());
-            context.startActivity(new Intent(v.getContext(), NewEventActivity.class));
+            ChatChannel chatChannel = channelList.get(getAdapterPosition());
+            context.startActivity(new Intent(v.getContext(), ConversationActivity.class));
         }
     }
 }
