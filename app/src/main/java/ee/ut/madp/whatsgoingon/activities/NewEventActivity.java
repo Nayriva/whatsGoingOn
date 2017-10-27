@@ -10,24 +10,23 @@ import ee.ut.madp.whatsgoingon.R;
 
 public class NewEventActivity extends AppCompatActivity {
 
-    private Intent intent;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_event);
     }
 
+    //
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            if (intent == null) {
-                intent = getIntent();
-            }
-            setResult(Activity.RESULT_OK, intent);
+            Intent data = new Intent();
+            setResult(Activity.RESULT_OK, data);
             finish();
-
         }
-        return super.onOptionsItemSelected(item);
+        return true;
     }
+
+
 }

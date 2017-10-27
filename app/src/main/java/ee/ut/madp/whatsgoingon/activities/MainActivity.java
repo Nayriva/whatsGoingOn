@@ -12,7 +12,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,6 +39,7 @@ import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_CURRENT_FRAGMENT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SETTINGS_REQUEST_CODE;
 
 public class MainActivity extends AppCompatActivity
@@ -54,7 +54,6 @@ public class MainActivity extends AppCompatActivity
     private ChatApplication application;
     private FirebaseAuth firebaseAuth;
     private DatabaseReference firebaseDatabase;
-    private String lastOpenedItem = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,27 +72,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
-                if (!lastOpenedItem.isEmpty()) {
-
-        }
-        return super.onCreateView(parent, name, context, attrs);
-
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
-        savedInstanceState.putString("lastOpenedItem", "Welcome back to Android");
-        // etc.
-    }
-
-    @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        lastOpenedItem = savedInstanceState.getString("lastOpenedItem");
-
+        savedInstanceState.getString(EXTRA_CURRENT_FRAGMENT);
     }
+
+    // invoked when the activity may be temporarily destroyed, save the instance state here
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString(EXTRA_CURRENT_FRAGMENT, "neco");
+
+        // call superclass to save any view hierarchy
+        super.onSaveInstanceState(outState);
+    }
+
+
+
 
     @Override
     public void onBackPressed() {

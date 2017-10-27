@@ -39,8 +39,5 @@ public class EventFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == EVENTS_REQUEST_CODE) {
-            //setUpInitialFragment("Events");
-        }
     }
 }
