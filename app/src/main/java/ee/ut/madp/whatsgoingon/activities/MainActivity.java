@@ -39,12 +39,13 @@ import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SETTINGS_REQUEST_CODE;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final int SETTINGS_REQUEST_CODE = 1 ;
+
     @BindView(R.id.nav_view) NavigationView navigationView;
     @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @BindView(R.id.toolbar) Toolbar toolbar;
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity
     private ChatApplication application;
     private FirebaseAuth firebaseAuth;
     private DatabaseReference firebaseDatabase;
+    private String lastOpenedItem = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +66,33 @@ public class MainActivity extends AppCompatActivity
         setUpNavigationView();
         setUpDrawer();
         setupNavigationHeader();
-        setUpInitialFragment();
+        setUpInitialFragment("Chat");
         application.startAdvertise();
+        if (!lastOpenedItem.isEmpty()) {
+            Log.i(TAG, "jooo " + lastOpenedItem);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Bundle bundle = new Bundle();
+        bundle.putString("novy", "novy");
+        onSaveInstanceState(bundle);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putString("lastOpenedItem", "Welcome back to Android");
+        // etc.
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        lastOpenedItem = savedInstanceState.getString("lastOpenedItem");
+
     }
 
     @Override
@@ -90,11 +117,16 @@ public class MainActivity extends AppCompatActivity
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
-    private void setUpInitialFragment() {
+    private void setUpInitialFragment(String type) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment fragment = null;
         try {
-            fragment = ChatChannelsFragment.class.newInstance();
+            if (type.equalsIgnoreCase("Chat")) {
+                fragment = ChatChannelsFragment.class.newInstance();
+            } else if (type.equalsIgnoreCase("Events")) {
+                fragment = EventFragment.class.newInstance();
+            }
+
         } catch (InstantiationException | IllegalAccessException e) {
             //this should never happen
         }
@@ -138,8 +170,7 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(MainActivity.this, MyProfileActivity.class));
                 break;
             case R.id.nav_settings:
-                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-                startActivityForResult(intent, SETTINGS_REQUEST_CODE);
+                startActivityForResult(new Intent(MainActivity.this, SettingsActivity.class), SETTINGS_REQUEST_CODE);
                 break;
             case R.id.nav_help:
                 break;
@@ -231,7 +262,7 @@ public class MainActivity extends AppCompatActivity
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             if (requestCode == SETTINGS_REQUEST_CODE) {
-                setUpInitialFragment();
+                setUpInitialFragment("Chat");
             }
         }
     }

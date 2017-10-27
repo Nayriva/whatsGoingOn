@@ -12,6 +12,8 @@ import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.NewEventActivity;
 
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENTS_REQUEST_CODE;
+
 public class EventFragment extends Fragment {
 
 
@@ -31,8 +33,14 @@ public class EventFragment extends Fragment {
 
     @OnClick(R.id.btn_add_event)
     public void showAddEventForm() {
-        startActivity(new Intent(getActivity(), NewEventActivity.class));
+        startActivityForResult(new Intent(getActivity(), NewEventActivity.class), EVENTS_REQUEST_CODE);
     }
 
-
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == EVENTS_REQUEST_CODE) {
+            //setUpInitialFragment("Events");
+        }
+    }
 }

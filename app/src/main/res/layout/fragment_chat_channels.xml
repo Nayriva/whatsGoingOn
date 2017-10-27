@@ -15,20 +15,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
+            android:layout_centerHorizontal="true"
             android:visibility="gone"
             android:textSize="@dimen/h1"
             android:text="@string/no_channels_found" />
 
-        <ListView
-            android:id="@+id/lv_channels_list"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_channels_list"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:divider="@null"
-            android:dividerHeight="0dp"
-            android:layout_below="@id/tv_channels_status"
-            android:overScrollFooter="@android:color/transparent"
-            android:clipToPadding="false"
-            android:footerDividersEnabled="false"/>
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:scrollbars="vertical"/>
+
+        <!--<ListView-->
+            <!--android:id="@+id/lv_channels_list"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:divider="@null"-->
+            <!--android:dividerHeight="0dp"-->
+            <!--android:layout_below="@id/tv_channels_status"-->
+            <!--android:footerDividersEnabled="false"/>-->
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab_add_channel"

@@ -58,7 +58,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.MainActivity" />
         </activity>
-        <activity android:name=".activities.NewEventActivity"></activity>
+        <activity
+            android:name=".activities.NewEventActivity"
+            android:label="@string/new_event_label">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

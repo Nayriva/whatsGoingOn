@@ -36,7 +36,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
-import ee.ut.madp.whatsgoingon.chat.ChatMessageAdapter;
+import ee.ut.madp.whatsgoingon.adapters.ChatMessageAdapter;
 import ee.ut.madp.whatsgoingon.chat.GroupParticipantsAdapter;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;

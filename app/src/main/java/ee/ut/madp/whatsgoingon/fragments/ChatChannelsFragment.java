@@ -8,14 +8,13 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -39,8 +38,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.adapters.ChatChannelAdapter;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
-import ee.ut.madp.whatsgoingon.chat.ChatChannelAdapter;
 import ee.ut.madp.whatsgoingon.chat.GroupParticipantsAdapter;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
@@ -53,7 +52,6 @@ import ee.ut.madp.whatsgoingon.models.GroupParticipant;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static android.widget.AdapterView.OnClickListener;
-import static android.widget.AdapterView.OnItemClickListener;
 
 public class ChatChannelsFragment extends Fragment implements Observer {
 
@@ -61,8 +59,8 @@ public class ChatChannelsFragment extends Fragment implements Observer {
 
     @BindView(R.id.swiperefresh)
     SwipeRefreshLayout swipeRefreshLayout;
-    @BindView(R.id.lv_channels_list)
-    ListView channelsList;
+    @BindView(R.id.rv_channels_list)
+    RecyclerView recyclerView;
     @BindView(R.id.tv_channels_status)
     TextView channelsStatus;
 
@@ -72,6 +70,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     private DatabaseReference groupsRef;
     private ChatChannelAdapter chatChannelAdapter;
     private String groupPhotoResult;
+    private List<ChatChannel> channelsList;
 
 
     @Override
@@ -82,6 +81,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         application.addObserver(this);
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
+        channelsList = new ArrayList<>();
 
         downloadGroups();
     }
@@ -112,15 +112,38 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void initialize() {
-        chatChannelAdapter = new ChatChannelAdapter(getContext(), R.layout.list_item_chat_channels, new ArrayList<ChatChannel>());
-        channelsList.setAdapter(chatChannelAdapter);
+        setupRecyclerView();
         getChannels();
         setSwipeRefreshLayoutListener();
-        setChatListViewListener();
+    }
+
+    private void setupRecyclerView() {
+        chatChannelAdapter = new ChatChannelAdapter(getContext(), channelsList);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(chatChannelAdapter);
+
+
+//        ChatChannel channel = (ChatChannel) channelsList.get();
+//        ChatFragment fragment = new ChatFragment();
+//        boolean isGroup = application.isGroup(channel.getId());
+//        if (isGroup) {
+//            String[] receivers = application.getGroupReceivers(channel.getId());
+//            fragment.setData(channel, true, receivers);
+//        } else {
+//            fragment.setData(channel, false, null);
+//        }
+//        channel.setNewMessage(false);
+//        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+//        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//        fragmentTransaction.replace(R.id.containerView, fragment);
+//        fragmentTransaction.addToBackStack(null);
+//        fragmentTransaction.commit();
+
     }
 
     private void getChannels() {
-        chatChannelAdapter.clear();
         Set<String> channels = application.getChannels();
         for (final String channel: channels) {
             if (application.isGroup(channel)) {
@@ -129,7 +152,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Group groupChannel = dataSnapshot.getValue(Group.class);
                         if (groupChannel != null) {
-                            chatChannelAdapter.add(new ChatChannel(channel,
+                            channelsList.add(new ChatChannel(channel,
                                     groupChannel.getDisplayName(), groupChannel.getPhoto()));
                         }
                     }
@@ -145,7 +168,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         User channelOwner = dataSnapshot.getValue(User.class);
                         if (channelOwner != null) {
-                            chatChannelAdapter.add(new ChatChannel(channel,
+                            channelsList.add(new ChatChannel(channel,
                                     channelOwner.getName(), channelOwner.getPhoto()));
                         }
                     }
@@ -156,14 +179,15 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                     }
                 });
             }
+            chatChannelAdapter.notifyDataSetChanged();
         }
 
         if (channels.isEmpty()) {
             channelsStatus.setVisibility(View.VISIBLE);
-            channelsList.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.GONE);
         } else {
             channelsStatus.setVisibility(View.GONE);
-            channelsList.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.VISIBLE);
         }
         chatChannelAdapter.notifyDataSetChanged();
     }
@@ -201,9 +225,8 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         ListView participantsList = (ListView) dialog.findViewById(R.id.lv_group_dialog_options_list);
         final EditText groupName = (EditText) dialog.findViewById(R.id.et_group_dialog_group_name);
 
-        List<ChatChannel> channels = chatChannelAdapter.getItems();
         List<GroupParticipant> participants = new ArrayList<>();
-        for (ChatChannel tmp : channels) {
+        for (ChatChannel tmp : channelsList) {
             if (! application.isGroup(tmp.getId())) {
                 participants.add(new GroupParticipant(tmp.getId(), tmp.getName(), tmp.getPhoto(), false));
             }
@@ -262,30 +285,6 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         return true;
     }
 
-    private void setChatListViewListener() {
-        Log.i(TAG, "setChatListViewListener");
-        channelsList.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ChatChannel channel = (ChatChannel) parent.getItemAtPosition(position);
-                ChatFragment fragment = new ChatFragment();
-                boolean isGroup = application.isGroup(channel.getId());
-                if (isGroup) {
-                    String[] receivers = application.getGroupReceivers(channel.getId());
-                    fragment.setData(channel, true, receivers);
-                } else {
-                    fragment.setData(channel, false, null);
-                }
-                channel.setNewMessage(false);
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.containerView, fragment);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-            }
-        });
-    }
-
     private void setSwipeRefreshLayoutListener() {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -312,7 +311,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                     sender = ChatHelper.groupMessageSender(data);
                 }
 
-                for (ChatChannel channel : chatChannelAdapter.getItems()) {
+                for (ChatChannel channel : channelsList) {
                     if (channel.getId().equals(sender)) {
                         channel.setNewMessage(true);
                         break;
