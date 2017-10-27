@@ -47,6 +47,7 @@ dependencies {
     compile 'com.github.Mariovc:ImagePicker:1.2.0'
     compile 'com.github.npanigrahy:Custom-Calendar-View:v1.0'
     compile 'com.android.support:recyclerview-v7:23.1.1'
+    compile 'joda-time:joda-time:2.9.4'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 }

@@ -1,7 +1,16 @@
 package ee.ut.madp.whatsgoingon.helpers;
 
+import android.content.Context;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import java.text.SimpleDateFormat;
-import java.util.Date;
+
+import ee.ut.madp.whatsgoingon.R;
 
 /**
  * Created by admin on 27.10.2017.
@@ -9,11 +18,73 @@ import java.util.Date;
 
 public class DateHelper {
 
+    private static final String FULL_DATE_TIME_FORMAT = "MMM dd, yyyy HH:mm";
+    private static final String TIME_FORMAT = "HH:mm";
+    private static final String DATE_TIME = "MMM dd HH:mm";
+
+    private static DateTimeFormatter dateTimeFormatter;
+
     public static String convertTimeToString(long time) {
-        Date date = new Date(time);
+        DateTime date = new DateTime(time);
         // TODO if the same day return just time, if the same year just date, otherwise with year
         SimpleDateFormat df2 = new SimpleDateFormat("dd/MM/yy");
-        String dateText = df2.format(date);
-        return dateText;
+        return df2.format(date);
     }
+
+    /**
+     * Creates message timestamp. For today AT 5:20 pm, for yesterday YESTERDAY AT 5:20 otherwise date
+     *
+     * @param time
+     * @return
+     */
+    public static String createMessageTime(Context context, long time) {
+        String messageTime = "";
+        DateTime jodaTime =  new DateTime(Long.valueOf(time), DateTimeZone.UTC);;
+
+        boolean isToday =  LocalDate.now().compareTo(new LocalDate(time)) == 0;
+        boolean isYesterday =  LocalDate.now().minusDays(1).compareTo(new LocalDate(time)) == 0;
+        boolean isSameYear = jodaTime.getYear() - LocalDate.now().getYear() == 0;
+
+        if (isToday) {
+            dateTimeFormatter = DateTimeFormat.forPattern(TIME_FORMAT);
+            messageTime = dateTimeFormatter.print(time);
+        } else if (isYesterday) {
+            dateTimeFormatter = DateTimeFormat.forPattern(TIME_FORMAT);
+            messageTime = context.getString(R.string.yesterday_sent) + " " + dateTimeFormatter.print(time);
+        } else if (isSameYear) {
+            dateTimeFormatter = DateTimeFormat.forPattern(DATE_TIME);
+            messageTime = dateTimeFormatter.print(time);
+        } else {
+            dateTimeFormatter = DateTimeFormat.forPattern(FULL_DATE_TIME_FORMAT);
+            messageTime = dateTimeFormatter.print(time);
+        }
+
+        return messageTime;
+    }
+
+    /**
+     * Converts the given date string with time to Joda DateTime
+     *
+     * @param dateWithTime
+     * @return
+     */
+    public static DateTime convertStringToDateTime(String dateWithTime) {
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(FULL_DATE_TIME_FORMAT);
+        DateTime dateTime = formatter.parseDateTime(dateWithTime);
+
+        return dateTime;
+    }
+
+    public boolean isToday(DateTime time) {
+        return LocalDate.now().compareTo(new LocalDate(time)) == 0;
+    }
+
+    public boolean isTomorrow(DateTime time) {
+        return LocalDate.now().plusDays(1).compareTo(new LocalDate(time)) == 0;
+    }
+
+    public boolean isYesterday(DateTime time) {
+        return LocalDate.now().minusDays(1).compareTo(new LocalDate(time)) == 0;
+    }
+
 }

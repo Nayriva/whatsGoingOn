@@ -1,5 +1,6 @@
 package ee.ut.madp.whatsgoingon.adapters;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,9 +19,11 @@ import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHolder> {
     private List<ChatMessage> chatMessages;
+    private Context context;
 
-    public MessageAdapter(List<ChatMessage> chatMessages) {
+    public MessageAdapter(Context context, List<ChatMessage> chatMessages) {
         this.chatMessages = chatMessages;
+        this.context = context;
     }
 
     @Override
@@ -42,7 +45,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
     public void onBindViewHolder(MessageAdapter.MyViewHolder holder, int position) {
         ChatMessage chatMessage = chatMessages.get(position);
         holder.message.setText(chatMessage.getMessageText());
-        holder.messageTime.setText(DateHelper.convertTimeToString(chatMessage.getMessageTime()));
+        holder.messageTime.setText(DateHelper.createMessageTime(context, chatMessage.getMessageTime()));
     }
 
     @Override
