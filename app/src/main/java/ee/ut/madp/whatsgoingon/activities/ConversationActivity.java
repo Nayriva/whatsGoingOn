@@ -29,10 +29,10 @@ public class ConversationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_conversation);
         ButterKnife.bind(this);
         chatMessageList = new ArrayList<>();
-        chatMessageList.add(new ChatMessage("ja jsem rekla", "eiemsmeie", "eieeei", true));
-        chatMessageList.add(new ChatMessage("ty jsi rekl", "eiemsmeie", "eieeei", false));
-        chatMessageList.add(new ChatMessage("ja opet", "eiemsmeie", "eieeei", true));
-        chatMessageList.add(new ChatMessage("ty", "eiemsmeie", "eieeei", false));
+//        chatMessageList.add(new ChatMessage("ja jsem rekla", "eiemsmeie", "eieeei", true));
+//        chatMessageList.add(new ChatMessage("ty jsi rekl", "eiemsmeie", "eieeei", false));
+//        chatMessageList.add(new ChatMessage("ja opet", "eiemsmeie", "eieeei", true));
+//        chatMessageList.add(new ChatMessage("ty", "eiemsmeie", "eieeei", false));
 
         setupRecyclerView();
     }

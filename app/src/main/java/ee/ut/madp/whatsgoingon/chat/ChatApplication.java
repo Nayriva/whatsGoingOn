@@ -160,14 +160,16 @@ public class ChatApplication extends Application implements Observable {
             chatHistory.put(sender, new ArrayList<ChatMessage>());
         }
         String text = ChatHelper.oneToOneMessageText(receivedMsg);
+        String senderName = ChatHelper.oneToOneMessageSenderDisplayName(receivedMsg);
         List<ChatMessage> hist = chatHistory.get(sender);
 
-//        ChatMessage newMessage = new ChatMessage(text, ChatMe);
-//        if (hist.size() > HISTORY_MAX) {
-//            hist.remove(0);
-//            //TODO store messages to DB
-//        }
-//        hist.add(newMessage);
+        ChatMessage newMessage = new ChatMessage(text, senderName, sender);
+
+        if (hist.size() > HISTORY_MAX) {
+            hist.remove(0);
+            //TODO store messages to DB
+        }
+        hist.add(newMessage);
     }
 
     private void storeGroupMessage(String receivedMsg) {
@@ -182,12 +184,12 @@ public class ChatApplication extends Application implements Observable {
         String displayName = ChatHelper.groupMessageSenderDisplayName(receivedMsg);
         List<ChatMessage> hist = chatHistory.get(group);
 
-//        ChatMessage newMessage = new ChatMessage(text, displayName, sender);
-//        if (hist.size() > HISTORY_MAX) {
-//            hist.remove(0);
-//            //TODO store messages to DB
-//        }
-//        hist.add(newMessage);
+        ChatMessage newMessage = new ChatMessage(text, displayName, sender);
+        if (hist.size() > HISTORY_MAX) {
+            hist.remove(0);
+            //TODO store messages to DB
+        }
+        hist.add(newMessage);
     }
 
     public boolean isGroup(String groupName) {
@@ -202,12 +204,14 @@ public class ChatApplication extends Application implements Observable {
         String type = ChatHelper.getMessageType(message);
         switch (type) {
             case "S": {
+                String channel = ChatHelper.oneToOneMessageReceiver(message);
+                String name = ChatHelper.oneToOneMessageSenderDisplayName(message);
                 String text = ChatHelper.oneToOneMessageText(message);
                 if (! chatHistory.containsKey(channel)) {
                     chatHistory.put(channel, new ArrayList<ChatMessage>());
                 }
                 List<ChatMessage> hist = chatHistory.get(channel);
-                ChatMessage newMessage = new ChatMessage(text);
+                ChatMessage newMessage = new ChatMessage(text, name, channel);
                 if (hist.size() > HISTORY_MAX) {
                     hist.remove(0);
                     //TODO store messages to DB

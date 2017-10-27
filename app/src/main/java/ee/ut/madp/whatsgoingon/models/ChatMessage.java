@@ -12,15 +12,16 @@ import java.util.Date;
 public class ChatMessage {
 
     private String messageText;
-
-    private String authorPhoto;
+    private String displayName;
+    private String sender;
     private long messageTime;
     private boolean isMe;
 
-    public ChatMessage(String messageText, boolean isMe) {
+    public ChatMessage(String messageText, String displayName, String sender) {
         this.messageText = messageText;
+        this.displayName = displayName;
+        this.sender = sender;
         this.messageTime = new Date().getTime();
-        this.isMe = isMe;
     }
 
     public ChatMessage() {
@@ -34,12 +35,20 @@ public class ChatMessage {
         this.messageText = messageText;
     }
 
-    public String getAuthorPhoto() {
-        return authorPhoto;
+    public String getSender() {
+        return sender;
     }
 
-    public void setAuthorPhoto(String authorPhoto) {
-        this.authorPhoto = authorPhoto;
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+    public boolean isMe() {
+        return isMe;
+    }
+
+    public void setMe(boolean me) {
+        isMe = me;
     }
 
     public long getMessageTime() {
@@ -50,11 +59,11 @@ public class ChatMessage {
         this.messageTime = messageTime;
     }
 
-    public boolean isMe() {
-        return isMe;
+    public String getDisplayName() {
+        return displayName;
     }
 
-    public void setMe(boolean me) {
-        isMe = me;
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 }

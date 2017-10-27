@@ -9,6 +9,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 /**
@@ -41,7 +42,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
     public void onBindViewHolder(MessageAdapter.MyViewHolder holder, int position) {
         ChatMessage chatMessage = chatMessages.get(position);
         holder.message.setText(chatMessage.getMessageText());
-        holder.messageTime.setText(chatMessage.getMessageText());
+        holder.messageTime.setText(DateHelper.convertTimeToString(chatMessage.getMessageTime()));
     }
 
     @Override
