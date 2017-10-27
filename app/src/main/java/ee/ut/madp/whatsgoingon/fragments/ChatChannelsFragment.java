@@ -159,9 +159,11 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         }
 
         if (channels.isEmpty()) {
-            channelsStatus.setText(R.string.no_channels_found);
+            channelsStatus.setVisibility(View.VISIBLE);
+            channelsList.setVisibility(View.GONE);
         } else {
-            channelsStatus.setText(R.string.join_channel);
+            channelsStatus.setVisibility(View.GONE);
+            channelsList.setVisibility(View.VISIBLE);
         }
         chatChannelAdapter.notifyDataSetChanged();
     }

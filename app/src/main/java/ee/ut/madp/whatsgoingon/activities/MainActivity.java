@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity
         setUpDrawer();
         setupNavigationHeader();
         setUpInitialFragment();
+        application.startAdvertise();
     }
 
     @Override

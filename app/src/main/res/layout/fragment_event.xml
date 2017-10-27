@@ -1,4 +1,4 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -14,8 +14,12 @@
     <android.support.v7.widget.AppCompatButton
         android:id="@+id/btn_add_event"
         style="@style/ButtonStyle"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/spacing_xlarge"
         android:background="@color/colorPrimary"
+        android:layout_below="@id/calendar_view"
+        android:layout_centerHorizontal="true"
         android:text="@string/btn_add_event" />
 
-</FrameLayout>
+</RelativeLayout>
