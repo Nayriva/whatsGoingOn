@@ -18,4 +18,10 @@
     <dimen name="profile_photo_large_size">100dp</dimen>
     <dimen name="profile_photo_size">80dp</dimen>
     <dimen name="app_bar_layout_height">256dp</dimen>
+    <dimen name="photo_user_chat">50dp</dimen>
+    <dimen name="h1">20sp</dimen>
+    <dimen name="h2">18sp</dimen>
+    <dimen name="h3">16sp</dimen>
+    <dimen name="h4">14sp</dimen>
+    <dimen name="h5">12sp</dimen>
 </resources>

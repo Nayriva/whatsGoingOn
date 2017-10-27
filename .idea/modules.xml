@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/What'sGoingOn.iml" filepath="$PROJECT_DIR$/What'sGoingOn.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/whatsGoingOn.iml" filepath="$PROJECT_DIR$/whatsGoingOn.iml" />
     </modules>

@@ -77,4 +77,9 @@
         <item name="android:src">@drawable/ic_add</item>
     </style>
 
+    <style name="h2">
+        <item name="android:textSize">@dimen/font_size_large</item>
+        <item name="android:textColor">@color/colorTextBlack</item>
+    </style>
+
 </resources>

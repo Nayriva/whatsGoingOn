@@ -10,4 +10,8 @@
     <color name="colorGreyLine">#565555</color>
     <color name="colorRedEnd">#ff766a</color>
     <color name="colorNewMessage">#ffffaa</color>
+    <color name="colorTextBlack">#333333</color>
+    <color name="colorTextHint">#e1e1e1</color>
+    <color name="colorTextInfo">#9b9b9b</color>
+    <color name="colorGreen">#A5DE40</color>
 </resources>

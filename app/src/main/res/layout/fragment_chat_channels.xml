@@ -11,7 +11,7 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/tw_channels_status"
+            android:id="@+id/tv_channels_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/no_channels_found"
@@ -29,14 +29,14 @@
             app:layout_constraintRight_toRightOf="parent" />
 
         <ListView
-            android:id="@+id/lw_channels_list"
+            android:id="@+id/lv_channels_list"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tw_channels_status"
+            app:layout_constraintTop_toBottomOf="@+id/tv_channels_status"
             app:layout_constraintVertical_bias="0.0" />
 
 
