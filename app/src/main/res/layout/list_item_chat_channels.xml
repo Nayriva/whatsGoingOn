@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="90dp">
     <CheckBox
@@ -23,6 +24,18 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/user"/>
+
+        <TextView
+            android:layout_width="12dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="7dp"
+            android:gravity="center"
+            android:background="@drawable/bg_online"
+            android:textColor="@color/colorAccent"
+            android:layout_marginEnd="0dp"
+            android:layout_height="12dp" />
+
 
     </RelativeLayout>
     <LinearLayout
@@ -51,15 +64,7 @@
                 android:textSize="@dimen/h3"
                 android:textColor="@color/colorTextInfo"
                 android:text="@string/message_hint" />
-            <View
-                android:id="@+id/online_indicator"
-                android:layout_toRightOf="@id/tv_user_name"
-                android:layout_alignTop="@id/tv_user_name"
-                android:layout_marginTop="5dp"
-                android:layout_marginLeft="@dimen/spacing_small"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@drawable/bg_online"/>
+
             <TextView
                 android:id="@+id/tv_time"
                 android:layout_width="wrap_content"
@@ -67,7 +72,7 @@
                 android:text="@string/time"
                 android:textColor="@color/colorTextBlack"
                 android:textSize="@dimen/h4"
-                android:layout_alignTop="@id/online_indicator"
+                android:layout_alignTop="@id/tv_user_name"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true" />
         </RelativeLayout>

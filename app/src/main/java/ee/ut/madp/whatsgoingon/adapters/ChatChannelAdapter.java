@@ -65,7 +65,7 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
         TextView channelName;
         TextView lastMessage;
         TextView messageTime;
-        View onlineIndicator;
+       // View onlineIndicator;
 
         public MyViewHolder(View view) {
             super(view);
@@ -73,7 +73,7 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
             channelName = (TextView) view.findViewById(R.id.tv_user_name);
             lastMessage = (TextView) view.findViewById(R.id.tv_last_chat);
             messageTime = (TextView) view.findViewById(R.id.tv_time);
-            onlineIndicator =  view.findViewById(R.id.online_indicator);
+           // onlineIndicator =  view.findViewById(R.id.online_indicator);
             view.setOnClickListener(this);
         }
 

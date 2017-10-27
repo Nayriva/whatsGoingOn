@@ -50,7 +50,7 @@ public class ChatChannelAdapter extends ArrayAdapter<ChatChannel> {
             holder.channelName = (TextView) row.findViewById(R.id.tv_user_name);
             holder.lastMessage = (TextView) row.findViewById(R.id.tv_last_chat);
             holder.messageTime = (TextView) row.findViewById(R.id.tv_time);
-            holder.onlineIndicator =  row.findViewById(R.id.online_indicator);
+            //holder.onlineIndicator =  row.findViewById(R.id.online_indicator);
             //holder.newMessage = (RelativeLayout) row.findViewById(R.id.rl_chat_channel) ;
 
             row.setTag(holder);
