@@ -164,6 +164,9 @@ public class ChatApplication extends Application implements Observable {
         List<ChatMessage> hist = chatHistory.get(sender);
 
         ChatMessage newMessage = new ChatMessage(text, senderName, sender);
+        if (senderName.equals(firebaseAuth.getCurrentUser().getUid())) {
+            newMessage.setMe(true);
+        }
 
         if (hist.size() > HISTORY_MAX) {
             hist.remove(0);

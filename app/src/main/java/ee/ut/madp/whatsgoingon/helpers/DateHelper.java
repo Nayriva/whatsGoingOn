@@ -11,6 +11,7 @@ public class DateHelper {
 
     public static String convertTimeToString(long time) {
         Date date = new Date(time);
+        // TODO if the same day return just time, if the same year just date, otherwise with year
         SimpleDateFormat df2 = new SimpleDateFormat("dd/MM/yy");
         String dateText = df2.format(date);
         return dateText;

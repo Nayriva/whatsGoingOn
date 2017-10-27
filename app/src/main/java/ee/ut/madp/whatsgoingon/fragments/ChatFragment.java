@@ -268,9 +268,7 @@ public class ChatFragment extends Fragment implements Observer {
         messageET.setText("");
         updateHistory();
     }
-    private void setFABListener() {
 
-    }
 
     private void updateHistory() {
         adapter.clear();

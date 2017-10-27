@@ -80,7 +80,18 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
         @Override
         public void onClick(View v) {
             ChatChannel chatChannel = channelList.get(getAdapterPosition());
-            context.startActivity(new Intent(v.getContext(), ConversationActivity.class));
+            //boolean isGroup = application.isGroup(channel.getId());
+//            if (isGroup) {
+//                String[] receivers = application.getGroupReceivers(channel.getId());
+//                fragment.setData(channel, true, receivers);
+//            } else {
+//                fragment.setData(channel, false, null);
+//            }
+            chatChannel.setNewMessage(false);
+            Intent intent = new Intent(v.getContext(), ConversationActivity.class);
+            intent.putExtra("isGroup", false);
+            intent.putExtra("channel", chatChannel);
+            context.startActivity(intent);
         }
     }
 }
