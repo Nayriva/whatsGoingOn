@@ -65,7 +65,6 @@
             android:background="@color/colorPrimary"
             android:text="@string/btn_login" />
 
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -174,5 +174,6 @@
     <string name="no_new_group_member_selected">No new member selected</string>
     <string name="send_message">Send</string>
     <string name="message_hint">Enter your message</string>
+    <string name="btn_add_event">Add event</string>
 
 </resources>
