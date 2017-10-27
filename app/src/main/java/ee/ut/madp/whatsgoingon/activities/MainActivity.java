@@ -191,7 +191,6 @@ public class MainActivity extends AppCompatActivity
             public void onCancelled(DatabaseError databaseError) {
                 Log.w(TAG, "Failed to read value ", databaseError.toException());
                 DialogHelper.showAlertDialog(MainActivity.this, databaseError.toString());
-
             }
         });
     }

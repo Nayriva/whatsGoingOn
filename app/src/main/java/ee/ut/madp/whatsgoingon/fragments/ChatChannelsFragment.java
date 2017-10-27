@@ -46,6 +46,7 @@ import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
+import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.Group;
@@ -82,8 +83,6 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         application.addObserver(this);
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
-
-        downloadGroups();
     }
 
     @Nullable
@@ -99,6 +98,8 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle(R.string.chat_item);
         initialize();
+
+        downloadGroups();
     }
 
     @Override
@@ -121,43 +122,10 @@ public class ChatChannelsFragment extends Fragment implements Observer {
 
     private void getChannels() {
         chatChannelAdapter.clear();
-        Set<String> channels = application.getChannels();
-        for (final String channel: channels) {
-            if (application.isGroup(channel)) {
-                groupsRef.child(channel).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Group groupChannel = dataSnapshot.getValue(Group.class);
-                        if (groupChannel != null) {
-                            chatChannelAdapter.add(new ChatChannel(channel,
-                                    groupChannel.getDisplayName(), groupChannel.getPhoto()));
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        //intentionally left blank
-                    }
-                });
-            } else {
-                usersRef.child(channel).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        User channelOwner = dataSnapshot.getValue(User.class);
-                        if (channelOwner != null) {
-                            chatChannelAdapter.add(new ChatChannel(channel,
-                                    channelOwner.getName(), channelOwner.getPhoto()));
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        //intentionally left blank
-                    }
-                });
-            }
+        Set<ChatChannel> channels = application.getChannels();
+        for (ChatChannel chatChannel : channels) {
+            chatChannelAdapter.add(chatChannel);
         }
-
         if (channels.isEmpty()) {
             channelsStatus.setVisibility(View.VISIBLE);
             channelsList.setVisibility(View.GONE);
@@ -169,6 +137,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void downloadGroups() {
+        DialogHelper.showProgressDialog(getContext(), "Loading chat channels");
         groupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -180,6 +149,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                         }
                     }
                 }
+                DialogHelper.hideProgressDialog();
             }
 
             @Override
@@ -297,28 +267,32 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     @Override
-    public void update(Observable o, String qualifier, String data) {
+    public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
-            case ChatApplication.GROUP_RECEIVERS_CHANGED:
-            case ChatApplication.GROUP_DELETED: {
-                getChannels();
+            //ADDING CHANNELS
+            case ChatApplication.USER_CHANNEL_DISCOVERED: //NEW CHANNEL HAS BEEN DISCOVERED
+            case ChatApplication.GROUP_CHANNEL_DISCOVERED: {
+                //data contains id of channel
+                ChatChannel foundChannel = application.getChannel(data);
+                chatChannelAdapter.add(foundChannel);
+                chatChannelAdapter.notifyDataSetChanged();
             } break;
-            case ChatApplication.MESSAGE_RECEIVED: {
-                String type = ChatHelper.getMessageType(data);
-                String sender = null;
-                if (type.equals("S")) {
-                    sender = ChatHelper.oneToOneMessageSender(data);
-                } else if (type.equals("G")) {
-                    sender = ChatHelper.groupMessageSender(data);
-                }
-
+            //DELETING CHANNELS
+            case ChatApplication.USER_CHANNEL_LEAVING:
+            case ChatApplication.GROUP_DELETED: {
+                //data contains id of channel
                 for (ChatChannel channel : chatChannelAdapter.getItems()) {
-                    if (channel.getId().equals(sender)) {
-                        channel.setNewMessage(true);
+                    if (channel.getId().equals(data)) {
+                        chatChannelAdapter.remove(channel);
                         break;
-                        //TODO maybe show notification
                     }
                 }
+                chatChannelAdapter.notifyDataSetChanged();
+            } break;
+            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+                //data contains received message
+                //TODO add update of last message to list item
             }
         }
     }

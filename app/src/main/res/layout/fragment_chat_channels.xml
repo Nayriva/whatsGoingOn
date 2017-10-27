@@ -28,6 +28,7 @@
             android:layout_below="@id/tv_channels_status"
             android:overScrollFooter="@android:color/transparent"
             android:clipToPadding="false"
+            android:headerDividersEnabled="false"
             android:footerDividersEnabled="false"/>
 
         <android.support.design.widget.FloatingActionButton

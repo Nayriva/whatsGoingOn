@@ -151,8 +151,6 @@
     <string name="hint_university">School</string>
     <string name="hint_work">Work</string>
     <string name="hint_birthday">Birthday</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="gender">Gender</string>
     <string name="title_activity_my_profile">My profile</string>

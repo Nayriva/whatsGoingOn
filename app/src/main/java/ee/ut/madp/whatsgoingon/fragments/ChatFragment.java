@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -121,8 +122,7 @@ public class ChatFragment extends Fragment implements Observer {
             }
             case R.id.group_menu_leave_group: {
                 showLeaveChannelDialog();
-                return true;
-            }
+            } break;
             default:
                 super.onOptionsItemSelected(item);
                 break;
@@ -138,22 +138,24 @@ public class ChatFragment extends Fragment implements Observer {
         Button buttonOk = (Button) dialog.findViewById(R.id.btn_add_group_members_ok);
         Button buttonCancel = (Button) dialog.findViewById(R.id.btn_add_group_members_cancel);
         ListView peopleListView = (ListView) dialog.findViewById(R.id.lv_add_group_members_list);
-        Set<String> channelsNearDevice = application.getChannels();
-        for (String receiver: receivers) {
-            if (channelsNearDevice.contains(receiver)) {
-                channelsNearDevice.remove(receiver);
+        Set<ChatChannel> channelsNearDevice = application.getChannels();
+        for (ChatChannel chatChannel: channelsNearDevice) { //remove groups
+            if (application.isGroup(chatChannel.getId())) {
+                channelsNearDevice.remove(chatChannel);
+            } else {
+                for (String receiver: receivers) { //remove receivers
+                    if (chatChannel.getId().equals(receiver)) {
+                        channelsNearDevice.remove(chatChannel);
+                    }
+                }
             }
-        }
-        for (String channel : channelsNearDevice) {
-            if (application.isGroup(channel)) {
-                channelsNearDevice.remove(channel);
-            }
+
         }
 
         final List<GroupParticipant> possibleParticipants = new ArrayList<>();
 
-        for (String member: channelsNearDevice) {
-            usersRef.child(member).addListenerForSingleValueEvent(new ValueEventListener() {
+        for (ChatChannel member: channelsNearDevice) {
+            usersRef.child(member.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     User user = dataSnapshot.getValue(User.class);
@@ -268,9 +270,6 @@ public class ChatFragment extends Fragment implements Observer {
         messageET.setText("");
         updateHistory();
     }
-    private void setFABListener() {
-
-    }
 
     private void updateHistory() {
         adapter.clear();
@@ -289,33 +288,35 @@ public class ChatFragment extends Fragment implements Observer {
     }
 
     @Override
-    public synchronized void update(Observable o, String qualifier, String data) {
-        switch (qualifier) {
-            case ChatApplication.MESSAGE_RECEIVED: {
-                String type = ChatHelper.getMessageType(data);
-                String sender = null;
-                if (type.equals("S")) {
-                    sender = ChatHelper.oneToOneMessageSender(data);
-                } else if (type.equals("G")) {
-                    sender = ChatHelper.groupMessageSender(data);
-                }
-
+    public synchronized void update(Observable o, int qualifier, String data) {
+        switch(qualifier) {
+            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ChatApplication.GROUP_MESSAGE_RECEIVED:
+            {
                 if (data.equals(chatChannel.getId())) {
                     updateHistory();
                 } else {
-                    //display notification
+                    //TODO show notification of incoming message
                 }
             } break;
             case ChatApplication.GROUP_RECEIVERS_CHANGED: {
-                receivers = ChatHelper.groupAdvertiseMessageReceivers(data);
+                if (data.equals(chatChannel.getId())) {
+                    receivers = application.getGroupReceivers(chatChannel.getId());
+                }
             } break;
             case ChatApplication.GROUP_DELETED: {
-                application.deleteGroup(chatChannel.getId(), true);
-                Fragment fragment = new ChatChannelsFragment();
-                FragmentManager fragmentManager = getFragmentManager();
-                fragmentManager.beginTransaction().replace(R.id.containerView, fragment).commit();
-                Toast.makeText(getContext(), "Group has been deleted", Toast.LENGTH_SHORT).show();
-            } break;
+                if (data.equals(chatChannel.getId())) {
+                    Toast.makeText(getContext(), "Group has been deleted due to too few members...",
+                            Toast.LENGTH_SHORT).show();
+
+                    FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                    fragmentTransaction.replace(R.id.containerView, new ChatChannelsFragment());
+                    fragmentTransaction.addToBackStack(null);
+                    fragmentTransaction.commit();
+                }
+            }
         }
+
     }
 }
