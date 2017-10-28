@@ -177,9 +177,11 @@
     <string name="btn_add_event">Add event</string>
     <string name="new_event_label">New event</string>
     <string name="yesterday_sent">Yesterday at</string>
-    <string name="hint_eventname">Event name</string>
+    <string name="hint_eventname">Name</string>
     <string name="hint_date">Date</string>
     <string name="hint_time">Time</string>
     <string name="hint_description">Description</string>
+    <string name="error_date_past">Date has to be in the future</string>
+    <string name="error_time_past">Time has to be in the future</string>
 
 </resources>

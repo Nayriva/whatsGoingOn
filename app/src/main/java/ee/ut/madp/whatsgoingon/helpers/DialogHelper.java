@@ -2,14 +2,31 @@ package ee.ut.madp.whatsgoingon.helpers;
 
 
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TextInputLayout;
+import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.View;
+import android.widget.DatePicker;
+import android.widget.TimePicker;
+
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
+import java.util.Calendar;
 
 import ee.ut.madp.whatsgoingon.R;
+
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.DATE_FORMAT;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.FULL_DATE_FORMAT;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.TIME_FORMAT;
 
 public class DialogHelper {
 
@@ -62,4 +79,89 @@ public class DialogHelper {
     public static void showInformationMessage(View coordinatorLayout, String message) {
         Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_LONG).show();
     }
+
+    public static void showTimePickerDialog( final Context context, final TextInputLayout timeInputLayout, final TextInputLayout dateInputLayout) {
+
+        final Calendar myCalendar = Calendar.getInstance();
+
+        final int hours = myCalendar.get(Calendar.HOUR_OF_DAY);
+        final int minutes = myCalendar.get(Calendar.MINUTE);
+
+        final DateTime chosenDate = DateHelper.parseDateFromString(dateInputLayout.getEditText().getText().toString());
+        final int year,month, day;
+        if (chosenDate != null) {
+            year = chosenDate.getYear();
+            month = chosenDate.getMonthOfYear();
+            day = chosenDate.getDayOfMonth();
+        } else {
+            year = myCalendar.get(Calendar.YEAR);
+            month = myCalendar.get(Calendar.MONTH);
+            day = myCalendar.get(Calendar.DAY_OF_MONTH);
+        }
+
+        Log.i("TimePicker", "vola se");
+
+
+        TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
+                myCalendar.set(Calendar.YEAR, year);
+                myCalendar.set(Calendar.MONTH, month);
+                myCalendar.set(Calendar.DAY_OF_MONTH, day);
+                myCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                myCalendar.set(Calendar.MINUTE, minute);
+
+                long calendarTime = myCalendar.getTime().getTime();
+
+                DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(TIME_FORMAT);
+                if (chosenDate != null) {
+                    if ((DateHelper.isToday(chosenDate.getMillis()) && !DateHelper.isFutureTime(calendarTime)) ||
+                            DateHelper.isPast(calendarTime)) {
+                        timeInputLayout.setErrorEnabled(true);
+                        timeInputLayout.setError(context.getString(R.string.error_time_past));
+
+                    }
+                }
+
+                timeInputLayout.getEditText().setText(dateTimeFormatter.print(myCalendar.getTime().getTime()));
+
+            }
+        };
+
+        new TimePickerDialog(context, timeSetListener, hours, minutes,
+                DateFormat.is24HourFormat(context)).show();
+
+    }
+
+    public static void showDatePickerDialog(final Context context, final TextInputLayout textInputLayout) {
+        final Calendar myCalendar = Calendar.getInstance();
+        final Calendar c = Calendar.getInstance();
+        int year = c.get(Calendar.YEAR);
+        int month = c.get(Calendar.MONTH);
+        int day = c.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+                myCalendar.set(Calendar.YEAR, year);
+                myCalendar.set(Calendar.MONTH, monthOfYear);
+                myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                if (DateHelper.isPast(myCalendar.getTime().getTime())) {
+                    textInputLayout.setErrorEnabled(true);
+                    textInputLayout.setError(context.getString(R.string.error_date_past));
+                }
+
+                String pattern = DateHelper.isSameYear(myCalendar.getTime().getTime()) ?  DATE_FORMAT: FULL_DATE_FORMAT;
+                DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(pattern);
+
+                textInputLayout.getEditText().setText(dateTimeFormatter.print(myCalendar.getTime().getTime()));
+
+
+            }
+        };
+
+        new DatePickerDialog(context, dateSetListener, year, month, day).show();
+    }
+
 }

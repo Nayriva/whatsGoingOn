@@ -1,12 +1,16 @@
 package ee.ut.madp.whatsgoingon.activities;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import com.mobsandgeeks.saripaar.annotation.NotEmpty;
 
@@ -14,6 +18,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 
 public class NewEventActivity extends AppCompatActivity {
 
@@ -55,6 +60,27 @@ public class NewEventActivity extends AppCompatActivity {
 
     @OnClick(R.id.btn_add_event)
     public void createNewEvent() {
+
+    }
+
+    private void closeKeyboard() {
+        View view = getCurrentFocus();
+        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    @OnClick(R.id.input_time)
+    public void showTimeDialog() {
+        //closeKeyboard();
+        DialogHelper.showTimePickerDialog(this, time, date);
+    }
+
+    @OnClick(R.id.input_date)
+    public void showDateDialog() {
+//        closeKeyboard();        date.setError(null);
+        Log.i("NewEvent", "date se vola");
+        date.setErrorEnabled(false);
+        DialogHelper.showDatePickerDialog(this, date);
 
     }
 
