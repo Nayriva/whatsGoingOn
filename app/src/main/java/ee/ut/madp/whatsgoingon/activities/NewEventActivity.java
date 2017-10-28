@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -72,13 +71,15 @@ public class NewEventActivity extends AppCompatActivity {
     @OnClick(R.id.input_time)
     public void showTimeDialog() {
         //closeKeyboard();
+        time.setError(null);
+        time.setErrorEnabled(false);
         DialogHelper.showTimePickerDialog(this, time, date);
     }
 
     @OnClick(R.id.input_date)
     public void showDateDialog() {
-//        closeKeyboard();        date.setError(null);
-        Log.i("NewEvent", "date se vola");
+//        closeKeyboard();        d
+        date.setError(null);
         date.setErrorEnabled(false);
         DialogHelper.showDatePickerDialog(this, date);
 

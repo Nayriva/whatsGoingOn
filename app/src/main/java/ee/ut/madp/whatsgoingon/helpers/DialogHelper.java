@@ -106,7 +106,7 @@ public class DialogHelper {
             @Override
             public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
                 myCalendar.set(Calendar.YEAR, year);
-                myCalendar.set(Calendar.MONTH, month);
+                myCalendar.set(Calendar.MONTH, month - 1);
                 myCalendar.set(Calendar.DAY_OF_MONTH, day);
                 myCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                 myCalendar.set(Calendar.MINUTE, minute);
