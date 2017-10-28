@@ -2,6 +2,7 @@ package ee.ut.madp.whatsgoingon;
 
 import java.util.Date;
 
+import ee.ut.madp.whatsgoingon.models.Event;
 import ee.ut.madp.whatsgoingon.models.User;
 
 public class ModelFactory {
@@ -14,5 +15,9 @@ public class ModelFactory {
                                           String nationality, String phoneNumber, String school,
                                           String work, Date birthday) {
         return  new User(id, name, email, photo, nationality, phoneNumber, school, work, birthday);
+    }
+
+    public static Event createNewEvent(String id, String name, long dateTime, String description) {
+        return new Event(id, name, description, dateTime);
     }
 }

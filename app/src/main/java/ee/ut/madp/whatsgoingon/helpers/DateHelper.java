@@ -35,6 +35,15 @@ public class DateHelper {
 
     }
 
+    public static DateTime parseTimeFromString(String stringTime) {
+        DateTime parseDate = null;
+        if (!stringTime.isEmpty()) {
+            DateTimeFormatter formatter = DateTimeFormat.forPattern(TIME_FORMAT);
+            parseDate = formatter.parseDateTime(stringTime);
+        }
+        return parseDate;
+    }
+
     /**
      * Creates message timestamp. For today AT 5:20 pm, for yesterday YESTERDAY AT 5:20 otherwise date
      *

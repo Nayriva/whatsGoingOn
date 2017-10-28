@@ -10,16 +10,34 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.mobsandgeeks.saripaar.ValidationError;
+import com.mobsandgeeks.saripaar.Validator;
+import com.mobsandgeeks.saripaar.adapter.ViewDataAdapter;
 import com.mobsandgeeks.saripaar.annotation.NotEmpty;
+import com.mobsandgeeks.saripaar.exception.ConversionException;
+
+import org.joda.time.DateTime;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import ee.ut.madp.whatsgoingon.ModelFactory;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
+import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
+import ee.ut.madp.whatsgoingon.models.Event;
 
-public class NewEventActivity extends AppCompatActivity {
+public class NewEventActivity extends AppCompatActivity implements Validator.ValidationListener {
 
     @NotEmpty
     @BindView(R.id.input_layout_eventname)
@@ -37,12 +55,49 @@ public class NewEventActivity extends AppCompatActivity {
     TextInputEditText dateInput;
     @BindView(R.id.input_time) TextInputEditText timeInput;
     @BindView(R.id.input_description) TextInputEditText descriptionInput;
+    @BindView(R.id.btn_add_event)
+    Button addEventButton;
+
+    private List<TextInputLayout> inputLayoutList;
+    private DatabaseReference eventsRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_event);
         ButterKnife.bind(this);
+
+        setValidation();
+        eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
+    }
+
+    private void setValidation() {
+        Validator validator = new Validator(this);
+        validator.setValidationListener(this);
+
+        validator.registerAdapter(TextInputLayout.class,
+                new ViewDataAdapter<TextInputLayout, String>() {
+                    @Override
+                    public String getData(TextInputLayout flet) throws ConversionException {
+                        if (flet.getEditText() != null) {
+                            return flet.getEditText().getText().toString();
+                        } else {
+                            return null;
+                        }
+                    }
+                }
+        );
+
+        inputLayoutList = new ArrayList<TextInputLayout>() {{
+            add(eventName);
+            add(date);
+            add(time);
+        }};
+
+        MyTextWatcherHelper.setTextWatcherListeners(inputLayoutList, validator);
+
+        addEventButton.setEnabled(false);
+        addEventButton.setAlpha(0.7f);
     }
 
     //
@@ -59,7 +114,19 @@ public class NewEventActivity extends AppCompatActivity {
 
     @OnClick(R.id.btn_add_event)
     public void createNewEvent() {
+        String eventName = String.valueOf(eventNameInput.getText());
+        String description = String.valueOf(descriptionInput.getText());
+        DateTime date = DateHelper.parseDateFromString(String.valueOf(dateInput.getText()));
+        DateTime time = DateHelper.parseTimeFromString(String.valueOf(timeInput.getText()));
+        date = date.withTime(time.getHourOfDay(), time.getMinuteOfHour(), time.getSecondOfMinute(), time.getMillisOfSecond());
+        storeNewEvent(ModelFactory.createNewEvent(null, eventName, date.getMillis(), description));
+    }
 
+
+    private void storeNewEvent(Event event) {
+        String id = eventsRef.push().getKey();
+        event.setId(id);
+        eventsRef.child(id).setValue(event);
     }
 
     private void closeKeyboard() {
@@ -78,7 +145,7 @@ public class NewEventActivity extends AppCompatActivity {
 
     @OnClick(R.id.input_date)
     public void showDateDialog() {
-//        closeKeyboard();        d
+//        closeKeyboard();
         date.setError(null);
         date.setErrorEnabled(false);
         DialogHelper.showDatePickerDialog(this, date);
@@ -86,4 +153,32 @@ public class NewEventActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onValidationSucceeded() {
+        addEventButton.setEnabled(true);
+        addEventButton.setAlpha(1);
+        MyTextWatcherHelper.clearAllInputs(inputLayoutList);
+    }
+
+    @Override
+    public void onValidationFailed(List<ValidationError> errors) {
+        if (date.isErrorEnabled() || time.isErrorEnabled()) {
+            inputLayoutList.remove(time);
+            inputLayoutList.remove(date);
+            MyTextWatcherHelper.clearAllInputs(inputLayoutList);
+        }
+
+        for (ValidationError error : errors) {
+            View view = error.getView();
+            String message = error.getCollatedErrorMessage(this);
+
+            if (view instanceof TextInputLayout) {
+                ((TextInputLayout) view).setErrorEnabled(true);
+                ((TextInputLayout) view).setError(message);
+            } else {
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            }
+        }
+        addEventButton.setAlpha(0.7f);
+    }
 }
