@@ -7,6 +7,9 @@ import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import ee.ut.madp.whatsgoingon.R;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.DATE_FORMAT;
@@ -33,6 +36,16 @@ public class DateHelper {
         }
         return parseDate;
 
+    }
+
+    public static Date removeTimeFromDate(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
 
     public static DateTime parseTimeFromString(String stringTime) {

@@ -60,6 +60,8 @@ public class NewEventActivity extends AppCompatActivity implements Validator.Val
 
     private List<TextInputLayout> inputLayoutList;
     private DatabaseReference eventsRef;
+    private Intent data;
+    private boolean saved = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,7 +107,8 @@ public class NewEventActivity extends AppCompatActivity implements Validator.Val
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            Intent data = new Intent();
+            data = new Intent();
+           // if (saved )
             setResult(Activity.RESULT_OK, data);
             finish();
         }
@@ -127,6 +130,8 @@ public class NewEventActivity extends AppCompatActivity implements Validator.Val
         String id = eventsRef.push().getKey();
         event.setId(id);
         eventsRef.child(id).setValue(event);
+        saved = true;
+
     }
 
     private void closeKeyboard() {

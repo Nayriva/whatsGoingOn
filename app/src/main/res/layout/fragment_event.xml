@@ -2,13 +2,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="ee.ut.madp.whatsgoingon.fragments.EventFragment">
 
     <com.imanoweb.calendarview.CustomCalendarView
         android:id="@+id/calendar_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#ffffff">
+        app:currentDayOfMonthColor="@color/colorPrimaryDark"
+        android:background="@color/colorWhite">
     </com.imanoweb.calendarview.CustomCalendarView>
 
     <android.support.v7.widget.AppCompatButton
