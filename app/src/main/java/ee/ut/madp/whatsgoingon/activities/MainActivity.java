@@ -31,6 +31,8 @@ import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.chat.Observable;
+import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
 import ee.ut.madp.whatsgoingon.fragments.EventFragment;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
@@ -43,7 +45,7 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENTS_REQUEST_
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SETTINGS_REQUEST_CODE;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, Observer {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity
     private ChatApplication application;
     private FirebaseAuth firebaseAuth;
     private DatabaseReference firebaseDatabase;
+    private Class fragmentClass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,11 +69,10 @@ public class MainActivity extends AppCompatActivity
         setUpNavigationView();
         setUpDrawer();
         setupNavigationHeader();
-        setUpInitialFragment("Chat");
+        setUpFragment("Chat");
         application.startAdvertise();
 
     }
-
 
     @Override
     public void onBackPressed() {
@@ -88,19 +90,33 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == SETTINGS_REQUEST_CODE) {
+                setUpFragment("Chat");
+            } else if (requestCode == EVENTS_REQUEST_CODE) {
+                setUpFragment("Events");
+            }
+        }
+    }
+
     private void setUpVariables() {
         application = (ChatApplication) getApplication();
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
-    private void setUpInitialFragment(String type) {
+    private void setUpFragment(String type) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment fragment = null;
         try {
             if (type.equalsIgnoreCase("Chat")) {
+                fragmentClass = ChatChannelsFragment.class;
                 fragment = ChatChannelsFragment.class.newInstance();
             } else if (type.equalsIgnoreCase("Events")) {
+                fragmentClass = EventFragment.class;
                 fragment = EventFragment.class.newInstance();
             }
 
@@ -235,14 +251,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            if (requestCode == SETTINGS_REQUEST_CODE) {
-                setUpInitialFragment("Chat");
-            } else if (requestCode == EVENTS_REQUEST_CODE) {
-                setUpInitialFragment("Events");
-            }
+    public synchronized void update(Observable o, int qualifier, String data) {
+        switch (qualifier) {
+            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+                if (fragmentClass.equals(ChatChannelsFragment.class)) {
+                    //TODO add message to the views
+                } else if (fragmentClass.equals(EventFragment.class)) {
+                    //TODO show notification of incoming message
+                }
+            } break;
         }
     }
 }

@@ -29,12 +29,16 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.chat.Observable;
+import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.User;
 
-public class MyProfileActivity extends AppCompatActivity {
+public class MyProfileActivity extends AppCompatActivity implements Observer {
 
+    private ChatApplication application;
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase firebaseDatabase;
     private Resources res;
@@ -64,6 +68,8 @@ public class MyProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_profile);
 
+        application = (ChatApplication) getApplication();
+        application.addObserver(this);
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
         userReference = firebaseDatabase.getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS)
@@ -83,12 +89,28 @@ public class MyProfileActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        application.deleteObserver(this);
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Bitmap bitmap = ImagePicker.getImageFromResult(this, requestCode, resultCode, data);
         if (bitmap != null) {
             profilePhoto.setImageBitmap(bitmap);
             photo = ImageHelper.encodeBitmap(bitmap);
             photoChanged = true;
+        }
+    }
+
+    @Override
+    public void update(Observable o, int qualifier, String data) {
+        switch (qualifier) {
+            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+                //TODO show notification
+            } break;
         }
     }
 

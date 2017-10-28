@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,7 +62,6 @@ public class EventFragment extends Fragment {
                         eventDays.add(DateHelper.removeTimeFromDate(new Date(event.getDateTime())));
                     }
                 }
-
                 setDaysWithEvents();
             }
 
@@ -78,11 +78,8 @@ public class EventFragment extends Fragment {
             decorators.add(new EventColorDecorator());
             calendarView.setDecorators(decorators);
             calendarView.refreshCalendar(currentCalendar);
-
         }
-
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -121,7 +118,7 @@ public class EventFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    class EventColorDecorator implements DayDecorator {
+    private class EventColorDecorator implements DayDecorator {
         private long day;
 
         @RequiresApi(api = Build.VERSION_CODES.M)
@@ -130,19 +127,14 @@ public class EventFragment extends Fragment {
             for (Date eventDay : eventDays) {
                 if (DateHelper.removeTimeFromDate(dayView.getDate()).equals(eventDay)) {
                     dayView.setTextColor(Color.WHITE);
-                    dayView.setBackgroundColor(getActivity().getColor(R.color.colorAccent));
+                    dayView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
                 }
 
                 if (DateHelper.isToday(dayView.getDate().getTime())) {
                     dayView.setPaintFlags(dayView.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
                     dayView.setTextColor(Color.WHITE);
-
                 }
             }
-
         }
-
     }
-
-
 }

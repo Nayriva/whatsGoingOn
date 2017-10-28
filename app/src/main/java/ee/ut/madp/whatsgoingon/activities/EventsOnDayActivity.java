@@ -16,30 +16,35 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.adapters.EventAdapter;
+import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.chat.Observable;
+import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.models.Event;
 
-public class EventsOnDayActivity extends AppCompatActivity {
+public class EventsOnDayActivity extends AppCompatActivity implements Observer {
 
-    @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
+    @BindView(R.id.recyclerView) RecyclerView recyclerView;
 
+    private ChatApplication application;
     private Intent data;
     private List<Event> eventList = new ArrayList<>();
     private EventAdapter eventAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_events_on_day);
         ButterKnife.bind(this);
+
+        application = (ChatApplication) getApplication();
+        application.addObserver(this);
         setupRecyclerView();
     }
 
-    private void setupRecyclerView() {
-        eventAdapter = new EventAdapter(this, eventList);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(eventAdapter);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        application.deleteObserver(this);
     }
 
     @Override
@@ -52,6 +57,24 @@ public class EventsOnDayActivity extends AppCompatActivity {
             finish();
         }
         return true;
+    }
+
+    @Override
+    public void update(Observable o, int qualifier, String data) {
+        switch (qualifier) {
+            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+                //TODO show notification
+            } break;
+        }
+    }
+
+    private void setupRecyclerView() {
+        eventAdapter = new EventAdapter(this, eventList);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(eventAdapter);
     }
 
     private void getAllEventsOnDay() {

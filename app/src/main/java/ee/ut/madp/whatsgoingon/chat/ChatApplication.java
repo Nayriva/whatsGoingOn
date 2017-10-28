@@ -8,6 +8,11 @@ import android.util.Log;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.alljoyn.bus.BusAttachment;
 import org.alljoyn.bus.BusException;
@@ -24,8 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
+import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
+import ee.ut.madp.whatsgoingon.models.Group;
+import ee.ut.madp.whatsgoingon.models.User;
 
 /**
  * Created by dominikf on 16. 10. 2017.
@@ -35,7 +44,10 @@ public class ChatApplication extends Application implements Observable {
 
     public static final String TAG = "chat.ChatApp";
     private FirebaseAuth firebaseAuth;
+    private DatabaseReference firebaseGroupsRef;
+    private DatabaseReference firebaseUsersRef;
 
+    private Map<String, ChatChannel> channelsNearDevice;
     private Map<String, List<ChatMessage>> chatHistory;
     private Map<String, String[]> groupChatsReceiversMap;
 
@@ -45,18 +57,28 @@ public class ChatApplication extends Application implements Observable {
 
     private final int HISTORY_MAX = 20;
     private static final int MESSAGE_CHAT = 1;
-    public static final String MESSAGE_RECEIVED = "MESSAGE RECEIVED";
-    public static final String GROUP_RECEIVERS_CHANGED = "GROUP_RECEIVERS_CHANGED";
-    public static final String GROUP_DELETED = "GROUP_DELETED";
+    public static final int GROUP_MESSAGE_RECEIVED = 1;
+    public static final int ONE_TO_ONE_MESSAGE_RECEIVED = 2;
+    public static final int GROUP_RECEIVERS_CHANGED = 3;
+    public static final int GROUP_CHANNEL_DISCOVERED = 4;
+    public static final int GROUP_DELETED = 5;
+    public static final int USER_CHANNEL_DISCOVERED = 6;
+    public static final int USER_CHANNEL_LEAVING = 7;
 
     private List<Observer> mObservers;
 
     public void checkIn() {
+        FirebaseApp.initializeApp(this);
+        firebaseGroupsRef = FirebaseDatabase.getInstance()
+                .getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
+        firebaseUsersRef = FirebaseDatabase.getInstance()
+                .getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
+
         chatHistory = new HashMap<>();
         groupChatsReceiversMap = new HashMap<>();
-        FirebaseApp.initializeApp(this);
         firebaseAuth = FirebaseAuth.getInstance();
         mObservers = new ArrayList<>();
+        channelsNearDevice = new HashMap<>();
         setUpAdvertising();
     }
 
@@ -68,7 +90,7 @@ public class ChatApplication extends Application implements Observable {
                 String msg = ChatHelper.advertiseMessage(firebaseAuth.getCurrentUser().getUid());
                 Message message = mBusHandler.obtainMessage(BusHandlerCallback.CHAT, msg);
                 mBusHandler.sendMessage(message);
-                advertiseHandler.postDelayed(this, 2000);
+                advertiseHandler.postDelayed(this, 10000);
             }
         };
     }
@@ -79,6 +101,7 @@ public class ChatApplication extends Application implements Observable {
 
     public void stopAdvertise() {
         advertiseHandler.removeCallbacks(advertiseCode);
+        sendMessage(ChatHelper.cancelAdvertiseMessage(firebaseAuth.getCurrentUser().getUid()));
     }
 
     private Handler mHandler = new Handler(new Handler.Callback() {
@@ -90,63 +113,22 @@ public class ChatApplication extends Application implements Observable {
                 String messageType = ChatHelper.getMessageType(receivedMsg);
                 switch (messageType) {
                     case "S": {
-                        String messageReceiver = ChatHelper.oneToOneMessageReceiver(receivedMsg);
-                        String sender = ChatHelper.oneToOneMessageSender(receivedMsg);
-                        if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
-                            return true;
-                        } else if (!messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
-                            return true;
-                        }
-                        storeOneToOneMessage(receivedMsg);
-                        notifyObservers(MESSAGE_RECEIVED, sender);
-                    }
-                    break;
+                        dealWithOneToOneMessage(receivedMsg);
+                    } break;
                     case "G": {
-                        String[] messageReceivers = ChatHelper.groupMessageReceivers(receivedMsg);
-                        String sender = ChatHelper.groupMessageSender(receivedMsg);
-                        if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
-                            return true;
-                        }
-
-                        boolean found = false;
-                        for (String messageReceiver : messageReceivers) {
-                            if (messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
-                                found = true;
-                            }
-                        }
-                        if (!found) {
-                            return true;
-                        }
-                        storeGroupMessage(receivedMsg);
-                        notifyObservers(MESSAGE_RECEIVED, sender);
-                    }
-                    break;
+                        dealWithGroupMessage(receivedMsg);
+                    } break;
                     case "A": {
-                        String uid = ChatHelper.advertiseMessageDisplayName(receivedMsg);
-                        if (!chatHistory.containsKey(uid)) {
-                            chatHistory.put(uid, new ArrayList<ChatMessage>());
-                        }
-                    }
-                    break;
+                        dealWithAdvertiseMessage(receivedMsg);
+                    } break;
                     case "AG": {
-                        String gid = ChatHelper.groupAdvertiseMessageId(receivedMsg);
-                        String[] receivers = ChatHelper.groupAdvertiseMessageReceivers(receivedMsg);
-                        boolean found = false;
-                        for (String messageReceiver : receivers) {
-                            if (messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
-                                found = true;
-                            }
-                        }
-                        if (!found) {
-                            return true;
-                        }
-                        chatHistory.put(gid, new ArrayList<ChatMessage>());
-                        groupChatsReceiversMap.put(gid, receivers);
-                        notifyObservers(GROUP_RECEIVERS_CHANGED, receivedMsg);
-                    }
-                    break;
+                        dealWithGroupAdvertiseMessage(receivedMsg);
+                    } break;
+                    case "CA": {
+                        dealWithCancelAdvertiseMessage(receivedMsg);
+                    } break;
                     default:
-                        return true;
+                        break;
                 }
                 return true;
             }
@@ -154,29 +136,95 @@ public class ChatApplication extends Application implements Observable {
         }
     });
 
-    private void storeOneToOneMessage(String receivedMsg) {
-        String sender = ChatHelper.oneToOneMessageSender(receivedMsg);
-        if (! chatHistory.containsKey(sender)) {
-            chatHistory.put(sender, new ArrayList<ChatMessage>());
+    private void dealWithCancelAdvertiseMessage(String receivedMsg) {
+        String sender = ChatHelper.cancelAdvertiseMessageSender(receivedMsg);
+        if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
+            return;
         }
-        String text = ChatHelper.oneToOneMessageText(receivedMsg);
-        String senderName = ChatHelper.oneToOneMessageSenderDisplayName(receivedMsg);
-        List<ChatMessage> hist = chatHistory.get(sender);
+        String channelId = ChatHelper.groupAdvertiseMessageId(receivedMsg);
+        notifyObservers(USER_CHANNEL_LEAVING, channelId);
+    }
 
-        ChatMessage newMessage = new ChatMessage(text, senderName, sender);
-        if (senderName.equals(firebaseAuth.getCurrentUser().getUid())) {
-            newMessage.setMe(true);
+    private void dealWithGroupAdvertiseMessage(String receivedMsg) {
+        final String gid = ChatHelper.groupAdvertiseMessageId(receivedMsg);
+        if (channelsNearDevice.containsKey(gid)) {
+            return;
+        }
+        firebaseGroupsRef.child(gid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Group group = dataSnapshot.getValue(Group.class);
+                if (group == null) {
+                    return;
+                }
+                ChatChannel newGroupChannel = new ChatChannel(group.getId(), group.getDisplayName(),
+                        group.getPhoto(), true);
+                channelsNearDevice.put(newGroupChannel.getId(), newGroupChannel);
+                groupChatsReceiversMap.put(newGroupChannel.getId(),
+                        group.getReceivers().toArray(new String[0]));
+                //TODO download history from firebase
+                chatHistory.put(newGroupChannel.getId(), new ArrayList<ChatMessage>());
+                notifyObservers(GROUP_CHANNEL_DISCOVERED, gid);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                //left blank intentionally
+            }
+        });
+    }
+
+    private void dealWithAdvertiseMessage(String receivedMsg) {
+        final String uid = ChatHelper.advertiseMessageDisplayName(receivedMsg);
+        if (firebaseAuth.getCurrentUser().getUid().equals(uid) || channelsNearDevice.containsKey(uid)) {
+            return;
         }
 
-        if (hist.size() > HISTORY_MAX) {
-            hist.remove(0);
-            //TODO store messages to DB
+        firebaseUsersRef.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                if (user == null) {
+                    return;
+                }
+                ChatChannel newUserChannel = new ChatChannel(user.getId(), user.getName(), user.getPhoto(), false);
+                channelsNearDevice.put(user.getId(), newUserChannel);
+                //TODO download history from firebase
+                chatHistory.put(user.getId(), new ArrayList<ChatMessage>());
+                notifyObservers(USER_CHANNEL_DISCOVERED, uid);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                //left blank intentionally
+            }
+        });
+    }
+
+    private void dealWithGroupMessage(String receivedMsg) {
+        String[] messageReceivers = ChatHelper.groupMessageReceivers(receivedMsg);
+        String sender = ChatHelper.groupMessageSender(receivedMsg);
+        if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
+            return;
         }
-        hist.add(newMessage);
+
+        boolean found = false;
+        for (String messageReceiver : messageReceivers) {
+            if (messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return;
+        }
+        storeGroupMessage(receivedMsg);
+        String gid = ChatHelper.groupMessageGID(receivedMsg);
+        notifyObservers(GROUP_MESSAGE_RECEIVED, gid);
     }
 
     private void storeGroupMessage(String receivedMsg) {
-        String group = ChatHelper.groupMessageDisplayName(receivedMsg);
+        String group = ChatHelper.groupMessageGID(receivedMsg);
         if (! chatHistory.containsKey(group)) {
             chatHistory.put(group, new ArrayList<ChatMessage>());
             String[] receivers = ChatHelper.groupMessageReceivers(receivedMsg);
@@ -195,12 +243,41 @@ public class ChatApplication extends Application implements Observable {
         hist.add(newMessage);
     }
 
-    public boolean isGroup(String groupName) {
-        return groupChatsReceiversMap.containsKey(groupName);
+    private void dealWithOneToOneMessage(String receivedMsg) {
+        String messageReceiver = ChatHelper.oneToOneMessageReceiver(receivedMsg);
+        String sender = ChatHelper.oneToOneMessageSender(receivedMsg);
+        if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
+            return;
+        } else if (!messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
+            return;
+        }
+        storeOneToOneMessage(receivedMsg);
+        notifyObservers(ONE_TO_ONE_MESSAGE_RECEIVED, sender);
     }
 
-    public synchronized String[] getGroupReceivers(String groupName) {
-        return groupChatsReceiversMap.get(groupName);
+    private void storeOneToOneMessage(String receivedMsg) {
+        String sender = ChatHelper.oneToOneMessageSender(receivedMsg);
+        if (! chatHistory.containsKey(sender)) {
+            chatHistory.put(sender, new ArrayList<ChatMessage>());
+        }
+        String text = ChatHelper.oneToOneMessageText(receivedMsg);
+        String senderName = ChatHelper.oneToOneMessageSenderDisplayName(receivedMsg);
+        List<ChatMessage> hist = chatHistory.get(sender);
+
+        ChatMessage newMessage = new ChatMessage(text, senderName, sender);
+        if (hist.size() > HISTORY_MAX) {
+            hist.remove(0);
+            //TODO store messages to DB
+        }
+        hist.add(newMessage);
+    }
+
+    public boolean isGroup(String gid) {
+        return groupChatsReceiversMap.containsKey(gid);
+    }
+
+    public synchronized String[] getGroupReceivers(String gid) {
+        return groupChatsReceiversMap.get(gid);
     }
 
     public void sendMessage(String message) {
@@ -210,15 +287,11 @@ public class ChatApplication extends Application implements Observable {
                 String channel = ChatHelper.oneToOneMessageReceiver(message);
                 String name = ChatHelper.oneToOneMessageSenderDisplayName(message);
                 String text = ChatHelper.oneToOneMessageText(message);
-                String senderId = ChatHelper.oneToOneMessageSender(message);
                 if (! chatHistory.containsKey(channel)) {
                     chatHistory.put(channel, new ArrayList<ChatMessage>());
                 }
                 List<ChatMessage> hist = chatHistory.get(channel);
                 ChatMessage newMessage = new ChatMessage(text, name, channel);
-                if (firebaseAuth.getCurrentUser().getUid().equals(senderId)) {
-                    newMessage.setMe(true);
-                }
                 if (hist.size() > HISTORY_MAX) {
                     hist.remove(0);
                     //TODO store messages to DB
@@ -242,10 +315,10 @@ public class ChatApplication extends Application implements Observable {
         return copy;
     }
 
-    public synchronized Set<String> getChannels() {
-        Set<String> channelsCopy = new HashSet<>();
-        for (String channel : chatHistory.keySet()) {
-            channelsCopy.add(new String(channel.getBytes()));
+    public synchronized Set<ChatChannel> getChannels() {
+        Set<ChatChannel> channelsCopy = new HashSet<>();
+        for (ChatChannel channel : channelsNearDevice.values()) {
+            channelsCopy.add(channel);
         }
         return channelsCopy;
     }
@@ -283,6 +356,10 @@ public class ChatApplication extends Application implements Observable {
         sendMessage(ChatHelper.groupAdvertiseMessage(
                 gId, receivers
         ));
+    }
+
+    public ChatChannel getChannel(String channelId) {
+        return channelsNearDevice.get(channelId);
     }
 
     /* The class that is our AllJoyn service.  It implements the ChatInterface. */
@@ -392,7 +469,7 @@ public class ChatApplication extends Application implements Observable {
         mObservers.remove(obs);
     }
 
-    private void notifyObservers(String arg, String data) {
+    private void notifyObservers(int arg, String data) {
         for (Observer obs : mObservers) {
             obs.update(this, arg, data);
         }

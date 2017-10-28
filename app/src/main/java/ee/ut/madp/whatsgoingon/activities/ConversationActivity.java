@@ -89,18 +89,52 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
 
         updateHistory();
-
     }
 
-
-    private void setupRecyclerView() {
-        messageAdapter = new MessageAdapter(this, chatMessageList);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(messageAdapter);
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.group_menu_add_member: {
+                showAddMemberDialog();
+                return true;
+            }
+            case R.id.group_menu_leave_group: {
+                showLeaveChannelDialog();
+                return true;
+            }
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
+    @Override
+    public synchronized void update(Observable o, int qualifier, String data) {
+        switch(qualifier) {
+            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ChatApplication.GROUP_MESSAGE_RECEIVED:
+            {
+                if (data.equals(chatChannel.getId())) {
+                    updateHistory();
+                } else {
+                    //TODO show notification of incoming message
+                }
+            } break;
+            case ChatApplication.GROUP_RECEIVERS_CHANGED: {
+                if (data.equals(chatChannel.getId())) {
+                    receivers = application.getGroupReceivers(chatChannel.getId());
+                }
+            } break;
+            case ChatApplication.GROUP_DELETED: {
+                if (data.equals(chatChannel.getId())) {
+                    Toast.makeText(ConversationActivity.this, "Group has been deleted due to too few members...",
+                            Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            } break;
+            default:
+                break;
+        }
+    }
 
     @OnClick(R.id.bt_send)
     public void sendMessage() {
@@ -119,84 +153,46 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         updateHistory();
     }
 
+    private void setupRecyclerView() {
+        messageAdapter = new MessageAdapter(this, chatMessageList);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(messageAdapter);
+    }
+
     private void updateHistory() {
         chatMessageList.clear();
         chatMessageList.addAll(application.getHistory(chatChannel.getId()));
         messageAdapter.notifyDataSetChanged();
     }
 
-
-    @Override
-    public void update(Observable o, String qualifier, String data) {
-        switch (qualifier) {
-            case ChatApplication.MESSAGE_RECEIVED: {
-                String type = ChatHelper.getMessageType(data);
-                String sender = null;
-                if (type.equals("S")) {
-                    sender = ChatHelper.oneToOneMessageSender(data);
-                } else if (type.equals("G")) {
-                    sender = ChatHelper.groupMessageSender(data);
-                }
-
-                if (data.equals(chatChannel.getId())) {
-                    updateHistory();
-                } else {
-                    //display notification
-                }
-            } break;
-            case ChatApplication.GROUP_RECEIVERS_CHANGED: {
-                receivers = ChatHelper.groupAdvertiseMessageReceivers(data);
-            } break;
-            case ChatApplication.GROUP_DELETED: {
-                application.deleteGroup(chatChannel.getId(), true);
-                Toast.makeText(ConversationActivity.this, "Group has been deleted", Toast.LENGTH_SHORT).show();
-            } break;
-        }
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.group_menu_add_member: {
-                showAddMemberDialog();
-                return true;
-            }
-            case R.id.group_menu_leave_group: {
-                showLeaveChannelDialog();
-                return true;
-            }
-            default:
-                super.onOptionsItemSelected(item);
-                break;
-        }
-        return false;
-    }
-
     private void showAddMemberDialog() {
-        final Dialog dialog = new Dialog(this);
+        final Dialog dialog = new Dialog(ConversationActivity.this);
         dialog.setContentView(R.layout.dialog_add_group_member);
         dialog.setTitle(add_members);
 
         Button buttonOk = (Button) dialog.findViewById(R.id.btn_add_group_members_ok);
         Button buttonCancel = (Button) dialog.findViewById(R.id.btn_add_group_members_cancel);
         ListView peopleListView = (ListView) dialog.findViewById(R.id.lv_add_group_members_list);
-        Set<String> channelsNearDevice = application.getChannels();
-        for (String receiver: receivers) {
-            if (channelsNearDevice.contains(receiver)) {
-                channelsNearDevice.remove(receiver);
+        Set<ChatChannel> channelsNearDevice = application.getChannels();
+        for (ChatChannel chatChannel: channelsNearDevice) { //remove groups
+            if (application.isGroup(chatChannel.getId())) {
+                channelsNearDevice.remove(chatChannel);
+            } else {
+                for (String receiver: receivers) { //remove receivers
+                    if (chatChannel.getId().equals(receiver)) {
+                        channelsNearDevice.remove(chatChannel);
+                    }
+                }
             }
-        }
-        for (String channel : channelsNearDevice) {
-            if (application.isGroup(channel)) {
-                channelsNearDevice.remove(channel);
-            }
+
         }
 
         final List<GroupParticipant> possibleParticipants = new ArrayList<>();
 
-        for (String member: channelsNearDevice) {
-            usersRef.child(member).addListenerForSingleValueEvent(new ValueEventListener() {
+        for (ChatChannel member: channelsNearDevice) {
+            usersRef.child(member.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     User user = dataSnapshot.getValue(User.class);
@@ -210,7 +206,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
                 }
             });
         }
-        final GroupParticipantsAdapter adapter = new GroupParticipantsAdapter(this,
+        final GroupParticipantsAdapter adapter = new GroupParticipantsAdapter(ConversationActivity.this,
                 R.layout.dialog_group_list_item, possibleParticipants);
         peopleListView.setAdapter(adapter);
 

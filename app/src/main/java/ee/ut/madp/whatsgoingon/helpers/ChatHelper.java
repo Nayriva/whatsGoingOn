@@ -5,14 +5,15 @@ package ee.ut.madp.whatsgoingon.helpers;
  *
  * Structure of messages:
  *  ADVERTISE_MESSAGE: A~&&~id
+ *  CANCEL_ADVERTISE_MESSAGE: C~&&~id
  *  GROUP_ADVERTISE_MESSAGE: AG~&&~groupId~&&~groupDisplayName~&&~receiver1~&~&~receiver2~&~&~...~&~&~receiverX
  *  ONE_TO_ONE_MESSAGE: S~&&~senderId~&&~senderDisplayName~&&~receiverId~&&~message_text
  *  GROUP_MESSAGE: G~&&~senderId~&&~senderDisplayName~&&~groupName~&&~
  *                  receiver1~&~&~receiver2~&~&~...~&~&~receiverX~&&~message_text
  *
+ *
  * Created by dominikf on 16. 10. 2017.
  *
- * //TODO add javaDoc
  */
 
 public class ChatHelper {
@@ -88,7 +89,7 @@ public class ChatHelper {
     //GROUP
 
     public static String groupMessage(String sender, String authorDisplayName,
-                                      String displayName, String[] receivers, String text ) {
+                                      String gid, String[] receivers, String text ) {
         StringBuilder message = new StringBuilder();
         message.append("G");
         message.append(delimiter);
@@ -96,7 +97,7 @@ public class ChatHelper {
         message.append(delimiter);
         message.append(authorDisplayName);
         message.append(delimiter);
-        message.append(displayName);
+        message.append(gid);
         message.append(delimiter);
         message.append(receivers[0]);
         for (int i = 1; i < receivers.length; i++) {
@@ -123,7 +124,7 @@ public class ChatHelper {
         return parts[2];
     }
 
-    public static String groupMessageDisplayName(String receivedMessage) {
+    public static String groupMessageGID(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
         return parts[3];
     }
@@ -139,6 +140,7 @@ public class ChatHelper {
     }
 
     //ADVERTISE
+
     public static String advertiseMessage(String displayName) {
         return "A" +
                 delimiter +
@@ -156,6 +158,7 @@ public class ChatHelper {
     }
 
     //GROUP ADVERTISE
+
     public static String groupAdvertiseMessage(String id, String[] receivers) {
         String msg = "AG" +
                 delimiter +
@@ -170,6 +173,7 @@ public class ChatHelper {
         msg = msg + stringBuilder.toString();
         return msg;
     }
+
     //COMMON
 
     public static String getMessageType(String receivedMessage) {
@@ -185,5 +189,18 @@ public class ChatHelper {
     public static String[] groupAdvertiseMessageReceivers(String receivedMsg) {
         String[] parts = receivedMsg.split(delimiter);
         return parts[2].split(groupReceiversDelimiter);
+    }
+
+    //CANCEL ADVERTISE
+
+    public static String cancelAdvertiseMessage(String id) {
+        return "CA" +
+                delimiter +
+                id;
+    }
+
+    public static String cancelAdvertiseMessageSender(String receivedMsg) {
+        String[] parts = receivedMsg.split(delimiter);
+        return parts[1];
     }
 }

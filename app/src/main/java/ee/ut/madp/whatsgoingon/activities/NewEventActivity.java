@@ -31,37 +31,37 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.ModelFactory;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.chat.Observable;
+import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
 import ee.ut.madp.whatsgoingon.models.Event;
 
-public class NewEventActivity extends AppCompatActivity implements Validator.ValidationListener {
+public class NewEventActivity extends AppCompatActivity
+        implements Validator.ValidationListener, Observer {
 
     @NotEmpty
-    @BindView(R.id.input_layout_eventname)
-    TextInputLayout eventName;
+    @BindView(R.id.input_layout_eventname) TextInputLayout eventName;
     @NotEmpty
-    @BindView(R.id.input_layout_date)
-    TextInputLayout date;
+    @BindView(R.id.input_layout_date) TextInputLayout date;
     @NotEmpty
     @BindView(R.id.input_layout_time) TextInputLayout time;
 
-
-    @BindView(R.id.input_eventname)
-    TextInputEditText eventNameInput;
-    @BindView(R.id.input_date)
-    TextInputEditText dateInput;
+    @BindView(R.id.input_eventname) TextInputEditText eventNameInput;
+    @BindView(R.id.input_date) TextInputEditText dateInput;
     @BindView(R.id.input_time) TextInputEditText timeInput;
     @BindView(R.id.input_description) TextInputEditText descriptionInput;
-    @BindView(R.id.btn_add_event)
-    Button addEventButton;
+    @BindView(R.id.btn_add_event) Button addEventButton;
 
     private List<TextInputLayout> inputLayoutList;
     private DatabaseReference eventsRef;
     private Intent data;
     private boolean saved = false;
+
+    private ChatApplication application;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,8 +69,94 @@ public class NewEventActivity extends AppCompatActivity implements Validator.Val
         setContentView(R.layout.activity_new_event);
         ButterKnife.bind(this);
 
+        application = (ChatApplication) getApplication();
+        application.addObserver(this);
         setValidation();
         eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        application.deleteObserver(this);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            data = new Intent();
+           // if (saved )
+            setResult(Activity.RESULT_OK, data);
+            finish();
+        }
+        return true;
+    }
+
+    @Override
+    public void onValidationSucceeded() {
+        addEventButton.setEnabled(true);
+        addEventButton.setAlpha(1);
+        MyTextWatcherHelper.clearAllInputs(inputLayoutList);
+    }
+
+    @Override
+    public void onValidationFailed(List<ValidationError> errors) {
+        if (date.isErrorEnabled() || time.isErrorEnabled()) {
+            inputLayoutList.remove(time);
+            inputLayoutList.remove(date);
+            MyTextWatcherHelper.clearAllInputs(inputLayoutList);
+        }
+
+        for (ValidationError error : errors) {
+            View view = error.getView();
+            String message = error.getCollatedErrorMessage(this);
+
+            if (view instanceof TextInputLayout) {
+                ((TextInputLayout) view).setErrorEnabled(true);
+                ((TextInputLayout) view).setError(message);
+            } else {
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            }
+        }
+        addEventButton.setAlpha(0.7f);
+    }
+
+    @Override
+    public void update(Observable o, int qualifier, String data) {
+        switch (qualifier) {
+            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+                //TODO show notification
+            } break;
+        }
+    }
+
+    @OnClick(R.id.btn_add_event)
+    public void createNewEvent() {
+        String eventName = String.valueOf(eventNameInput.getText());
+        String description = String.valueOf(descriptionInput.getText());
+        DateTime date = DateHelper.parseDateFromString(String.valueOf(dateInput.getText()));
+        DateTime time = DateHelper.parseTimeFromString(String.valueOf(timeInput.getText()));
+        date = date.withTime(time.getHourOfDay(), time.getMinuteOfHour(), time.getSecondOfMinute(), time.getMillisOfSecond());
+        storeNewEvent(ModelFactory.createNewEvent(null, eventName, date.getMillis(), description));
+    }
+
+    @OnClick(R.id.input_time)
+    public void showTimeDialog() {
+        //closeKeyboard();
+        time.setError(null);
+        time.setErrorEnabled(false);
+        DialogHelper.showTimePickerDialog(this, time, date);
+    }
+
+    @OnClick(R.id.input_date)
+    public void showDateDialog() {
+//        closeKeyboard();
+        date.setError(null);
+        date.setErrorEnabled(false);
+        DialogHelper.showDatePickerDialog(this, date);
+
     }
 
     private void setValidation() {
@@ -102,88 +188,17 @@ public class NewEventActivity extends AppCompatActivity implements Validator.Val
         addEventButton.setAlpha(0.7f);
     }
 
-    //
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == android.R.id.home) {
-            data = new Intent();
-           // if (saved )
-            setResult(Activity.RESULT_OK, data);
-            finish();
-        }
-        return true;
-    }
-
-    @OnClick(R.id.btn_add_event)
-    public void createNewEvent() {
-        String eventName = String.valueOf(eventNameInput.getText());
-        String description = String.valueOf(descriptionInput.getText());
-        DateTime date = DateHelper.parseDateFromString(String.valueOf(dateInput.getText()));
-        DateTime time = DateHelper.parseTimeFromString(String.valueOf(timeInput.getText()));
-        date = date.withTime(time.getHourOfDay(), time.getMinuteOfHour(), time.getSecondOfMinute(), time.getMillisOfSecond());
-        storeNewEvent(ModelFactory.createNewEvent(null, eventName, date.getMillis(), description));
-    }
-
-
     private void storeNewEvent(Event event) {
         String id = eventsRef.push().getKey();
         event.setId(id);
         eventsRef.child(id).setValue(event);
         saved = true;
-
     }
 
     private void closeKeyboard() {
+        //TODO finalize this method
         View view = getCurrentFocus();
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-    }
-
-    @OnClick(R.id.input_time)
-    public void showTimeDialog() {
-        //closeKeyboard();
-        time.setError(null);
-        time.setErrorEnabled(false);
-        DialogHelper.showTimePickerDialog(this, time, date);
-    }
-
-    @OnClick(R.id.input_date)
-    public void showDateDialog() {
-//        closeKeyboard();
-        date.setError(null);
-        date.setErrorEnabled(false);
-        DialogHelper.showDatePickerDialog(this, date);
-
-    }
-
-
-    @Override
-    public void onValidationSucceeded() {
-        addEventButton.setEnabled(true);
-        addEventButton.setAlpha(1);
-        MyTextWatcherHelper.clearAllInputs(inputLayoutList);
-    }
-
-    @Override
-    public void onValidationFailed(List<ValidationError> errors) {
-        if (date.isErrorEnabled() || time.isErrorEnabled()) {
-            inputLayoutList.remove(time);
-            inputLayoutList.remove(date);
-            MyTextWatcherHelper.clearAllInputs(inputLayoutList);
-        }
-
-        for (ValidationError error : errors) {
-            View view = error.getView();
-            String message = error.getCollatedErrorMessage(this);
-
-            if (view instanceof TextInputLayout) {
-                ((TextInputLayout) view).setErrorEnabled(true);
-                ((TextInputLayout) view).setError(message);
-            } else {
-                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-            }
-        }
-        addEventButton.setAlpha(0.7f);
     }
 }

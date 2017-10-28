@@ -86,6 +86,12 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         downloadGroups();
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        application.deleteObserver(this);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -108,7 +114,6 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         if (bitmap != null) {
             groupPhotoResult = ImageHelper.encodeBitmap(bitmap);
         }
-
     }
 
     private void initialize() {
@@ -123,63 +128,15 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(chatChannelAdapter);
-
-
-//        ChatChannel channel = (ChatChannel) channelsList.get();
-//        ChatFragment fragment = new ChatFragment();
-//        boolean isGroup = application.isGroup(channel.getId());
-//        if (isGroup) {
-//            String[] receivers = application.getGroupReceivers(channel.getId());
-//            fragment.setData(channel, true, receivers);
-//        } else {
-//            fragment.setData(channel, false, null);
-//        }
-//        channel.setNewMessage(false);
-
     }
 
     private void getChannels() {
-        Set<String> channelNames = application.getChannels();
-        for (final String channelName: channelNames) {
-            if (application.isGroup(channelName)) {
-                groupsRef.child(channelName).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Group groupChannel = dataSnapshot.getValue(Group.class);
-                        if (groupChannel != null) {
-                            ChatChannel chatChannel = new ChatChannel(channelName,
-                                    groupChannel.getDisplayName(), groupChannel.getPhoto(), true);
-                            chatChannel.setReceivers(application.getGroupReceivers(channelName));
-                            channelsList.add(chatChannel);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        //intentionally left blank
-                    }
-                });
-            } else {
-                usersRef.child(channelName).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        User channelOwner = dataSnapshot.getValue(User.class);
-                        if (channelOwner != null) {
-                            channelsList.add(new ChatChannel(channelName,
-                                    channelOwner.getName(), channelOwner.getPhoto(), false));
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        //intentionally left blank
-                    }
-                });
-            }
-            chatChannelAdapter.notifyDataSetChanged();
+        chatChannelAdapter.cleearChannels();
+        Set<ChatChannel> channels = application.getChannels();
+        for (ChatChannel chatChannel : channels) {
+            chatChannelAdapter.addChannel(chatChannel);
         }
-
-        if (channelNames.isEmpty()) {
+        if (channels.isEmpty()) {
             channelsStatus.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
         } else {
@@ -194,7 +151,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot groupSnapshot: dataSnapshot.getChildren()) {
-                    Group group = groupSnapshot.getValue(Group.class);
+                        Group group = groupSnapshot.getValue(Group.class);
                     if (group != null) {
                         if (group.getReceivers().contains(firebaseAuth.getCurrentUser().getUid())) {
                             application.createGroup(group.getId(), group.getReceivers().toArray(new String[0]));
@@ -293,28 +250,32 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     @Override
-    public void update(Observable o, String qualifier, String data) {
+    public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
-            case ChatApplication.GROUP_RECEIVERS_CHANGED:
-            case ChatApplication.GROUP_DELETED: {
-                getChannels();
+            //ADDING CHANNELS
+            case ChatApplication.USER_CHANNEL_DISCOVERED: //NEW CHANNEL HAS BEEN DISCOVERED
+            case ChatApplication.GROUP_CHANNEL_DISCOVERED: {
+                //data contains id of channel
+                ChatChannel foundChannel = application.getChannel(data);
+                chatChannelAdapter.addChannel(foundChannel);
+                chatChannelAdapter.notifyDataSetChanged();
             } break;
-            case ChatApplication.MESSAGE_RECEIVED: {
-                String type = ChatHelper.getMessageType(data);
-                String sender = null;
-                if (type.equals("S")) {
-                    sender = ChatHelper.oneToOneMessageSender(data);
-                } else if (type.equals("G")) {
-                    sender = ChatHelper.groupMessageSender(data);
-                }
-
-                for (ChatChannel channel : channelsList) {
-                    if (channel.getId().equals(sender)) {
-                        channel.setNewMessage(true);
+            //DELETING CHANNELS
+            case ChatApplication.USER_CHANNEL_LEAVING:
+            case ChatApplication.GROUP_DELETED: {
+                //data contains id of channel
+                for (ChatChannel channel : chatChannelAdapter.getChannels()) {
+                    if (channel.getId().equals(data)) {
+                        chatChannelAdapter.removeChannel(channel);
                         break;
-                        //TODO maybe show notification
                     }
                 }
+                chatChannelAdapter.notifyDataSetChanged();
+            } break;
+            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+                //data contains received message
+                //TODO add update of last message to list item
             }
         }
     }

@@ -22,9 +22,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.mvc.imagepicker.ImagePicker;
 
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.chat.Observable;
+import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 
-public class SettingsActivity extends AppCompatPreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class SettingsActivity extends AppCompatPreferenceActivity
+        implements SharedPreferences.OnSharedPreferenceChangeListener, Observer {
+
     public static final String PREFERENCE_EMAIL = "email";
     public static final String PREFERENCE_PASSWORD = "password";
     private static final String PREFERENCE_PHOTO = "profile_photo";
@@ -36,7 +41,36 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
     private static DatabaseReference databaseReference;
     private static CoordinatorLayout coordinatorLayout;
     private Intent intent;
+    private ChatApplication application;
 
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_settings);
+
+        application = (ChatApplication) getApplication();
+        application.addObserver(this);
+
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+        getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
+
+        firebaseAuth = FirebaseAuth.getInstance();
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        application.deleteObserver(this);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -50,24 +84,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
 
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
-        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
-
-        firebaseAuth = FirebaseAuth.getInstance();
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
     }
 
     @Override
@@ -93,6 +109,42 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
             editor.commit();
         }
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Bitmap bitmap = ImagePicker.getImageFromResult(this, requestCode, resultCode, data);
+        if (bitmap != null) {
+            // TODO save photo to the external storage
+            String userId = firebaseAuth.getCurrentUser().getUid();
+           // storeUserProfilePhotoToStorage(userId, );
+
+//            intent = getIntent();
+//            intent.putExtra(UPDATED_PHOTO, UPDATED_PHOTO);
+            DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.profile_photo_updated));
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getPreferences(MODE_PRIVATE).registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        getPreferences(MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void update(Observable o, int qualifier, String data) {
+        switch (qualifier) {
+            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+                //TODO show notification
+            } break;
+        }
     }
 
     public static class MyPreferenceFragment extends PreferenceFragment {
@@ -139,35 +191,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Bitmap bitmap = ImagePicker.getImageFromResult(this, requestCode, resultCode, data);
-        if (bitmap != null) {
-            // TODO save photo to the external storage
-            String userId = firebaseAuth.getCurrentUser().getUid();
-           // storeUserProfilePhotoToStorage(userId, );
-
-//            intent = getIntent();
-//            intent.putExtra(UPDATED_PHOTO, UPDATED_PHOTO);
-            DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.profile_photo_updated));
-        }
-
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        getPreferences(MODE_PRIVATE).registerOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        getPreferences(MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(this);
-    }
-
     private void storeUserProfilePhotoToStorage(String userId, byte[] newImage) {
-
+        //TODO implement
     }
 }

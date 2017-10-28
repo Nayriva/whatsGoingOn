@@ -6,5 +6,5 @@ package ee.ut.madp.whatsgoingon.chat;
 
 public interface Observer {
 
-    void update(Observable o, String qualifier, String data);
+    void update(Observable o, int qualifier, String data);
 }

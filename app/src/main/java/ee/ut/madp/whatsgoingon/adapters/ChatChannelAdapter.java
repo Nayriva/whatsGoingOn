@@ -62,6 +62,22 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
         return channelList.size();
     }
 
+    public void addChannel(ChatChannel foundChannel) {
+        channelList.add(foundChannel);
+    }
+
+    public void removeChannel(ChatChannel channel) {
+        channelList.remove(channel);
+    }
+
+    public List<ChatChannel> getChannels() {
+        return channelList;
+    }
+
+    public void cleearChannels() {
+        channelList.clear();
+    }
+
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         CircleImageView photo;
         TextView channelName;
@@ -85,7 +101,7 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
             chatChannel.setNewMessage(false);
             Intent intent = new Intent(v.getContext(), ConversationActivity.class);
             intent.putExtra(PARCEL_CHAT_CHANNEL, chatChannel);
-            context.startActivity(intent);
+            v.getContext().startActivity(intent);
         }
     }
 }
