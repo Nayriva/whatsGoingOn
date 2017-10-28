@@ -9,7 +9,6 @@
         android:id="@+id/calendar_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:currentDayOfMonthColor="@color/colorPrimaryDark"
         android:background="@color/colorWhite">
     </com.imanoweb.calendarview.CustomCalendarView>
 

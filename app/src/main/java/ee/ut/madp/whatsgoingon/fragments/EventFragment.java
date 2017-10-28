@@ -2,6 +2,7 @@ package ee.ut.madp.whatsgoingon.fragments;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -36,6 +37,7 @@ import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.models.Event;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENTS_REQUEST_CODE;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_DAY_REQUEST_CODE;
 
 public class EventFragment extends Fragment {
 
@@ -96,7 +98,8 @@ public class EventFragment extends Fragment {
             @Override
             public void onDateSelected(Date date) {
                 if (eventDays.contains(DateHelper.removeTimeFromDate(date))) {
-                    startActivity(new Intent(getActivity(), EventsOnDayActivity.class));
+                    Intent intent = new Intent(new Intent(getActivity(), EventsOnDayActivity.class));
+                    startActivityForResult(intent, EVENT_DAY_REQUEST_CODE);
                 }
 
             }
@@ -128,8 +131,12 @@ public class EventFragment extends Fragment {
                 if (DateHelper.removeTimeFromDate(dayView.getDate()).equals(eventDay)) {
                     dayView.setTextColor(Color.WHITE);
                     dayView.setBackgroundColor(getActivity().getColor(R.color.colorAccent));
-                } else if (DateHelper.isToday(dayView.getDate().getTime())) {
+                }
+
+                if (DateHelper.isToday(dayView.getDate().getTime())) {
+                    dayView.setPaintFlags(dayView.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
                     dayView.setTextColor(Color.WHITE);
+
                 }
             }
 

@@ -39,6 +39,7 @@ import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENTS_REQUEST_CODE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SETTINGS_REQUEST_CODE;
 
 public class MainActivity extends AppCompatActivity
@@ -239,6 +240,8 @@ public class MainActivity extends AppCompatActivity
         if (resultCode == RESULT_OK) {
             if (requestCode == SETTINGS_REQUEST_CODE) {
                 setUpInitialFragment("Chat");
+            } else if (requestCode == EVENTS_REQUEST_CODE) {
+                setUpInitialFragment("Events");
             }
         }
     }
