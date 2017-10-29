@@ -1,27 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal">
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="?android:attr/selectableItemBackground">
 
     <TextView
         android:id="@+id/event_type"
-        android:layout_width="@dimen/spacing_xlarge"
-        android:layout_height="wrap_content"
-        android:background="@color/colorPrimary" />
+        android:layout_width="@dimen/spacing_large"
+        android:layout_height="@dimen/event_type_height"
+        android:background="@color/colorAccent" />
 
     <TextView
         android:id="@+id/event_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="moje udalost"
+        android:layout_marginLeft="@dimen/spacing_large"
+        android:textSize="@dimen/h3"
+        android:textStyle="bold"
+        android:layout_centerVertical="true"
         android:layout_toRightOf="@id/event_type"/>
 
     <TextView
         android:id="@+id/event_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="5:55"
-        android:layout_alignParentRight="true"/>
+        android:layout_marginEnd="@dimen/spacing_large"
+        android:textSize="@dimen/h3"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        tools:ignore="RelativeOverlap" />
 
 </RelativeLayout>

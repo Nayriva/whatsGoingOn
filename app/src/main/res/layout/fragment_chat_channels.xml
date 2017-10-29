@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:layout_centerHorizontal="true"
+            android:gravity="center_horizontal"
             android:visibility="gone"
             android:textSize="@dimen/h1"
             android:text="@string/no_channels_found" />
@@ -26,7 +26,6 @@
             android:layout_height="match_parent"
             android:clickable="true"
             android:focusable="true"
-            android:background="?attr/selectableItemBackground"
             android:scrollbars="vertical"/>
 
         <android.support.design.widget.FloatingActionButton

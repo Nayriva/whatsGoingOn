@@ -38,6 +38,7 @@ public class DateHelper {
 
     }
 
+
     public static Date removeTimeFromDate(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -49,12 +50,12 @@ public class DateHelper {
     }
 
     public static DateTime parseTimeFromString(String stringTime) {
-        DateTime parseDate = null;
+        DateTime parseTime = null;
         if (!stringTime.isEmpty()) {
             DateTimeFormatter formatter = DateTimeFormat.forPattern(TIME_FORMAT);
-            parseDate = formatter.parseDateTime(stringTime);
+            parseTime = formatter.parseDateTime(stringTime);
         }
-        return parseDate;
+        return parseTime;
     }
 
     /**
@@ -91,6 +92,11 @@ public class DateHelper {
     public static String parseTimeFromLong(long time) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(TIME_FORMAT);
         return dateTimeFormatter.print(time);
+    }
+
+    public static String parseDateFromLong(long date) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(DATE_FORMAT);
+        return dateTimeFormatter.print(date);
     }
 
     public static boolean isToday(long time) {

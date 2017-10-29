@@ -9,6 +9,8 @@ public class GeneralConstants {
     public static final int EVENTS_REQUEST_CODE = 2 ;
     public static final int EVENT_DAY_REQUEST_CODE = 3 ;
     public static final String PARCEL_CHAT_CHANNEL = "chatChannel";
+    public static final String PARCEL_EVENT = "event";
+    public static final String PARAM_EVENT_DAY = "eventDay";
     public static final String FULL_DATE_TIME_FORMAT = "MMM dd, yyyy HH:mm";
     public static final String TIME_FORMAT = "HH:mm";
     public static final String DATE_TIME_FORMAT = "MMM dd HH:mm";

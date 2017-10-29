@@ -43,7 +43,7 @@
         <activity
             android:name=".activities.MainActivity"
             android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme.Activity"></activity>
+            android:theme="@style/AppTheme.Activity" />
         <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/title_activity_settings"
@@ -61,7 +61,7 @@
                 android:value=".activities.MainActivity" />
         </activity>
         <activity
-            android:name=".activities.NewEventActivity"
+            android:name=".activities.EventFormActivity"
             android:label="@string/new_event_label"
             android:windowSoftInputMode="stateHidden">
             <meta-data

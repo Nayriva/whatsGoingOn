@@ -13,6 +13,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.mobsandgeeks.saripaar.ValidationError;
@@ -40,7 +41,9 @@ import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
 import ee.ut.madp.whatsgoingon.models.Event;
 
-public class NewEventActivity extends AppCompatActivity
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_EVENT;
+
+public class EventFormActivity extends AppCompatActivity
         implements Validator.ValidationListener, Observer {
 
     @NotEmpty
@@ -55,24 +58,43 @@ public class NewEventActivity extends AppCompatActivity
     @BindView(R.id.input_time) TextInputEditText timeInput;
     @BindView(R.id.input_description) TextInputEditText descriptionInput;
     @BindView(R.id.btn_add_event) Button addEventButton;
+    @BindView(R.id.btn_edit_event) Button editEventButton;
+    @BindView(R.id.btn_delete_event) Button deleteEventButton;
 
     private List<TextInputLayout> inputLayoutList;
     private DatabaseReference eventsRef;
     private Intent data;
-    private boolean saved = false;
+    boolean isEdit = false;
 
     private ChatApplication application;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_event);
+        setContentView(R.layout.activity_form_event);
         ButterKnife.bind(this);
+
+        if (getIntent().hasExtra(PARCEL_EVENT)) {
+            isEdit = true;
+            setupContentForEdit((Event) getIntent().getParcelableExtra(PARCEL_EVENT));
+        }
 
         application = (ChatApplication) getApplication();
         application.addObserver(this);
         setValidation();
         eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
+    }
+
+    private void setupContentForEdit(Event event) {
+        eventNameInput.setText(event.getName());
+        dateInput.setText(DateHelper.parseDateFromLong(event.getDate()));
+        timeInput.setText(DateHelper.parseTimeFromLong(event.getDateTime()));
+        descriptionInput.setText(event.getDescription());
+        editEventButton.setVisibility(View.VISIBLE);
+        deleteEventButton.setVisibility(View.VISIBLE);
+        addEventButton.setVisibility(View.GONE);
+
+
     }
 
     @Override
@@ -86,7 +108,6 @@ public class NewEventActivity extends AppCompatActivity
         int id = item.getItemId();
         if (id == android.R.id.home) {
             data = new Intent();
-           // if (saved )
             setResult(Activity.RESULT_OK, data);
             finish();
         }
@@ -138,8 +159,17 @@ public class NewEventActivity extends AppCompatActivity
         String description = String.valueOf(descriptionInput.getText());
         DateTime date = DateHelper.parseDateFromString(String.valueOf(dateInput.getText()));
         DateTime time = DateHelper.parseTimeFromString(String.valueOf(timeInput.getText()));
-        date = date.withTime(time.getHourOfDay(), time.getMinuteOfHour(), time.getSecondOfMinute(), time.getMillisOfSecond());
-        storeNewEvent(ModelFactory.createNewEvent(null, eventName, date.getMillis(), description));
+        DateTime dateTime = date.withTime(time.getHourOfDay(), time.getMinuteOfHour(), time.getSecondOfMinute(), time.getMillisOfSecond());
+        String ownerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        storeNewEvent(ModelFactory.createNewEvent(null, eventName, description, DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis()));
+        clearAllInputs();
+    }
+
+    private void clearAllInputs() {
+        eventNameInput.getText().clear();
+        descriptionInput.getText().clear();
+        dateInput.getText().clear();
+        timeInput.getText().clear();
     }
 
     @OnClick(R.id.input_time)
@@ -192,7 +222,8 @@ public class NewEventActivity extends AppCompatActivity
         String id = eventsRef.push().getKey();
         event.setId(id);
         eventsRef.child(id).setValue(event);
-        saved = true;
+        Toast.makeText(EventFormActivity.this, getString(R.string.message_saved_event), Toast.LENGTH_SHORT).show();
+        closeKeyboard();
     }
 
     private void closeKeyboard() {

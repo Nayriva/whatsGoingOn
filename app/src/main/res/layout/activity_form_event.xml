@@ -83,8 +83,25 @@
             android:id="@+id/btn_add_event"
             style="@style/ButtonStyle"
             android:layout_marginTop="@dimen/spacing_xlarge"
-            android:background="@color/colorPrimary"
+            android:background="@color/colorAccent"
             android:text="@string/create_event" />
+
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/btn_edit_event"
+            style="@style/ButtonStyle"
+            android:layout_marginTop="@dimen/spacing_xlarge"
+            android:background="@color/colorAccent"
+            android:visibility="gone"
+            android:text="@string/edit_event" />
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/btn_delete_event"
+            style="@style/ButtonStyle"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:background="@color/colorAccent"
+            android:visibility="gone"
+            android:text="@string/delete_event" />
 
 
     </LinearLayout>

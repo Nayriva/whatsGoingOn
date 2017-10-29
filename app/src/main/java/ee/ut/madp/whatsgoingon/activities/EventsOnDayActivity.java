@@ -2,25 +2,42 @@ package ee.ut.madp.whatsgoingon.activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.TimeComparator;
 import ee.ut.madp.whatsgoingon.adapters.EventAdapter;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
+import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.helpers.DateHelper;
+import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.models.Event;
+
+import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_EVENTS_DATE;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARAM_EVENT_DAY;
 
 public class EventsOnDayActivity extends AppCompatActivity implements Observer {
 
@@ -32,31 +49,41 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
     private Intent data;
     private List<Event> eventList = new ArrayList<>();
     private EventAdapter eventAdapter;
+    private DatabaseReference eventsRef;
+    private ValueEventListener valueEventListener;
+    private long eventDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_events_on_day);
         ButterKnife.bind(this);
+        DialogHelper.showProgressDialog(EventsOnDayActivity.this, getString(R.string.progress_dialog_wait));
+        setupRecyclerView();
 
-        eventList.add(new Event("eeie", "nova", "nova,", 5));
-        eventList.add(new Event("eeie", "nova", "nova,", 5));
-        eventList.add(new Event("eeie", "nova", "nova,", 5));
-        eventList.add(new Event("eeie", "nova", "nova,", 5));
+        if (getIntent().hasExtra(PARAM_EVENT_DAY)) {
+            eventDate = getIntent().getLongExtra(PARAM_EVENT_DAY, 0);
+            eventDay.setText(DateHelper.parseDateFromLong(eventDate));
+            setTitle("Events on " + DateHelper.parseDateFromLong(eventDate) );
+        }
 
-        eventDay.setText("neco");
+        eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
 
 
+        eventsRef.orderByChild(FIREBASE_CHILD_EVENTS_DATE).equalTo(eventDate).addListenerForSingleValueEvent(setValueEventListener());
 
         application = (ChatApplication) getApplication();
         application.addObserver(this);
-        setupRecyclerView();
+
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         application.deleteObserver(this);
+        eventsRef.removeEventListener(valueEventListener);
+
     }
 
     @Override
@@ -86,10 +113,36 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
+        DividerItemDecoration horizontalDecoration = new DividerItemDecoration(this,
+                DividerItemDecoration.VERTICAL);
+        Drawable horizontalDivider = ContextCompat.getDrawable(this, R.drawable.horizontal_divider);
+        horizontalDecoration.setDrawable(horizontalDivider);
+        recyclerView.addItemDecoration(horizontalDecoration);
         recyclerView.setAdapter(eventAdapter);
     }
 
-    private void getAllEventsOnDay() {
-        
+    private ValueEventListener setValueEventListener() {
+        valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    Event event = postSnapshot.getValue(Event.class);
+                    if (event != null) {
+                        eventList.add(event);
+                    }
+                }
+                eventAdapter.notifyDataSetChanged();
+                Collections.sort(eventList, new TimeComparator());
+                DialogHelper.hideProgressDialog();
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        return valueEventListener;
     }
 }

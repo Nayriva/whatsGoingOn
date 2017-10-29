@@ -183,5 +183,8 @@
     <string name="hint_description">Description</string>
     <string name="error_date_past">Date has to be in the future</string>
     <string name="error_time_past">Time has to be in the future</string>
+    <string name="message_saved_event">New event was created</string>
+    <string name="edit_event">Edit event</string>
+    <string name="delete_event">Delete event</string>
 
 </resources>

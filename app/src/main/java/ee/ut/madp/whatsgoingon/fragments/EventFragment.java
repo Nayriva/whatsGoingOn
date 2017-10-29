@@ -31,14 +31,15 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
 import ee.ut.madp.whatsgoingon.activities.EventsOnDayActivity;
-import ee.ut.madp.whatsgoingon.activities.NewEventActivity;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.models.Event;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENTS_REQUEST_CODE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_DAY_REQUEST_CODE;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARAM_EVENT_DAY;
 
 public class EventFragment extends Fragment {
 
@@ -48,12 +49,13 @@ public class EventFragment extends Fragment {
     private Calendar currentCalendar;
     private DatabaseReference eventsRef;
     private List<Date> eventDays = new ArrayList<>();
+    private ValueEventListener valueEventListener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
-        eventsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
@@ -69,7 +71,9 @@ public class EventFragment extends Fragment {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
+
+        eventsRef.addListenerForSingleValueEvent(valueEventListener);
     }
 
     private void setDaysWithEvents() {
@@ -95,7 +99,8 @@ public class EventFragment extends Fragment {
             @Override
             public void onDateSelected(Date date) {
                 if (eventDays.contains(DateHelper.removeTimeFromDate(date))) {
-                    Intent intent = new Intent(new Intent(getActivity(), EventsOnDayActivity.class));
+                    Intent intent = new Intent(getActivity(), EventsOnDayActivity.class);
+                    intent.putExtra(PARAM_EVENT_DAY, DateHelper.removeTimeFromDate(date).getTime());
                     startActivityForResult(intent, EVENT_DAY_REQUEST_CODE);
                 }
             }
@@ -109,7 +114,7 @@ public class EventFragment extends Fragment {
 
     @OnClick(R.id.btn_add_event)
     public void showAddEventForm() {
-        startActivityForResult(new Intent(getActivity(), NewEventActivity.class), EVENTS_REQUEST_CODE);
+        startActivityForResult(new Intent(getActivity(), EventFormActivity.class), EVENTS_REQUEST_CODE);
     }
 
     @Override
@@ -118,7 +123,6 @@ public class EventFragment extends Fragment {
     }
 
     private class EventColorDecorator implements DayDecorator {
-        private long day;
 
         @RequiresApi(api = Build.VERSION_CODES.M)
         @Override
@@ -136,4 +140,12 @@ public class EventFragment extends Fragment {
             }
         }
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        eventsRef.removeEventListener(valueEventListener);
+    }
+
+
 }

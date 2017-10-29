@@ -1,22 +1,49 @@
 package ee.ut.madp.whatsgoingon.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by admin on 28.10.2017.
  */
 
-public class Event {
-    private String id, name, description;
-    private long dateTime;
+public class Event implements Parcelable{
+    //date for filtering
+    private String id, name, description, owner;
+    private long dateTime, date;
 
     public Event() {
     }
 
-    public Event(String id, String name, String description, long dateTime) {
+    public Event(String id, String name, String description, long date, String owner, long dateTime) {
         this.id = id;
         this.name = name;
+        this.date = date;
         this.description = description;
         this.dateTime = dateTime;
+        this.owner = owner;
     }
+
+    protected Event(Parcel in) {
+        id = in.readString();
+        name = in.readString();
+        description = in.readString();
+        owner = in.readString();
+        dateTime = in.readLong();
+        date = in.readLong();
+    }
+
+    public static final Creator<Event> CREATOR = new Creator<Event>() {
+        @Override
+        public Event createFromParcel(Parcel in) {
+            return new Event(in);
+        }
+
+        @Override
+        public Event[] newArray(int size) {
+            return new Event[size];
+        }
+    };
 
     public String getId() {
         return id;
@@ -48,5 +75,36 @@ public class Event {
 
     public void setDateTime(long dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public long getDate() {
+        return date;
+    }
+
+    public void setDate(long date) {
+        this.date = date;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(name);
+        dest.writeString(description);
+        dest.writeString(owner);
+        dest.writeLong(dateTime);
+        dest.writeLong(date);
     }
 }
