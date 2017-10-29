@@ -22,7 +22,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="@dimen/spacing_medium"
-            android:text="Hi, joe how are you, do you like to join our party in next week because you don't like party?"
             android:textColor="@color/colorTextBlack"
             android:textSize="@dimen/h3"
             android:background="@drawable/bg_message_you"/>
@@ -33,7 +32,6 @@
             android:layout_height="wrap_content"
             android:drawablePadding="@dimen/spacing_small"
             android:drawableLeft="@drawable/ic_clock"
-            android:text="5:04pm"
             android:textColor="@color/colorTextInfo"
             android:textSize="@dimen/h4"
             android:layout_centerVertical="true"/>

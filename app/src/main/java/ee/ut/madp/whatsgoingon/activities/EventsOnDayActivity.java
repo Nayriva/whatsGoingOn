@@ -8,6 +8,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,8 @@ import ee.ut.madp.whatsgoingon.models.Event;
 public class EventsOnDayActivity extends AppCompatActivity implements Observer {
 
     @BindView(R.id.recyclerView) RecyclerView recyclerView;
+    @BindView(R.id.event_day)
+    TextView eventDay;
 
     private ChatApplication application;
     private Intent data;
@@ -35,6 +38,15 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_events_on_day);
         ButterKnife.bind(this);
+
+        eventList.add(new Event("eeie", "nova", "nova,", 5));
+        eventList.add(new Event("eeie", "nova", "nova,", 5));
+        eventList.add(new Event("eeie", "nova", "nova,", 5));
+        eventList.add(new Event("eeie", "nova", "nova,", 5));
+
+        eventDay.setText("neco");
+
+
 
         application = (ChatApplication) getApplication();
         application.addObserver(this);
