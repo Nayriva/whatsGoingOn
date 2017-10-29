@@ -77,14 +77,17 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
 
         downloadGroups();
-        setUpLastMessages();
     }
 
     private void setUpLastMessages() {
         for (ChatChannel chatChannel: chatChannelAdapter.getChannels()) {
             ChatMessage lastMessage = application.getLastMessage(chatChannel.getId());
             if (lastMessage != null) {
-                chatChannel.setLastMessage(lastMessage.getMessageText());
+                if (chatChannel.isGroup()) {
+                    chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
+                } else {
+                    chatChannel.setLastMessage(lastMessage.getMessageText());
+                }
                 chatChannel.setTimeMessage(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
                 chatChannelAdapter.notifyDataSetChanged();
             }
@@ -125,6 +128,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         setupRecyclerView();
         getChannels();
         setSwipeRefreshLayoutListener();
+        setUpLastMessages();
     }
 
     private void setupRecyclerView() {
@@ -297,7 +301,11 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         ChatChannel chatChannel = chatChannelAdapter.getChannelById(channelId);
         ChatMessage lastMessage = application.getLastMessage(channelId);
         if (chatChannel != null && lastMessage != null) {
-            chatChannel.setLastMessage(lastMessage.getMessageText());
+            if (chatChannel.isGroup()) {
+                chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
+            } else {
+                chatChannel.setLastMessage(lastMessage.getMessageText());
+            }
             chatChannel.setTimeMessage(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
             chatChannelAdapter.notifyDataSetChanged();
         }

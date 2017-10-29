@@ -109,7 +109,9 @@ public class ChatApplication extends Application implements Observable {
         List<ChatMessage> chatMessages = chatHistory.get(channelId);
         if (chatMessages != null) {
             int size = chatMessages.size();
-            return  chatMessages.get(size);
+            if (size > 0) {
+                return chatMessages.get(size - 1);
+            }
         }
         return null;
     }
@@ -155,7 +157,7 @@ public class ChatApplication extends Application implements Observable {
         notifyObservers(USER_CHANNEL_LEAVING, channelId);
     }
 
-    private void dealWithGroupAdvertiseMessage(String receivedMsg) {
+    private void dealWithGroupAdvertiseMessage(final String receivedMsg) {
         final String gid = ChatHelper.groupAdvertiseMessageId(receivedMsg);
         if (channelsNearDevice.containsKey(gid)) {
             return;
@@ -183,6 +185,7 @@ public class ChatApplication extends Application implements Observable {
                 }
                 ChatChannel newGroupChannel = new ChatChannel(group.getId(), group.getDisplayName(),
                         group.getPhoto(), true);
+                newGroupChannel.setReceivers(group.getReceivers().toArray(new String[0]));
                 channelsNearDevice.put(newGroupChannel.getId(), newGroupChannel);
                 groupChatsReceiversMap.put(newGroupChannel.getId(),
                         group.getReceivers().toArray(new String[0]));

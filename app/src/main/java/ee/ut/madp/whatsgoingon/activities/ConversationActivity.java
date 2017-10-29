@@ -69,23 +69,23 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         setContentView(R.layout.activity_conversation);
         ButterKnife.bind(this);
 
+        application = (ChatApplication) getApplication();
+        firebaseAuth = FirebaseAuth.getInstance();
+        application.addObserver(this);
+        groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
+        usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
+
         if (getIntent().hasExtra(PARCEL_CHAT_CHANNEL)) {
             chatChannel = getIntent().getParcelableExtra(PARCEL_CHAT_CHANNEL);
 
             isGroup = chatChannel.isGroup();
             setTitle(chatChannel.getName());
             if (isGroup) {
-                this.receivers = chatChannel.getReceivers();
+                this.receivers = application.getGroupReceivers(chatChannel.getId());
             }
         }
 
         setupRecyclerView();
-
-        application = (ChatApplication) getApplication();
-        firebaseAuth = FirebaseAuth.getInstance();
-        application.addObserver(this);
-        groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
-        usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
 
         updateHistory();
     }
@@ -138,6 +138,9 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     @OnClick(R.id.bt_send)
     public void sendMessage() {
         String messageText = String.valueOf(editTextMessage.getText());
+        if (messageText == null || messageText.isEmpty()) {
+            return;
+        }
         String sender = firebaseAuth.getCurrentUser().getUid();
         String message;
         if (isGroup) {

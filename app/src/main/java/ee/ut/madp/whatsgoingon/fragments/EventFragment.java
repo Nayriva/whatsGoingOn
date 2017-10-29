@@ -98,7 +98,6 @@ public class EventFragment extends Fragment {
                     Intent intent = new Intent(new Intent(getActivity(), EventsOnDayActivity.class));
                     startActivityForResult(intent, EVENT_DAY_REQUEST_CODE);
                 }
-
             }
 
             @Override
