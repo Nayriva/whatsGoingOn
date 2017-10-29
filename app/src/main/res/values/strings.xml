@@ -186,5 +186,7 @@
     <string name="message_saved_event">New event was created</string>
     <string name="edit_event">Edit event</string>
     <string name="delete_event">Delete event</string>
+    <string name="success_message_deleted_event">Event was deleted</string>
+    <string name="success_message_edit_event">Event was edited</string>
 
 </resources>

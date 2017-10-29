@@ -65,6 +65,7 @@ public class EventFormActivity extends AppCompatActivity
     private DatabaseReference eventsRef;
     private Intent data;
     boolean isEdit = false;
+    private Event event;
 
     private ChatApplication application;
 
@@ -93,7 +94,8 @@ public class EventFormActivity extends AppCompatActivity
         editEventButton.setVisibility(View.VISIBLE);
         deleteEventButton.setVisibility(View.VISIBLE);
         addEventButton.setVisibility(View.GONE);
-
+        this.event = event;
+        setTitle(event.getName());
 
     }
 
@@ -153,23 +155,51 @@ public class EventFormActivity extends AppCompatActivity
         }
     }
 
-    @OnClick(R.id.btn_add_event)
-    public void createNewEvent() {
+
+    @OnClick({R.id.btn_add_event, R.id.btn_edit_event})
+    public void createOrEditEvent() {
         String eventName = String.valueOf(eventNameInput.getText());
         String description = String.valueOf(descriptionInput.getText());
         DateTime date = DateHelper.parseDateFromString(String.valueOf(dateInput.getText()));
         DateTime time = DateHelper.parseTimeFromString(String.valueOf(timeInput.getText()));
         DateTime dateTime = date.withTime(time.getHourOfDay(), time.getMinuteOfHour(), time.getSecondOfMinute(), time.getMillisOfSecond());
         String ownerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        storeNewEvent(ModelFactory.createNewEvent(null, eventName, description, DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis()));
-        clearAllInputs();
+        String id = isEdit ? event.getId() : null;
+        Event createdEvent = ModelFactory.createNewEvent(id, eventName, description, DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
+        storeNewEvent(createdEvent);
+        if (!isEdit) {
+            clearAllInputs();
+            if (!inputLayoutList.contains(this.date) && !inputLayoutList.contains(this.time)) {
+                inputLayoutList.add(this.date);
+                inputLayoutList.add(this.time);
+            }
+            MyTextWatcherHelper.clearAllInputs(inputLayoutList);
+
+            addEventButton.setEnabled(false);
+            addEventButton.setAlpha(0.7f);
+        } else {
+            setupContentForEdit(createdEvent);
+        }
+
+
     }
+
 
     private void clearAllInputs() {
         eventNameInput.getText().clear();
         descriptionInput.getText().clear();
         dateInput.getText().clear();
         timeInput.getText().clear();
+    }
+
+    @OnClick(R.id.btn_delete_event)
+    public void deleteEvent() {
+        if (event != null && isEdit) {
+            eventsRef.child(event.getId()).removeValue();
+            Toast.makeText(this, getString(R.string.success_message_deleted_event), Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
     }
 
     @OnClick(R.id.input_time)
@@ -219,10 +249,17 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     private void storeNewEvent(Event event) {
-        String id = eventsRef.push().getKey();
-        event.setId(id);
+        String id;
+        if (!isEdit) {
+            id = eventsRef.push().getKey();
+            event.setId(id);
+        } else {
+            id = event.getId();
+        }
+
         eventsRef.child(id).setValue(event);
-        Toast.makeText(EventFormActivity.this, getString(R.string.message_saved_event), Toast.LENGTH_SHORT).show();
+        String message = isEdit ? getString(R.string.success_message_edit_event) : getString(R.string.message_saved_event);
+        Toast.makeText(EventFormActivity.this, message, Toast.LENGTH_SHORT).show();
         closeKeyboard();
     }
 
