@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -88,6 +89,10 @@ public class ChatApplication extends Application implements Observable {
         advertiseCode = new Runnable() {
             @Override
             public void run() {
+                FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+                if (currentUser == null) {
+                    return;
+                }
                 String msg = ChatHelper.advertiseMessage(firebaseAuth.getCurrentUser().getUid());
                 Message message = mBusHandler.obtainMessage(BusHandlerCallback.CHAT, msg);
                 mBusHandler.sendMessage(message);
@@ -101,6 +106,10 @@ public class ChatApplication extends Application implements Observable {
     }
 
     public void stopAdvertise() {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null) {
+            return;
+        }
         advertiseHandler.removeCallbacks(advertiseCode);
         sendMessage(ChatHelper.cancelAdvertiseMessage(firebaseAuth.getCurrentUser().getUid()));
     }
@@ -150,7 +159,8 @@ public class ChatApplication extends Application implements Observable {
 
     private void dealWithCancelAdvertiseMessage(String receivedMsg) {
         String sender = ChatHelper.cancelAdvertiseMessageSender(receivedMsg);
-        if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null || sender.equals(currentUser.getUid())) {
             return;
         }
         String channelId = ChatHelper.cancelAdvertiseMessageSender(receivedMsg);
@@ -165,8 +175,13 @@ public class ChatApplication extends Application implements Observable {
 
         String[] receivers = ChatHelper.groupAdvertiseMessageReceivers(receivedMsg);
         boolean found = false;
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null) {
+            return;
+        }
+
         for (String receiver: receivers) {
-            if (receiver.equals(firebaseAuth.getCurrentUser().getUid())) {
+            if (receiver.equals(currentUser.getUid())) {
                 found = true;
                 break;
             }
@@ -203,7 +218,9 @@ public class ChatApplication extends Application implements Observable {
 
     private void dealWithAdvertiseMessage(String receivedMsg) {
         final String uid = ChatHelper.advertiseMessageDisplayName(receivedMsg);
-        if (firebaseAuth.getCurrentUser().getUid().equals(uid) || channelsNearDevice.containsKey(uid)) {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null ||
+                currentUser.getUid().equals(uid) || channelsNearDevice.containsKey(uid)) {
             return;
         }
 
@@ -231,7 +248,8 @@ public class ChatApplication extends Application implements Observable {
     private void dealWithGroupMessage(String receivedMsg) {
         String[] messageReceivers = ChatHelper.groupMessageReceivers(receivedMsg);
         String sender = ChatHelper.groupMessageSender(receivedMsg);
-        if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null || sender.equals(currentUser.getUid())) {
             return;
         }
 
@@ -273,7 +291,8 @@ public class ChatApplication extends Application implements Observable {
     private void dealWithOneToOneMessage(String receivedMsg) {
         String messageReceiver = ChatHelper.oneToOneMessageReceiver(receivedMsg);
         String sender = ChatHelper.oneToOneMessageSender(receivedMsg);
-        if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser == null || sender.equals(currentUser.getUid())) {
             return;
         } else if (!messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
             return;
@@ -391,7 +410,7 @@ public class ChatApplication extends Application implements Observable {
 
     /* The class that is our AllJoyn service.  It implements the ChatInterface. */
     private class ChatService implements ChatInterface, BusObject {
-        private BusAttachment bus;
+        private BusAttachment   bus;
 
         public ChatService(BusAttachment bus) {
             this.bus = bus;
