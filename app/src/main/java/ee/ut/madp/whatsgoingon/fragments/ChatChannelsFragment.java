@@ -45,11 +45,12 @@ import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
+import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
+import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.Group;
 import ee.ut.madp.whatsgoingon.models.GroupParticipant;
-import ee.ut.madp.whatsgoingon.models.User;
 
 import static android.widget.AdapterView.OnClickListener;
 
@@ -57,21 +58,15 @@ public class ChatChannelsFragment extends Fragment implements Observer {
 
     private static final String TAG = "chat.ChannelsActivity";
 
-    @BindView(R.id.swiperefresh)
-    SwipeRefreshLayout swipeRefreshLayout;
-    @BindView(R.id.rv_channels_list)
-    RecyclerView recyclerView;
-    @BindView(R.id.tv_channels_status)
-    TextView channelsStatus;
+    @BindView(R.id.swiperefresh) SwipeRefreshLayout swipeRefreshLayout;
+    @BindView(R.id.rv_channels_list) RecyclerView recyclerView;
+    @BindView(R.id.tv_channels_status) TextView channelsStatus;
 
     private ChatApplication application;
     private FirebaseAuth firebaseAuth;
-    private DatabaseReference usersRef;
     private DatabaseReference groupsRef;
     private ChatChannelAdapter chatChannelAdapter;
     private String groupPhotoResult;
-    private List<ChatChannel> channelsList;
-
 
     @Override
     public void onAttach(Context context) {
@@ -79,11 +74,21 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         application = (ChatApplication) context.getApplicationContext();
         firebaseAuth = FirebaseAuth.getInstance();
         application.addObserver(this);
-        usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
-        channelsList = new ArrayList<>();
 
         downloadGroups();
+        setUpLastMessages();
+    }
+
+    private void setUpLastMessages() {
+        for (ChatChannel chatChannel: chatChannelAdapter.getChannels()) {
+            ChatMessage lastMessage = application.getLastMessage(chatChannel.getId());
+            if (lastMessage != null) {
+                chatChannel.setLastMessage(lastMessage.getMessageText());
+                chatChannel.setTimeMessage(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
+                chatChannelAdapter.notifyDataSetChanged();
+            }
+        }
     }
 
     @Override
@@ -123,7 +128,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void setupRecyclerView() {
-        chatChannelAdapter = new ChatChannelAdapter(getContext(), channelsList);
+        chatChannelAdapter = new ChatChannelAdapter(getContext(), new ArrayList<ChatChannel>());
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -131,7 +136,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void getChannels() {
-        chatChannelAdapter.cleearChannels();
+        chatChannelAdapter.clearChannels();
         Set<ChatChannel> channels = application.getChannels();
         for (ChatChannel chatChannel : channels) {
             chatChannelAdapter.addChannel(chatChannel);
@@ -180,7 +185,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         final EditText groupName = (EditText) dialog.findViewById(R.id.et_group_dialog_group_name);
 
         List<GroupParticipant> participants = new ArrayList<>();
-        for (ChatChannel tmp : channelsList) {
+        for (ChatChannel tmp : chatChannelAdapter.getChannels()) {
             if (! application.isGroup(tmp.getId())) {
                 participants.add(new GroupParticipant(tmp.getId(), tmp.getName(), tmp.getPhoto(), false));
             }
@@ -275,8 +280,26 @@ public class ChatChannelsFragment extends Fragment implements Observer {
             case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
             case ChatApplication.GROUP_MESSAGE_RECEIVED: {
                 //data contains received message
+                updateLastMessage(data);
                 //TODO add update of last message to list item
             }
+        }
+    }
+
+    private void updateLastMessage(String data) {
+        String type = ChatHelper.getMessageType(data);
+        String channelId = null;
+        if (type.equals(ChatHelper.ONE_TO_ONE_MESSAGE)) {
+            channelId = ChatHelper.oneToOneMessageSender(data);
+        } else if (type.equals(ChatHelper.GROUP_MESSAGE)) {
+            channelId = ChatHelper.groupMessageGID(data);
+        }
+        ChatChannel chatChannel = chatChannelAdapter.getChannelById(channelId);
+        ChatMessage lastMessage = application.getLastMessage(channelId);
+        if (chatChannel != null && lastMessage != null) {
+            chatChannel.setLastMessage(lastMessage.getMessageText());
+            chatChannel.setTimeMessage(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
+            chatChannelAdapter.notifyDataSetChanged();
         }
     }
 }

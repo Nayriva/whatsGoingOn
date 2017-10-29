@@ -64,6 +64,7 @@ public class ChatApplication extends Application implements Observable {
     public static final int GROUP_DELETED = 5;
     public static final int USER_CHANNEL_DISCOVERED = 6;
     public static final int USER_CHANNEL_LEAVING = 7;
+    //TODO handle user profile change (mainly photo)
 
     private List<Observer> mObservers;
 
@@ -104,6 +105,15 @@ public class ChatApplication extends Application implements Observable {
         sendMessage(ChatHelper.cancelAdvertiseMessage(firebaseAuth.getCurrentUser().getUid()));
     }
 
+    public ChatMessage getLastMessage(String channelId) {
+        List<ChatMessage> chatMessages = chatHistory.get(channelId);
+        if (chatMessages != null) {
+            int size = chatMessages.size();
+            return  chatMessages.get(size);
+        }
+        return null;
+    }
+
     private Handler mHandler = new Handler(new Handler.Callback() {
 
         @Override
@@ -112,19 +122,19 @@ public class ChatApplication extends Application implements Observable {
                 String receivedMsg = (String) msg.obj;
                 String messageType = ChatHelper.getMessageType(receivedMsg);
                 switch (messageType) {
-                    case "S": {
+                    case ChatHelper.ONE_TO_ONE_MESSAGE: {
                         dealWithOneToOneMessage(receivedMsg);
                     } break;
-                    case "G": {
+                    case ChatHelper.GROUP_MESSAGE: {
                         dealWithGroupMessage(receivedMsg);
                     } break;
-                    case "A": {
+                    case ChatHelper.ADVERTISE_MESSAGE: {
                         dealWithAdvertiseMessage(receivedMsg);
                     } break;
-                    case "AG": {
+                    case ChatHelper.GROUP_ADVERTISE_MESSAGE: {
                         dealWithGroupAdvertiseMessage(receivedMsg);
                     } break;
-                    case "CA": {
+                    case ChatHelper.CANCEL_ADVERTISE_MESSAGE: {
                         dealWithCancelAdvertiseMessage(receivedMsg);
                     } break;
                     default:
@@ -141,7 +151,7 @@ public class ChatApplication extends Application implements Observable {
         if (sender.equals(firebaseAuth.getCurrentUser().getUid())) {
             return;
         }
-        String channelId = ChatHelper.groupAdvertiseMessageId(receivedMsg);
+        String channelId = ChatHelper.cancelAdvertiseMessageSender(receivedMsg);
         notifyObservers(USER_CHANNEL_LEAVING, channelId);
     }
 
@@ -150,6 +160,20 @@ public class ChatApplication extends Application implements Observable {
         if (channelsNearDevice.containsKey(gid)) {
             return;
         }
+
+        String[] receivers = ChatHelper.groupAdvertiseMessageReceivers(receivedMsg);
+        boolean found = false;
+        for (String receiver: receivers) {
+            if (receiver.equals(firebaseAuth.getCurrentUser().getUid())) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            return;
+        }
+
         firebaseGroupsRef.child(gid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -407,13 +431,13 @@ public class ChatApplication extends Application implements Observable {
                     mChatService = new ChatService(mBus);
                     Status status = mBus.registerBusObject(mChatService, "/ChatService");
                     if (Status.OK != status) {
-                        //logStatus("BusAttachment.registerBusObject()", status);
+                        Log.i(TAG + ".RegBus()", status.toString());
                         return false;
                     }
                     status = mBus.connect();
-                    //logStatus("BusAttachment.connect()", status);
+                    Log.i(TAG, status.toString());
                     if (status != Status.OK) {
-                        //logStatus("BusAtt");
+                        Log.i(TAG + ".BusCon()", "BusAtt");
                         return false;
                     }
                     status = mBus.registerSignalHandlers(mChatService);
@@ -443,7 +467,7 @@ public class ChatApplication extends Application implements Observable {
                             mChatInterface.Chat(message);
                         }
                     } catch (BusException ex) {
-                        //logException("ChatInterface.Chat()", ex);
+                        Log.w(TAG, ex);
                     }
                     break;
                 }

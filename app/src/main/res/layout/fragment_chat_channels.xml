@@ -29,15 +29,6 @@
             android:background="?attr/selectableItemBackground"
             android:scrollbars="vertical"/>
 
-        <!--<ListView-->
-            <!--android:id="@+id/lv_channels_list"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:divider="@null"-->
-            <!--android:dividerHeight="0dp"-->
-            <!--android:layout_below="@id/tv_channels_status"-->
-            <!--android:footerDividersEnabled="false"/>-->
-
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab_add_channel"
             style="@style/FabStyle"

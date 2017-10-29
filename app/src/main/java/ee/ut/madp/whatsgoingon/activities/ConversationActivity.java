@@ -50,10 +50,8 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_CHAT_CHA
 public class ConversationActivity extends AppCompatActivity implements Observer {
     public static final String TAG = ConversationActivity.class.getSimpleName();
 
-    @BindView(R.id.recyclerView)
-    RecyclerView recyclerView;
-    @BindView(R.id.et_message)
-    EditText editTextMessage;
+    @BindView(R.id.recyclerView) RecyclerView recyclerView;
+    @BindView(R.id.et_message) EditText editTextMessage;
 
     private MessageAdapter messageAdapter;
     private List<ChatMessage> chatMessageList = new ArrayList<>();
@@ -73,11 +71,12 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
         if (getIntent().hasExtra(PARCEL_CHAT_CHANNEL)) {
             chatChannel = getIntent().getParcelableExtra(PARCEL_CHAT_CHANNEL);
-            // tODo every time true
-            isGroup = !chatChannel.isGroup();
-            setTitle(chatChannel.getName());
-            if (chatChannel.getReceivers() != null) this.receivers = chatChannel.getReceivers();
 
+            isGroup = chatChannel.isGroup();
+            setTitle(chatChannel.getName());
+            if (isGroup) {
+                this.receivers = chatChannel.getReceivers();
+            }
         }
 
         setupRecyclerView();

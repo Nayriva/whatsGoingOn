@@ -24,7 +24,8 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_CHAT_CHA
  * Created by admin on 27.10.2017.
  */
 
-public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.MyViewHolder> {
+public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.ChatChannelViewHolder> {
+
     private List<ChatChannel> channelList;
     private Context context;
 
@@ -34,15 +35,15 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
     }
 
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ChatChannelViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_chat_channels, parent, false);
 
-        return new MyViewHolder(itemView);
+        return new ChatChannelViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(ChatChannelViewHolder holder, int position) {
         ChatChannel chatChannel = channelList.get(position);
         String photo = chatChannel.getPhoto();
         if (photo != null) {
@@ -70,22 +71,31 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
         channelList.remove(channel);
     }
 
+    public ChatChannel getChannelById(String id) {
+        for (ChatChannel chatChannel: channelList) {
+            if (chatChannel.getId().equals(id)) {
+                return chatChannel;
+            }
+        }
+        return null;
+    }
+
     public List<ChatChannel> getChannels() {
         return channelList;
     }
 
-    public void cleearChannels() {
+    public void clearChannels() {
         channelList.clear();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class ChatChannelViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         CircleImageView photo;
         TextView channelName;
         TextView lastMessage;
         TextView messageTime;
        // View onlineIndicator;
 
-        public MyViewHolder(View view) {
+        public ChatChannelViewHolder(View view) {
             super(view);
             photo = (CircleImageView) view.findViewById(R.id.iv_user_photo);
             channelName = (TextView) view.findViewById(R.id.tv_user_name);

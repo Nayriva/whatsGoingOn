@@ -65,7 +65,7 @@ public class DateHelper {
      */
     public static String createMessageTime(Context context, long time) {
         DateTimeFormatter dateTimeFormatter;
-        String messageTime = "";
+        String messageTime;
 
         boolean isToday = isToday(time);
         boolean isYesterday =  LocalDate.now().minusDays(1).compareTo(new LocalDate(time)) == 0;
@@ -88,6 +88,11 @@ public class DateHelper {
         return messageTime;
     }
 
+    public static String parseTimeFromLong(long time) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(TIME_FORMAT);
+        return dateTimeFormatter.print(time);
+    }
+
     public static boolean isToday(long time) {
         return LocalDate.now().compareTo(new LocalDate(time)) == 0;
     }
@@ -103,6 +108,4 @@ public class DateHelper {
     public static boolean isFutureTime(long time) {
         return new DateTime(time).isAfter(DateTime.now());
     }
-
-
 }

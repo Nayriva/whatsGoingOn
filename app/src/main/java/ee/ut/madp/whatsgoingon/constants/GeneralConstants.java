@@ -14,5 +14,4 @@ public class GeneralConstants {
     public static final String DATE_TIME_FORMAT = "MMM dd HH:mm";
     public static final String DATE_FORMAT = "MMM dd";
     public static final String FULL_DATE_FORMAT = "MMM dd yyyy";
-
 }

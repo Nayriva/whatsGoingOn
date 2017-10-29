@@ -32,7 +32,6 @@ public class ChatChannel implements Parcelable {
         newMessage = in.readByte() != 0;
         isOnline = in.readByte() != 0;
         isGroup = in.readByte() != 0;
-
     }
 
     public static final Creator<ChatChannel> CREATOR = new Creator<ChatChannel>() {
@@ -133,6 +132,5 @@ public class ChatChannel implements Parcelable {
         dest.writeByte((byte) (newMessage ? 1 : 0));
         dest.writeByte((byte) (isOnline ? 1 : 0));
         dest.writeByte((byte) (isGroup ? 1 : 0));
-
     }
 }

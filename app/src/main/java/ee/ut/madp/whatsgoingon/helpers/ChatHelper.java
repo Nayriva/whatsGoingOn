@@ -19,6 +19,11 @@ package ee.ut.madp.whatsgoingon.helpers;
 public class ChatHelper {
     private static String delimiter = "~&&~";
     private static String groupReceiversDelimiter = "~&&&~";
+    public static final String ADVERTISE_MESSAGE = "A";
+    public static final String CANCEL_ADVERTISE_MESSAGE = "C";
+    public static final String GROUP_ADVERTISE_MESSAGE = "AG";
+    public static final String ONE_TO_ONE_MESSAGE = "S";
+    public static final String GROUP_MESSAGE = "G";
 
     //ONE TO ONE
 
@@ -30,7 +35,7 @@ public class ChatHelper {
      * @return one-to-one message for chat in correct format
      */
     public static String oneToOneMessage(String sender, String senderDisplayName, String receiver, String text) {
-        return "S" +
+        return ONE_TO_ONE_MESSAGE +
                 delimiter +
                 sender +
                 delimiter +
@@ -91,7 +96,7 @@ public class ChatHelper {
     public static String groupMessage(String sender, String authorDisplayName,
                                       String gid, String[] receivers, String text ) {
         StringBuilder message = new StringBuilder();
-        message.append("G");
+        message.append(GROUP_MESSAGE);
         message.append(delimiter);
         message.append(sender);
         message.append(delimiter);
@@ -142,7 +147,7 @@ public class ChatHelper {
     //ADVERTISE
 
     public static String advertiseMessage(String displayName) {
-        return "A" +
+        return ADVERTISE_MESSAGE +
                 delimiter +
                 displayName;
     }
@@ -160,7 +165,7 @@ public class ChatHelper {
     //GROUP ADVERTISE
 
     public static String groupAdvertiseMessage(String id, String[] receivers) {
-        String msg = "AG" +
+        String msg = GROUP_ADVERTISE_MESSAGE +
                 delimiter +
                 id +
                 delimiter +
@@ -172,13 +177,6 @@ public class ChatHelper {
         }
         msg = msg + stringBuilder.toString();
         return msg;
-    }
-
-    //COMMON
-
-    public static String getMessageType(String receivedMessage) {
-        String[] parts = receivedMessage.split(delimiter);
-        return parts[0];
     }
 
     public static String groupAdvertiseMessageId(String receivedMsg) {
@@ -194,7 +192,7 @@ public class ChatHelper {
     //CANCEL ADVERTISE
 
     public static String cancelAdvertiseMessage(String id) {
-        return "CA" +
+        return CANCEL_ADVERTISE_MESSAGE +
                 delimiter +
                 id;
     }
@@ -202,5 +200,12 @@ public class ChatHelper {
     public static String cancelAdvertiseMessageSender(String receivedMsg) {
         String[] parts = receivedMsg.split(delimiter);
         return parts[1];
+    }
+
+    //COMMON
+
+    public static String getMessageType(String receivedMessage) {
+        String[] parts = receivedMessage.split(delimiter);
+        return parts[0];
     }
 }
