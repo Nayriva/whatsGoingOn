@@ -188,5 +188,6 @@
     <string name="delete_event">Delete event</string>
     <string name="success_message_deleted_event">Event was deleted</string>
     <string name="success_message_edit_event">Event was edited</string>
+    <string name="sychronize_events">Synchronize with Google Calendar</string>
 
 </resources>

@@ -181,7 +181,6 @@ public class EventFormActivity extends AppCompatActivity
             setupContentForEdit(createdEvent);
         }
 
-
     }
 
 
@@ -216,6 +215,14 @@ public class EventFormActivity extends AppCompatActivity
         date.setError(null);
         date.setErrorEnabled(false);
         DialogHelper.showDatePickerDialog(this, date);
+
+    }
+
+    /**
+     * Sychronizes events with the existing google calendar
+     */
+    @OnClick(R.id.btn_synchronize)
+    public void synchronizeEvents() {
 
     }
 

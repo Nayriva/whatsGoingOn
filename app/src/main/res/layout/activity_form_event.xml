@@ -104,5 +104,13 @@
             android:text="@string/delete_event" />
 
 
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/btn_synchronize"
+            style="@style/ButtonStyle"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:background="@color/colorAccent"
+            android:text="@string/sychronize_events" />
+
+
     </LinearLayout>
 </ScrollView>
