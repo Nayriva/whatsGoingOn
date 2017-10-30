@@ -9,8 +9,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -157,10 +157,12 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
 
     private void setBackupValues() {
         photo = backupValues.get("photo");
-        if (photo.contains("http")) {
-            Picasso.with(getApplicationContext()).load(photo).into(profilePhoto);
-        } else {
-            profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
+        if (photo != null) {
+            if (photo.contains("http")) {
+                Picasso.with(getApplicationContext()).load(photo).into(profilePhoto);
+            } else {
+                profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
+            }
         }
         nationality.setText(user.getNationality() == null
                 ? "" : backupValues.get("nationality"));

@@ -17,7 +17,7 @@ public class ModelFactory {
         return  new User(id, name, email, photo, nationality, phoneNumber, school, work, birthday);
     }
 
-    public static Event createNewEvent(String id, String name, String description, long date, String owner, long dateTime) {
-        return new Event(id, name, description, date, owner, dateTime);
+    public static Event createNewEvent(String id, String name, String place, String description, long date, String owner, long dateTime) {
+        return new Event(id, name, place, description, date, owner, dateTime);
     }
 }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -25,6 +26,7 @@ import com.mobsandgeeks.saripaar.exception.ConversionException;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
@@ -49,17 +51,22 @@ public class EventFormActivity extends AppCompatActivity
     @NotEmpty
     @BindView(R.id.input_layout_eventname) TextInputLayout eventName;
     @NotEmpty
+    @BindView(R.id.input_layout_eventplace) TextInputLayout eventPlace;
+    @NotEmpty
     @BindView(R.id.input_layout_date) TextInputLayout date;
     @NotEmpty
     @BindView(R.id.input_layout_time) TextInputLayout time;
 
     @BindView(R.id.input_eventname) TextInputEditText eventNameInput;
+    @BindView(R.id.input_eventplace) TextInputEditText eventPlaceInput;
     @BindView(R.id.input_date) TextInputEditText dateInput;
     @BindView(R.id.input_time) TextInputEditText timeInput;
     @BindView(R.id.input_description) TextInputEditText descriptionInput;
     @BindView(R.id.btn_add_event) Button addEventButton;
     @BindView(R.id.btn_edit_event) Button editEventButton;
     @BindView(R.id.btn_delete_event) Button deleteEventButton;
+    @BindView(R.id.btn_synchronize) Button synchronizeEventButton;
+    @BindView(R.id.btn_join_event) Button joinEventButton;
 
     private List<TextInputLayout> inputLayoutList;
     private DatabaseReference eventsRef;
@@ -87,14 +94,24 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     private void setupContentForEdit(Event event) {
+        this.event = event;
         eventNameInput.setText(event.getName());
+        eventPlaceInput.setText(event.getPlace());
         dateInput.setText(DateHelper.parseDateFromLong(event.getDate()));
         timeInput.setText(DateHelper.parseTimeFromLong(event.getDateTime()));
         descriptionInput.setText(event.getDescription());
-        editEventButton.setVisibility(View.VISIBLE);
-        deleteEventButton.setVisibility(View.VISIBLE);
+
+        if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals(event.getOwner())) {
+            // only owner can edit or delete event
+            editEventButton.setVisibility(View.VISIBLE);
+            deleteEventButton.setVisibility(View.VISIBLE);
+        } else {
+            // non owner can join the event, by default the owner is joining the event
+            joinEventButton.setVisibility(View.VISIBLE);
+        }
+
+        synchronizeEventButton.setVisibility(View.VISIBLE);
         addEventButton.setVisibility(View.GONE);
-        this.event = event;
         setTitle(event.getName());
 
     }
@@ -160,12 +177,13 @@ public class EventFormActivity extends AppCompatActivity
     public void createOrEditEvent() {
         String eventName = String.valueOf(eventNameInput.getText());
         String description = String.valueOf(descriptionInput.getText());
+        String place = String.valueOf(eventPlaceInput.getText());
         DateTime date = DateHelper.parseDateFromString(String.valueOf(dateInput.getText()));
         DateTime time = DateHelper.parseTimeFromString(String.valueOf(timeInput.getText()));
         DateTime dateTime = date.withTime(time.getHourOfDay(), time.getMinuteOfHour(), time.getSecondOfMinute(), time.getMillisOfSecond());
         String ownerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         String id = isEdit ? event.getId() : null;
-        Event createdEvent = ModelFactory.createNewEvent(id, eventName, description, DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
+        Event createdEvent = ModelFactory.createNewEvent(id, eventName, place, description, DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
         storeNewEvent(createdEvent);
         if (!isEdit) {
             clearAllInputs();
@@ -223,6 +241,21 @@ public class EventFormActivity extends AppCompatActivity
      */
     @OnClick(R.id.btn_synchronize)
     public void synchronizeEvents() {
+
+        Calendar beginTime = Calendar.getInstance();
+        beginTime.set(2012, 0, 19, 7, 30);
+        Calendar endTime = Calendar.getInstance();
+        endTime.set(2012, 0, 19, 8, 30);
+        Intent intent = new Intent(Intent.ACTION_INSERT)
+                .setData(CalendarContract.Events.CONTENT_URI)
+                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime.getTimeInMillis())
+                .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endTime.getTimeInMillis())
+                .putExtra(CalendarContract.Events.TITLE, "Yoga")
+                .putExtra(CalendarContract.Events.DESCRIPTION, "Group class")
+                .putExtra(CalendarContract.Events.EVENT_LOCATION, "The gym")
+                .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY)
+                .putExtra(Intent.EXTRA_EMAIL, "rowan@example.com,trevor@example.com");
+        startActivity(intent);
 
     }
 

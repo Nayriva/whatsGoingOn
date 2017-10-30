@@ -27,6 +27,21 @@
                 android:hint="@string/hint_eventname" />
         </android.support.design.widget.TextInputLayout>
 
+        <!-- Event place -->
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/input_layout_eventplace"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/input_eventplace"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ic_place"
+                android:drawablePadding="@dimen/spacing_small"
+                android:hint="@string/hint_eventplace" />
+        </android.support.design.widget.TextInputLayout>
+
         <!-- Date -->
         <android.support.design.widget.TextInputLayout
             android:id="@+id/input_layout_date"
@@ -105,10 +120,19 @@
 
 
         <android.support.v7.widget.AppCompatButton
+            android:id="@+id/btn_join_event"
+            style="@style/ButtonStyle"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:background="@color/colorAccent"
+            android:visibility="gone"
+            android:text="@string/join_event" />
+
+        <android.support.v7.widget.AppCompatButton
             android:id="@+id/btn_synchronize"
             style="@style/ButtonStyle"
             android:layout_marginTop="@dimen/spacing_large"
             android:background="@color/colorAccent"
+            android:visibility="gone"
             android:text="@string/sychronize_events" />
 
 

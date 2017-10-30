@@ -3,22 +3,26 @@ package ee.ut.madp.whatsgoingon.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.List;
+
 /**
  * Created by admin on 28.10.2017.
  */
 
 public class Event implements Parcelable{
     //date for filtering
-    private String id, name, description, owner;
+    private String id, name, description, owner, place;
     private long dateTime, date;
+    private List<User> attendants;
 
     public Event() {
     }
 
-    public Event(String id, String name, String description, long date, String owner, long dateTime) {
+    public Event(String id, String name, String place, String description, long date, String owner, long dateTime) {
         this.id = id;
         this.name = name;
         this.date = date;
+        this.place = place;
         this.description = description;
         this.dateTime = dateTime;
         this.owner = owner;
@@ -27,6 +31,7 @@ public class Event implements Parcelable{
     protected Event(Parcel in) {
         id = in.readString();
         name = in.readString();
+        place = in.readString();
         description = in.readString();
         owner = in.readString();
         dateTime = in.readLong();
@@ -93,6 +98,22 @@ public class Event implements Parcelable{
         this.owner = owner;
     }
 
+    public String getPlace() {
+        return place;
+    }
+
+    public void setPlace(String place) {
+        this.place = place;
+    }
+
+    public List<User> getAttendants() {
+        return attendants;
+    }
+
+    public void setAttendants(List<User> attendants) {
+        this.attendants = attendants;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -102,6 +123,7 @@ public class Event implements Parcelable{
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(id);
         dest.writeString(name);
+        dest.writeString(place);
         dest.writeString(description);
         dest.writeString(owner);
         dest.writeLong(dateTime);
