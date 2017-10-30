@@ -101,17 +101,20 @@ public class ChatApplication extends Application implements Observable {
         };
     }
 
-    public void startAdvertise() {
+    public synchronized void startAdvertise() {
         advertiseHandler.post(advertiseCode);
     }
 
-    public void stopAdvertise() {
+    public synchronized void stopAdvertise() {
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if (currentUser == null) {
             return;
         }
-        advertiseHandler.removeCallbacks(advertiseCode);
         sendMessage(ChatHelper.cancelAdvertiseMessage(firebaseAuth.getCurrentUser().getUid()));
+        advertiseHandler.removeCallbacks(advertiseCode);
+        channelsNearDevice = new HashMap<>();
+        chatHistory = new HashMap<>();
+        groupChatsReceiversMap = new HashMap<>();
     }
 
     public ChatMessage getLastMessage(String channelId) {
