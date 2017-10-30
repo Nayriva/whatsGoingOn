@@ -205,21 +205,22 @@ public class MainActivity extends AppCompatActivity
         firebaseDatabase.child(FIREBASE_CHILD_USERS).child(getUserId()).addListenerForSingleValueEvent(
                 new ValueEventListener() {
 
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "Retrieving user with uid " + getUserId());
-                User user = dataSnapshot.getValue(User.class);
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Log.d(TAG, "Retrieving user with uid " + getUserId());
+                        User user = null;
+                        while (user == null) user = dataSnapshot.getValue(User.class);
 
-                // setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
-            }
+                        setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
+                    }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.w(TAG, "Failed to read value ", databaseError.toException());
-                DialogHelper.showAlertDialog(MainActivity.this, databaseError.toString());
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w(TAG, "Failed to read value ", databaseError.toException());
+                        DialogHelper.showAlertDialog(MainActivity.this, databaseError.toString());
 
-            }
-        });
+                    }
+                });
     }
 
     public void setupDataForDrawer(String name, String email, String photo) {
