@@ -1,12 +1,19 @@
 package ee.ut.madp.whatsgoingon.activities;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
@@ -49,24 +56,38 @@ public class EventFormActivity extends AppCompatActivity
         implements Validator.ValidationListener, Observer {
 
     @NotEmpty
-    @BindView(R.id.input_layout_eventname) TextInputLayout eventName;
+    @BindView(R.id.input_layout_eventname)
+    TextInputLayout eventName;
     @NotEmpty
-    @BindView(R.id.input_layout_eventplace) TextInputLayout eventPlace;
+    @BindView(R.id.input_layout_eventplace)
+    TextInputLayout eventPlace;
     @NotEmpty
-    @BindView(R.id.input_layout_date) TextInputLayout date;
+    @BindView(R.id.input_layout_date)
+    TextInputLayout date;
     @NotEmpty
-    @BindView(R.id.input_layout_time) TextInputLayout time;
+    @BindView(R.id.input_layout_time)
+    TextInputLayout time;
 
-    @BindView(R.id.input_eventname) TextInputEditText eventNameInput;
-    @BindView(R.id.input_eventplace) TextInputEditText eventPlaceInput;
-    @BindView(R.id.input_date) TextInputEditText dateInput;
-    @BindView(R.id.input_time) TextInputEditText timeInput;
-    @BindView(R.id.input_description) TextInputEditText descriptionInput;
-    @BindView(R.id.btn_add_event) Button addEventButton;
-    @BindView(R.id.btn_edit_event) Button editEventButton;
-    @BindView(R.id.btn_delete_event) Button deleteEventButton;
-    @BindView(R.id.btn_synchronize) Button synchronizeEventButton;
-    @BindView(R.id.btn_join_event) Button joinEventButton;
+    @BindView(R.id.input_eventname)
+    TextInputEditText eventNameInput;
+    @BindView(R.id.input_eventplace)
+    TextInputEditText eventPlaceInput;
+    @BindView(R.id.input_date)
+    TextInputEditText dateInput;
+    @BindView(R.id.input_time)
+    TextInputEditText timeInput;
+    @BindView(R.id.input_description)
+    TextInputEditText descriptionInput;
+    @BindView(R.id.btn_add_event)
+    Button addEventButton;
+    @BindView(R.id.btn_edit_event)
+    Button editEventButton;
+    @BindView(R.id.btn_delete_event)
+    Button deleteEventButton;
+    @BindView(R.id.btn_synchronize)
+    Button synchronizeEventButton;
+    @BindView(R.id.btn_join_event)
+    Button joinEventButton;
 
     private List<TextInputLayout> inputLayoutList;
     private DatabaseReference eventsRef;
@@ -168,7 +189,8 @@ public class EventFormActivity extends AppCompatActivity
             case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
             case ChatApplication.GROUP_MESSAGE_RECEIVED: {
                 //TODO show notification
-            } break;
+            }
+            break;
         }
     }
 
@@ -237,28 +259,82 @@ public class EventFormActivity extends AppCompatActivity
 
     }
 
+    public static final String[] EVENT_PROJECTION = new String[]{
+            CalendarContract.Calendars._ID,                           // 0
+            CalendarContract.Calendars.ACCOUNT_NAME,                  // 1
+            CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,         // 2
+            CalendarContract.Calendars.OWNER_ACCOUNT                  // 3
+    };
+
+    // The indices for the projection array above.
+    private static final int PROJECTION_ID_INDEX = 0;
+    private static final int PROJECTION_ACCOUNT_NAME_INDEX = 1;
+    private static final int PROJECTION_DISPLAY_NAME_INDEX = 2;
+    private static final int PROJECTION_OWNER_ACCOUNT_INDEX = 3;
+
     /**
      * Sychronizes events with the existing google calendar
      */
     @OnClick(R.id.btn_synchronize)
     public void synchronizeEvents() {
 
+        Cursor cur = null;
+        ContentResolver cr = getContentResolver();
+        Uri uri = CalendarContract.Calendars.CONTENT_URI;
+// Submit the query and get a Cursor object back.
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        cur = cr.query(uri, EVENT_PROJECTION, null, null, null);
+
+        while (cur.moveToNext()) {
+            long calID = 0;
+            String displayName = null;
+            String accountName = null;
+            String ownerName = null;
+
+            // Get the field values
+            calID = cur.getLong(PROJECTION_ID_INDEX);
+            displayName = cur.getString(PROJECTION_DISPLAY_NAME_INDEX);
+            accountName = cur.getString(PROJECTION_ACCOUNT_NAME_INDEX);
+            ownerName = cur.getString(PROJECTION_OWNER_ACCOUNT_INDEX);
+
+        }
+
+
+        long calID = 0;
+        long startMillis = 0;
+        long endMillis = 0;
         Calendar beginTime = Calendar.getInstance();
-        beginTime.set(2012, 0, 19, 7, 30);
+        beginTime.set(2017, 10, 30, 17, 30);
+        startMillis = beginTime.getTimeInMillis();
         Calendar endTime = Calendar.getInstance();
-        endTime.set(2012, 0, 19, 8, 30);
-        Intent intent = new Intent(Intent.ACTION_INSERT)
-                .setData(CalendarContract.Events.CONTENT_URI)
-                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime.getTimeInMillis())
-                .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endTime.getTimeInMillis())
-                .putExtra(CalendarContract.Events.TITLE, "Yoga")
-                .putExtra(CalendarContract.Events.DESCRIPTION, "Group class")
-                .putExtra(CalendarContract.Events.EVENT_LOCATION, "The gym")
-                .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY)
-                .putExtra(Intent.EXTRA_EMAIL, "rowan@example.com,trevor@example.com");
-        startActivity(intent);
+        endTime.set(2017, 11, 2, 8, 45);
+        endMillis = endTime.getTimeInMillis();
+
+        ContentValues values = new ContentValues();
+        values.put(CalendarContract.Events.DTSTART, startMillis);
+        values.put(CalendarContract.Events.DTEND, endMillis);
+        values.put(CalendarContract.Events.TITLE, "Jazzercise");
+        values.put(CalendarContract.Events.DESCRIPTION, "Group workout");
+        values.put(CalendarContract.Events.CALENDAR_ID, calID);
+        values.put(CalendarContract.Events.EVENT_TIMEZONE, "America/Los_Angeles");
+
+        Uri uri2 = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+
+// get the event ID that is the last element in the Uri
+        long eventID = Long.parseLong(uri.getLastPathSegment());
+
 
     }
+
 
     private void setValidation() {
         Validator validator = new Validator(this);
