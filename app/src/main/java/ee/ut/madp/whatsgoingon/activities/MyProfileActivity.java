@@ -54,6 +54,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
     private TextView username;
     private TextView email;
     private EditText nationality;
+    private EditText city;
     private EditText phoneNumber;
     private EditText school;
     private EditText work;
@@ -122,6 +123,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         username = (TextView) findViewById(R.id.tw_username);
         email = (TextView) findViewById(R.id.et_email);
         nationality = (EditText) findViewById(R.id.et_nationality);
+        city = (EditText) findViewById(R.id.et_city);
         phoneNumber = (EditText) findViewById(R.id.et_phone_number);
         work = (EditText) findViewById(R.id.et_work);
         school = (EditText) findViewById(R.id.et_school);
@@ -166,6 +168,8 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         }
         nationality.setText(user.getNationality() == null
                 ? "" : backupValues.get("nationality"));
+        city.setText(user.getNationality() == null
+                ? "" : backupValues.get("city"));
         phoneNumber.setText(user.getPhoneNumber() == null
                 ? "" : backupValues.get("phoneNumber"));
         work.setText(user.getWork() == null
@@ -184,6 +188,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         backupValues.put("school", user.getSchool());
         backupValues.put("birthday", user.getBirthday());
         backupValues.put("photo", user.getPhoto());
+        backupValues.put("city", user.getCity());
     }
 
     private void setFABListeners() {

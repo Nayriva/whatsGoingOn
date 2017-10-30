@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "Retrieving user with uid " + getUserId());
                 User user = dataSnapshot.getValue(User.class);
 
-                setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
+                // setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
             }
 
             @Override

@@ -74,6 +74,40 @@
 
         </RelativeLayout>
 
+
+        <!-- city -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:padding="@dimen/activity_horizontal_margin">
+
+            <ImageView
+                android:id="@+id/iv_city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                app:srcCompat="@drawable/ic_place"
+                tools:ignore="ContentDescription"/>
+
+            <EditText
+                android:id="@+id/et_city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_toEndOf="@id/iv_city"
+                android:hint="@string/hint_city"
+                android:background="@android:color/transparent"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="#212121"
+                android:textColorHint="#212121"
+                android:inputType="text"/>
+
+
+        </RelativeLayout>
+
         <!-- phone number -->
         <RelativeLayout
             android:layout_width="match_parent"

@@ -12,9 +12,9 @@ public class ModelFactory {
     }
 
     public static User createUserProfiled(String id, String name, String email, String photo,
-                                          String nationality, String phoneNumber, String school,
+                                          String nationality, String city, String phoneNumber, String school,
                                           String work, Date birthday) {
-        return  new User(id, name, email, photo, nationality, phoneNumber, school, work, birthday);
+        return new User(id, name, email, photo, nationality, city, phoneNumber, school, work, birthday);
     }
 
     public static Event createNewEvent(String id, String name, String place, String description, long date, String owner, long dateTime) {

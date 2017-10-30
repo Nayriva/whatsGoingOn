@@ -17,6 +17,7 @@ public class User {
     private String school;
     private String work;
     private String birthday;
+    private String city;
 
     public User() {
     }
@@ -93,6 +94,14 @@ public class User {
         this.birthday = birthday;
     }
 
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
     public User(String id, String photo, String email, String name) {
         this.id = id;
         this.photo = photo;
@@ -101,7 +110,7 @@ public class User {
     }
 
     public User(String id, String name, String email, String photo,
-                String nationality, String phoneNumber, String school, String work, Date birthday) {
+                String nationality, String city, String phoneNumber, String school, String work, Date birthday) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         this.id = id;
         this.name = name;
@@ -111,6 +120,7 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.school = school;
         this.work = work;
+        this.city = city;
         this.birthday = dateFormat.format(birthday);
     }
 
@@ -126,6 +136,8 @@ public class User {
                 ", school='" + school + '\'' +
                 ", work='" + work + '\'' +
                 ", birthday='" + birthday + '\'' +
+                ", city='" + city + '\'' +
                 '}';
     }
 }
+
