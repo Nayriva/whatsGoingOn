@@ -204,6 +204,7 @@ public class EventFormActivity extends AppCompatActivity
 
     private void clearAllInputs() {
         eventNameInput.getText().clear();
+        eventPlaceInput.getText().clear();
         descriptionInput.getText().clear();
         dateInput.getText().clear();
         timeInput.getText().clear();
@@ -278,6 +279,7 @@ public class EventFormActivity extends AppCompatActivity
 
         inputLayoutList = new ArrayList<TextInputLayout>() {{
             add(eventName);
+            add(eventPlace);
             add(date);
             add(time);
         }};

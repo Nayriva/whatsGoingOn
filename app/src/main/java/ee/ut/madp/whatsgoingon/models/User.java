@@ -1,7 +1,5 @@
 package ee.ut.madp.whatsgoingon.models;
 
-import com.google.firebase.database.Exclude;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -13,7 +11,6 @@ public class User {
     private String id;
     private String name;
     private String email;
-    @Exclude
     private String photo;
     private String nationality;
     private String phoneNumber;
@@ -24,12 +21,10 @@ public class User {
     public User() {
     }
 
-    @Exclude
     public String getPhoto() {
         return photo;
     }
 
-    @Exclude
     public void setPhoto(String photo) {
         this.photo = photo;
     }

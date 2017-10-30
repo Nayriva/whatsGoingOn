@@ -82,4 +82,9 @@
         <item name="android:textColor">@color/colorTextBlack</item>
     </style>
 
+    <style name="MyAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:background">@drawable/dialog_bg</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
 </resources>
