@@ -54,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:layout_toLeftOf="@id/bt_attachment"
                 android:padding="@dimen/spacing_large"
-                android:hint="Enter your message"
+                android:hint="@string/hint_enter_message"
                 android:maxLines="3"
                 android:textSize="@dimen/h3"
                 android:textColor="@color/colorTextBlack"

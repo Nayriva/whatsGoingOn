@@ -191,5 +191,6 @@
     <string name="sychronize_events">Synchronize with my calendars</string>
     <string name="join_event">Join event</string>
     <string name="hint_eventplace">Place</string>
+    <string name="hint_enter_message">Enter your message</string>
 
 </resources>

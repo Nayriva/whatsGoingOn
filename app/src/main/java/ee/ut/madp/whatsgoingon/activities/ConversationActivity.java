@@ -2,16 +2,19 @@ package ee.ut.madp.whatsgoingon.activities;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -74,9 +77,11 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         application.addObserver(this);
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
+        
 
         if (getIntent().hasExtra(PARCEL_CHAT_CHANNEL)) {
             chatChannel = getIntent().getParcelableExtra(PARCEL_CHAT_CHANNEL);
+            setUserProfilePhotos();
 
             isGroup = chatChannel.isGroup();
             setTitle(chatChannel.getName());
@@ -88,6 +93,13 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         setupRecyclerView();
 
         updateHistory();
+    }
+
+    private void setUserProfilePhotos() {
+        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View meView = inflater.inflate(R.layout.message_me, null);
+        ImageView mePhoto = (ImageView) meView.findViewById(R.id.user_photo);
+        mePhoto.setImageResource(R.drawable.b7);
     }
 
     @Override
