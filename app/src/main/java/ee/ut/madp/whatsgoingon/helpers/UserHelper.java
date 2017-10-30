@@ -63,7 +63,7 @@ public class UserHelper {
                           @Override
                           public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                               try {
-                                  saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser, photoUrl);
+                                  saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser, ImageHelper.encodeBitmap(bitmap));
                                   LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                   View view = inflater.inflate(R.layout.nav_header_main, null);
                                   CircleImageView profilePhoto = (CircleImageView) view.findViewById(R.id.user_photo);
@@ -93,7 +93,7 @@ public class UserHelper {
                           @Override
                           public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                               try {
-                                  saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser, photoUrl);
+                                  saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser, ImageHelper.encodeBitmap(bitmap));
                                   LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                   View view = inflater.inflate(R.layout.nav_header_main, null);
                                   CircleImageView profilePhoto = (CircleImageView) view.findViewById(R.id.user_photo);

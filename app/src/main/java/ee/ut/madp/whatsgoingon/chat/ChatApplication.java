@@ -160,6 +160,8 @@ public class ChatApplication extends Application implements Observable {
         }
     });
 
+
+
     private void dealWithCancelAdvertiseMessage(String receivedMsg) {
         String sender = ChatHelper.cancelAdvertiseMessageSender(receivedMsg);
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
