@@ -17,11 +17,12 @@ public class ChatMessage {
     private long messageTime;
     private boolean isMe;
 
-    public ChatMessage(String messageText, String displayName, String sender) {
+    public ChatMessage(String messageText, String displayName, String sender, boolean isMe) {
         this.messageText = messageText;
         this.displayName = displayName;
         this.sender = sender;
         this.messageTime = new Date().getTime();
+        this.isMe = isMe;
     }
 
     public ChatMessage() {
