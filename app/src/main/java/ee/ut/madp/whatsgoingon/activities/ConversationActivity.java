@@ -97,8 +97,8 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
     private void setUserProfilePhotos() {
         LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View meView = inflater.inflate(R.layout.message_me, null);
-        ImageView mePhoto = (ImageView) meView.findViewById(R.id.user_photo);
+        View youView = inflater.inflate(R.layout.message_you, null);
+        ImageView mePhoto = (ImageView) youView.findViewById(R.id.user_photo);
         mePhoto.setImageResource(R.drawable.b7);
     }
 
