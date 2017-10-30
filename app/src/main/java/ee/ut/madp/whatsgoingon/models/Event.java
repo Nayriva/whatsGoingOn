@@ -3,7 +3,10 @@ package ee.ut.madp.whatsgoingon.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.firebase.database.Exclude;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by admin on 28.10.2017.
@@ -13,7 +16,9 @@ public class Event implements Parcelable{
     //date for filtering
     private String id, name, description, owner, place;
     private long dateTime, date;
-    private List<String> attendantIds;
+    private List<Map<String, String>> attendantIds;
+    @Exclude
+    private boolean isJoining;
 
     public Event() {
     }
@@ -36,6 +41,7 @@ public class Event implements Parcelable{
         owner = in.readString();
         dateTime = in.readLong();
         date = in.readLong();
+        isJoining = in.readByte() != 0;
     }
 
     public static final Creator<Event> CREATOR = new Creator<Event>() {
@@ -106,12 +112,20 @@ public class Event implements Parcelable{
         this.place = place;
     }
 
-    public List<String> getAttendantIds() {
+    public List<Map<String, String>> getAttendantIds() {
         return attendantIds;
     }
 
-    public void setAttendantIds(List<String> attendantIds) {
+    public void setAttendantIds(List<Map<String,String>> attendantIds) {
         this.attendantIds = attendantIds;
+    }
+
+    public boolean isJoining() {
+        return isJoining;
+    }
+
+    public void setJoining(boolean joining) {
+        isJoining = joining;
     }
 
     @Override
@@ -128,5 +142,6 @@ public class Event implements Parcelable{
         dest.writeString(owner);
         dest.writeLong(dateTime);
         dest.writeLong(date);
+        dest.writeByte((byte) (isJoining ? 1 : 0));
     }
 }

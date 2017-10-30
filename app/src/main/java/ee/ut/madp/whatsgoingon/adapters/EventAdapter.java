@@ -12,13 +12,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.firebase.auth.FirebaseAuth;
-
 import java.util.List;
 
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
+import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.Event;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_EVENT;
@@ -48,8 +47,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.MyViewHolder
     public void onBindViewHolder(MyViewHolder holder, int position) {
         Event event = eventList.get(position);
         holder.eventName.setText(event.getName());
-        if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals(event.getOwner())) {
+        if (UserHelper.getCurrentUserId().equals(event.getOwner())) {
             holder.eventType.setBackgroundColor(context.getResources().getColor(R.color.colorPrimary));
+        } else if (event.isJoining()) {
+            holder.eventType.setBackgroundColor(context.getResources().getColor(R.color.colorAccent));
         }
 
         holder.eventTime.setText(String.valueOf(DateHelper.parseTimeFromLong(event.getDateTime())));

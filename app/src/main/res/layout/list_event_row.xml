@@ -9,8 +9,7 @@
     <TextView
         android:id="@+id/event_type"
         android:layout_width="@dimen/spacing_large"
-        android:layout_height="@dimen/event_type_height"
-        android:background="@color/colorAccent" />
+        android:layout_height="@dimen/event_type_height" />
 
     <TextView
         android:id="@+id/event_name"

@@ -34,6 +34,7 @@ import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
+import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.Event;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_EVENTS_DATE;
@@ -127,6 +128,11 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     Event event = postSnapshot.getValue(Event.class);
+                    if ( event.getAttendantIds() != null && event.getAttendantIds().contains(UserHelper.getCurrentUserId())) {
+                        event.setJoining(true);
+                    } else {
+                        event.setJoining(false);
+                    }
                     if (event != null) {
                         eventList.add(event);
                     }
@@ -145,4 +151,5 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
 
         return valueEventListener;
     }
+
 }

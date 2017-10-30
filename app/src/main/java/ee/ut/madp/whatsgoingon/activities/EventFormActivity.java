@@ -22,8 +22,11 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.mobsandgeeks.saripaar.ValidationError;
 import com.mobsandgeeks.saripaar.Validator;
 import com.mobsandgeeks.saripaar.adapter.ViewDataAdapter;
@@ -48,6 +51,7 @@ import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
+import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.Event;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_EVENT;
@@ -94,6 +98,7 @@ public class EventFormActivity extends AppCompatActivity
     private Intent data;
     boolean isEdit = false;
     private Event event;
+    private boolean isJoining = false;
 
     private ChatApplication application;
 
@@ -103,6 +108,8 @@ public class EventFormActivity extends AppCompatActivity
         setContentView(R.layout.activity_form_event);
         ButterKnife.bind(this);
 
+        eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
+
         if (getIntent().hasExtra(PARCEL_EVENT)) {
             isEdit = true;
             setupContentForEdit((Event) getIntent().getParcelableExtra(PARCEL_EVENT));
@@ -111,7 +118,7 @@ public class EventFormActivity extends AppCompatActivity
         application = (ChatApplication) getApplication();
         application.addObserver(this);
         setValidation();
-        eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
+
     }
 
     private void setupContentForEdit(Event event) {
@@ -128,7 +135,30 @@ public class EventFormActivity extends AppCompatActivity
             deleteEventButton.setVisibility(View.VISIBLE);
         } else {
             // non owner can join the event, by default the owner is joining the event
-            joinEventButton.setVisibility(View.VISIBLE);
+            DialogHelper.showProgressDialog(this, getString(R.string.progress_dialog_wait));
+            if (isEdit && this.event != null && !isJoining) {
+                eventsRef.child(event.getId()).child(FirebaseConstants.FIREBASE_CHILD_EVENTS_ATTENDANTS).orderByValue().equalTo(UserHelper.getCurrentUserId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            isJoining = true;
+                        }
+
+                        if (isJoining) {
+                            joinEventButton.setText(getString(R.string.leave_event));
+                        }
+
+                        joinEventButton.setVisibility(View.VISIBLE);
+                        DialogHelper.hideProgressDialog();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+
         }
 
         synchronizeEventButton.setVisibility(View.VISIBLE);
@@ -262,7 +292,19 @@ public class EventFormActivity extends AppCompatActivity
     @OnClick(R.id.btn_join_event)
     public void joinEvent() {
         if (isEdit && event != null) {
-            eventsRef.child(event.getId()).child(FirebaseConstants.FIREBASE_CHILD_EVENTS_ATTENDANTS).push().setValue(FirebaseAuth.getInstance().getCurrentUser().getUid());
+            if (!isJoining) {
+                eventsRef.child(event.getId()).child(FirebaseConstants.FIREBASE_CHILD_EVENTS_ATTENDANTS).push().child(UserHelper.getCurrentUserId()).setValue(UserHelper.getCurrentUserId());
+                isJoining = true;
+                event.setJoining(true);
+                joinEventButton.setText(getString(R.string.leave_event));
+                Toast.makeText(this, getString(R.string.message_join_event), Toast.LENGTH_SHORT).show();
+            } else {
+                eventsRef.child(event.getId()).child(FirebaseConstants.FIREBASE_CHILD_EVENTS_ATTENDANTS).child(UserHelper.getCurrentUserId()).removeValue();
+                isJoining = false;
+                event.setJoining(false);
+                joinEventButton.setText(getString(R.string.join_event));
+                Toast.makeText(EventFormActivity.this, getString(R.string.message_leave_event), Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

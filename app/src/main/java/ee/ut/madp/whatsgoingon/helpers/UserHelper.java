@@ -8,9 +8,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
@@ -27,6 +27,11 @@ public class UserHelper {
 
     public static final String TAG = UserHelper.class.getSimpleName();
     private static DatabaseReference firebaseDatabase;
+
+    public static String getCurrentUserId() {
+        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+    }
+
 
     private static DatabaseReference getFirebaseDatabase() {
         if (firebaseDatabase == null) {
