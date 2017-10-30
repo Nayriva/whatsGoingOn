@@ -82,7 +82,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         if (getIntent().hasExtra(PARCEL_CHAT_CHANNEL)) {
             chatChannel = getIntent().getParcelableExtra(PARCEL_CHAT_CHANNEL);
 
-            isGroup = chatChannel.isGroup();
+            isGroup = application.getChannel(chatChannel.getId()).isGroup();
             setTitle(chatChannel.getName());
             if (isGroup) {
                 this.receivers = application.getGroupReceivers(chatChannel.getId());

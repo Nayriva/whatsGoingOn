@@ -38,7 +38,6 @@ import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.models.Event;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENTS_REQUEST_CODE;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_DAY_REQUEST_CODE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARAM_EVENT_DAY;
 
 public class EventFragment extends Fragment {
@@ -101,7 +100,7 @@ public class EventFragment extends Fragment {
                 if (eventDays.contains(DateHelper.removeTimeFromDate(date))) {
                     Intent intent = new Intent(getActivity(), EventsOnDayActivity.class);
                     intent.putExtra(PARAM_EVENT_DAY, DateHelper.removeTimeFromDate(date).getTime());
-                    startActivityForResult(intent, EVENT_DAY_REQUEST_CODE);
+                    getActivity().startActivityForResult(intent, EVENTS_REQUEST_CODE);
                 }
             }
 
@@ -114,13 +113,9 @@ public class EventFragment extends Fragment {
 
     @OnClick(R.id.btn_add_event)
     public void showAddEventForm() {
-        startActivityForResult(new Intent(getActivity(), EventFormActivity.class), EVENTS_REQUEST_CODE);
+        startActivity(new Intent(getActivity(), EventFormActivity.class));
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-    }
 
     private class EventColorDecorator implements DayDecorator {
 
