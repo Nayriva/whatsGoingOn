@@ -143,6 +143,10 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
         String username = String.valueOf(usernameInput.getText());
         String email = String.valueOf(emailInput.getText());
         String password = String.valueOf(passwordInput.getText());
+        if (profilePhoto == null) {
+            profilePhoto = ImageHelper.encodeBitmap(
+                    BitmapFactory.decodeResource(getResources(), R.drawable.user));
+        }
         createNewUser(email, password, username, profilePhoto);
     }
 

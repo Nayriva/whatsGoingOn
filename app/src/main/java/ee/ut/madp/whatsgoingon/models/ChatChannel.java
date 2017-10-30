@@ -1,3 +1,4 @@
+
 package ee.ut.madp.whatsgoingon.models;
 
 import android.os.Parcel;
@@ -7,6 +8,7 @@ import android.os.Parcelable;
  * Created by dominikf on 21. 10. 2017.
  */
 public class ChatChannel implements Parcelable {
+
     private String id;
     private String name;
     private String photo;
