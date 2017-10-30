@@ -24,7 +24,9 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import butterknife.BindView;
@@ -62,6 +64,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     private ChatChannel chatChannel;
     private boolean isGroup;
     private String[] receivers;
+    private Map<String, String> photosMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +77,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         application.addObserver(this);
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
+        photosMap = new HashMap<>();
 
         if (getIntent().hasExtra(PARCEL_CHAT_CHANNEL)) {
             chatChannel = getIntent().getParcelableExtra(PARCEL_CHAT_CHANNEL);
@@ -86,8 +90,29 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         }
 
         setupRecyclerView();
-
+        if (isGroup) {
+            downloadPhotos();
+        }
         updateHistory();
+    }
+
+    private void downloadPhotos() {
+        for (String receiver: receivers) {
+            usersRef.child(receiver).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    User user = dataSnapshot.getValue(User.class);
+                    if (user != null && user.getId() != null && user.getPhoto() != null) {
+                        photosMap.put(user.getId(), user.getPhoto());
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
     }
 
     @Override

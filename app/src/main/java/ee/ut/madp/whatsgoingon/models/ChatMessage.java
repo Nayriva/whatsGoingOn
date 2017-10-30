@@ -48,7 +48,7 @@ public class ChatMessage {
         return isMe;
     }
 
-    public void setMe(boolean me) {
+    public void sextMe(boolean me) {
         isMe = me;
     }
 
