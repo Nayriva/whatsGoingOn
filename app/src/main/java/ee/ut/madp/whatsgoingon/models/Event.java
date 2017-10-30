@@ -13,7 +13,7 @@ public class Event implements Parcelable{
     //date for filtering
     private String id, name, description, owner, place;
     private long dateTime, date;
-    private List<User> attendants;
+    private List<String> attendantIds;
 
     public Event() {
     }
@@ -106,12 +106,12 @@ public class Event implements Parcelable{
         this.place = place;
     }
 
-    public List<User> getAttendants() {
-        return attendants;
+    public List<String> getAttendantIds() {
+        return attendantIds;
     }
 
-    public void setAttendants(List<User> attendants) {
-        this.attendants = attendants;
+    public void setAttendantIds(List<String> attendantIds) {
+        this.attendantIds = attendantIds;
     }
 
     @Override

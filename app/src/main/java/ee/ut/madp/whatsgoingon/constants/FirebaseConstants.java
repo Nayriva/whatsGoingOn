@@ -9,4 +9,5 @@ public class FirebaseConstants {
     public static final String FIREBASE_CHILD_GROUPS = "groups";
     public static final String FIREBASE_CHILD_EVENTS = "events";
     public static final String FIREBASE_CHILD_EVENTS_DATE = "date";
+    public static final String FIREBASE_CHILD_EVENTS_ATTENDANTS = "attendants";
 }

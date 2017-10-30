@@ -259,6 +259,13 @@ public class EventFormActivity extends AppCompatActivity
 
     }
 
+    @OnClick(R.id.btn_join_event)
+    public void joinEvent() {
+        if (isEdit && event != null) {
+            eventsRef.child(event.getId()).child(FirebaseConstants.FIREBASE_CHILD_EVENTS_ATTENDANTS).push().setValue(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        }
+    }
+
     public static final String[] EVENT_PROJECTION = new String[]{
             CalendarContract.Calendars._ID,                           // 0
             CalendarContract.Calendars.ACCOUNT_NAME,                  // 1

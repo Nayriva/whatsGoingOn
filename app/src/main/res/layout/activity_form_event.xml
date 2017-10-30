@@ -24,6 +24,7 @@
                 android:layout_height="wrap_content"
                 android:drawableLeft="@drawable/ic_event_name"
                 android:drawablePadding="@dimen/spacing_small"
+                android:descendantFocusability="blocksDescendants"
                 android:hint="@string/hint_eventname" />
         </android.support.design.widget.TextInputLayout>
 
@@ -38,6 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:drawableLeft="@drawable/ic_place"
+                android:descendantFocusability="blocksDescendants"
                 android:drawablePadding="@dimen/spacing_small"
                 android:hint="@string/hint_eventplace" />
         </android.support.design.widget.TextInputLayout>

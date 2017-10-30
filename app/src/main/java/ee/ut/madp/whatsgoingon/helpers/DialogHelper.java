@@ -11,7 +11,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
@@ -98,8 +97,6 @@ public class DialogHelper {
             month = myCalendar.get(Calendar.MONTH);
             day = myCalendar.get(Calendar.DAY_OF_MONTH);
         }
-
-        Log.i("TimePicker", "vola se");
 
 
         TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
