@@ -11,7 +11,8 @@
         android:layout_alignParentLeft="true"
         android:orientation="horizontal"
         android:gravity="center_vertical">
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/civ_message_user_photo"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@drawable/user"

@@ -92,6 +92,9 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         setupRecyclerView();
         if (isGroup) {
             downloadPhotos();
+        } else {
+            photosMap.put(application.getLoggedUser().getId(), application.getLoggedUser().getPhoto());
+            photosMap.put(chatChannel.getId(), chatChannel.getPhoto());
         }
         updateHistory();
     }
@@ -181,7 +184,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     }
 
     private void setupRecyclerView() {
-        messageAdapter = new MessageAdapter(this, chatMessageList);
+        messageAdapter = new MessageAdapter(this, chatMessageList, photosMap);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());

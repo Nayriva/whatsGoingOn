@@ -26,21 +26,15 @@ import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD
 public class UserHelper {
 
     public static final String TAG = UserHelper.class.getSimpleName();
-    private static DatabaseReference firebaseDatabase;
-
-    private static DatabaseReference getFirebaseDatabase() {
-        if (firebaseDatabase == null) {
-            firebaseDatabase = FirebaseDatabase.getInstance().getReference();
-        }
-        return firebaseDatabase;
-    }
+    private static DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference().child(FIREBASE_CHILD_USERS);
 
     public static void saveNewUserToDB(String name, FirebaseUser firebaseUser, String photo) {
         User user = ModelFactory.createUser(firebaseUser.getUid(), photo, firebaseUser.getEmail(), name);
-        getFirebaseDatabase().child(FIREBASE_CHILD_USERS).child(firebaseUser.getUid()).setValue(user);
+        usersRef.child(firebaseUser.getUid()).setValue(user);
+        usersRef.child(FIREBASE_CHILD_USERS).child(firebaseUser.getUid()).keepSynced(true);
     }
 
-    public static String getFacebookPhotoUrl(FirebaseUser firebaseUser) {
+    private static String getFacebookPhotoUrl(FirebaseUser firebaseUser) {
         String facebookUserId = "";
         for (UserInfo profile : firebaseUser.getProviderData()) {
             if (profile.getProviderId().equals("facebook.com")) {
@@ -51,10 +45,6 @@ public class UserHelper {
         return "https://graph.facebook.com/" + facebookUserId + "/picture?type=large";
     }
 
-    public static String getGooglePhotoUrl(Uri photoUrl) {
-        return photoUrl.toString();
-    }
-
     public static void saveFacebookInfoAboutUser(final Context context, final FirebaseUser firebaseUser) {
         final String photoUrl = getFacebookPhotoUrl(firebaseUser);
         Picasso.with(context)
@@ -63,10 +53,13 @@ public class UserHelper {
                           @Override
                           public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                               try {
-                                  saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser, ImageHelper.encodeBitmap(bitmap));
-                                  LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                                  saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser,
+                                          ImageHelper.encodeBitmap(bitmap));
+                                  LayoutInflater inflater = (LayoutInflater) context
+                                          .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                   View view = inflater.inflate(R.layout.nav_header_main, null);
-                                  CircleImageView profilePhoto = (CircleImageView) view.findViewById(R.id.user_photo);
+                                  CircleImageView profilePhoto = (CircleImageView) view
+                                          .findViewById(R.id.user_photo);
                                   profilePhoto.setImageBitmap(bitmap);
                               } catch (Exception e) {
                                   Log.e(TAG, "onBitmapLoaded " + e.getMessage());
@@ -93,10 +86,13 @@ public class UserHelper {
                           @Override
                           public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                               try {
-                                  saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser, ImageHelper.encodeBitmap(bitmap));
-                                  LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                                  saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser,
+                                          ImageHelper.encodeBitmap(bitmap));
+                                  LayoutInflater inflater = (LayoutInflater) context
+                                          .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                   View view = inflater.inflate(R.layout.nav_header_main, null);
-                                  CircleImageView profilePhoto = (CircleImageView) view.findViewById(R.id.user_photo);
+                                  CircleImageView profilePhoto = (CircleImageView) view
+                                          .findViewById(R.id.user_photo);
                                   profilePhoto.setImageBitmap(bitmap);
                               } catch (Exception e) {
                                   Log.e(TAG, "onBitmapLoaded " + e.getMessage());

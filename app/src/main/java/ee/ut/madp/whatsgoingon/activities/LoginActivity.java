@@ -52,15 +52,13 @@ public class LoginActivity extends AppCompatActivity
     private static final String TAG = LoginActivity.class.getSimpleName();
     private ChatApplication application;
 
-    @BindView(R.id.coordinator_layout)
-    CoordinatorLayout coordinatorLayout;
+    @BindView(R.id.coordinator_layout) CoordinatorLayout coordinatorLayout;
 
     @BindView(R.id.input_email) TextInputEditText emailInput;
     @BindView(R.id.input_password) TextInputEditText passwordInput;
     @BindView(R.id.login_title) TextView loginTitle;
 
-    @BindView(R.id.btn_facebook)
-    LoginButton facebookButton;
+    @BindView(R.id.btn_facebook) LoginButton facebookButton;
 
     private GoogleApiClient mGoogleApiClient;
     private FirebaseAuth firebaseAuth;

@@ -5,12 +5,16 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
+import java.util.Map;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
+import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 /**
@@ -20,10 +24,12 @@ import ee.ut.madp.whatsgoingon.models.ChatMessage;
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHolder> {
     private List<ChatMessage> chatMessages;
     private Context context;
+    private Map<String, String> photosMap;
 
-    public MessageAdapter(Context context, List<ChatMessage> chatMessages) {
+    public MessageAdapter(Context context, List<ChatMessage> chatMessages, Map<String, String> photosMap) {
         this.chatMessages = chatMessages;
         this.context = context;
+        this.photosMap = photosMap;
     }
 
     @Override
@@ -46,6 +52,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
         ChatMessage chatMessage = chatMessages.get(position);
         holder.message.setText(chatMessage.getMessageText());
         holder.messageTime.setText(DateHelper.createMessageTime(context, chatMessage.getMessageTime()));
+        holder.photo.setImageBitmap(ImageHelper.decodeBitmap(photosMap.get(chatMessage.getSender())));
     }
 
     @Override
@@ -60,11 +67,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
 
     public class MyViewHolder extends RecyclerView.ViewHolder  {
         TextView messageTime, message;
+        CircleImageView photo;
 
         public MyViewHolder(View view) {
             super(view);
             message = (TextView) view.findViewById(R.id.tv_chat_text);
             messageTime = (TextView) view.findViewById(R.id.tv_time);
+            photo = (CircleImageView) view.findViewById(R.id.civ_message_user_photo);
         }
 
     }
