@@ -2,19 +2,16 @@ package ee.ut.madp.whatsgoingon.activities;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -27,7 +24,9 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import butterknife.BindView;
@@ -65,6 +64,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     private ChatChannel chatChannel;
     private boolean isGroup;
     private String[] receivers;
+    private Map<String, String> photosMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,11 +77,10 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         application.addObserver(this);
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
-        
+        photosMap = new HashMap<>();
 
         if (getIntent().hasExtra(PARCEL_CHAT_CHANNEL)) {
             chatChannel = getIntent().getParcelableExtra(PARCEL_CHAT_CHANNEL);
-            setUserProfilePhotos();
 
             isGroup = chatChannel.isGroup();
             setTitle(chatChannel.getName());
@@ -91,15 +90,29 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         }
 
         setupRecyclerView();
-
+        if (isGroup) {
+            downloadPhotos();
+        }
         updateHistory();
     }
 
-    private void setUserProfilePhotos() {
-        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View youView = inflater.inflate(R.layout.message_you, null);
-        ImageView mePhoto = (ImageView) youView.findViewById(R.id.user_photo);
-        mePhoto.setImageResource(R.drawable.b7);
+    private void downloadPhotos() {
+        for (String receiver: receivers) {
+            usersRef.child(receiver).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    User user = dataSnapshot.getValue(User.class);
+                    if (user != null && user.getId() != null && user.getPhoto() != null) {
+                        photosMap.put(user.getId(), user.getPhoto());
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
     }
 
     @Override
