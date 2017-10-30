@@ -132,7 +132,7 @@ public class ChatApplication extends Application implements Observable {
 
         @Override
         public boolean handleMessage(Message msg) {
-            if (msg.what == MESSAGE_CHAT) {
+            if (firebaseAuth.getCurrentUser() != null && msg.what == MESSAGE_CHAT) {
                 String receivedMsg = (String) msg.obj;
                 String messageType = ChatHelper.getMessageType(receivedMsg);
                 switch (messageType) {
@@ -283,7 +283,8 @@ public class ChatApplication extends Application implements Observable {
         String displayName = ChatHelper.groupMessageSenderDisplayName(receivedMsg);
         List<ChatMessage> hist = chatHistory.get(group);
 
-        ChatMessage newMessage = new ChatMessage(text, displayName, sender);
+        ChatMessage newMessage = new ChatMessage(text, displayName, sender,
+                firebaseAuth.getCurrentUser().getUid().equals(sender));
         if (hist.size() > HISTORY_MAX) {
             hist.remove(0);
             //TODO store messages to DB
@@ -313,7 +314,8 @@ public class ChatApplication extends Application implements Observable {
         String senderName = ChatHelper.oneToOneMessageSenderDisplayName(receivedMsg);
         List<ChatMessage> hist = chatHistory.get(sender);
 
-        ChatMessage newMessage = new ChatMessage(text, senderName, sender);
+        ChatMessage newMessage = new ChatMessage(text, senderName, sender,
+                firebaseAuth.getCurrentUser().getUid().equals(sender));
         if (hist.size() > HISTORY_MAX) {
             hist.remove(0);
             //TODO store messages to DB
@@ -340,7 +342,7 @@ public class ChatApplication extends Application implements Observable {
                     chatHistory.put(channel, new ArrayList<ChatMessage>());
                 }
                 List<ChatMessage> hist = chatHistory.get(channel);
-                ChatMessage newMessage = new ChatMessage(text, name, channel);
+                ChatMessage newMessage = new ChatMessage(text, name, channel, true);
                 if (hist.size() > HISTORY_MAX) {
                     hist.remove(0);
                     //TODO store messages to DB
