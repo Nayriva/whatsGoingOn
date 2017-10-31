@@ -21,7 +21,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -30,6 +29,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.mvc.imagepicker.ImagePicker;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -37,6 +37,7 @@ import java.util.UUID;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import ee.ut.madp.whatsgoingon.ChatChannelComparator;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.adapters.ChatChannelAdapter;
 import ee.ut.madp.whatsgoingon.chat.ChatApplication;
@@ -64,7 +65,6 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     @BindView(R.id.tv_channels_status) TextView channelsStatus;
 
     private ChatApplication application;
-    private FirebaseAuth firebaseAuth;
     private DatabaseReference groupsRef;
     private ChatChannelAdapter chatChannelAdapter;
     private String groupPhotoResult;
@@ -73,7 +73,6 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     public void onAttach(Context context) {
         super.onAttach(context);
         application = (ChatApplication) context.getApplicationContext();
-        firebaseAuth = FirebaseAuth.getInstance();
         application.addObserver(this);
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
 
@@ -146,6 +145,10 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         for (ChatChannel chatChannel : channels) {
             chatChannelAdapter.addChannel(chatChannel);
         }
+
+        List<ChatChannel> list = new ArrayList<>(channels);
+        Collections.sort(list, new ChatChannelComparator());
+
         if (channels.isEmpty()) {
             channelsStatus.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
