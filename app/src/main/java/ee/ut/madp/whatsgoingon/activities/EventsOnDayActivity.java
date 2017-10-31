@@ -39,6 +39,7 @@ import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.Event;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_EVENTS_DATE;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_DAY_REQUEST_CODE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARAM_EVENT_DAY;
 
 public class EventsOnDayActivity extends AppCompatActivity implements Observer {
@@ -83,18 +84,28 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        if (getIntent().hasExtra(GeneralConstants.EXTRA_EVENT_JOINING)) {
-            joinedEvent = getIntent().getStringExtra(GeneralConstants.EXTRA_EVENT_JOINING);
-        }
-        if (eventList != null && joinedEvent != null) {
-            for (Event event : eventList) {
-                if (event.getId().equals(joinedEvent)) {
-                    event.setJoining(true);
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == EVENT_DAY_REQUEST_CODE) {
+                if (getIntent().hasExtra(GeneralConstants.EXTRA_EVENT_JOINING)) {
+                    joinedEvent = getIntent().getStringExtra(GeneralConstants.EXTRA_EVENT_JOINING);
+                    if (eventList != null && joinedEvent != null) {
+                        for (Event event : eventList) {
+                            if (event.getId().equals(joinedEvent)) {
+                                event.setJoining(true);
+                            }
+                            eventAdapter.notifyDataSetChanged();
+                        }
+                    }
                 }
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -127,7 +138,7 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
     }
 
     private void setupRecyclerView() {
-        eventAdapter = new EventAdapter(this, eventList);
+        eventAdapter = new EventAdapter(EventsOnDayActivity.this, eventList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
