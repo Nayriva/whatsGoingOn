@@ -21,7 +21,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -48,6 +47,7 @@ import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
@@ -129,7 +129,7 @@ public class EventFormActivity extends AppCompatActivity
         timeInput.setText(DateHelper.parseTimeFromLong(event.getDateTime()));
         descriptionInput.setText(event.getDescription());
 
-        if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals(event.getOwner())) {
+        if (UserHelper.getCurrentUserId().equals(event.getOwner())) {
             // only owner can edit or delete event
             editEventButton.setVisibility(View.VISIBLE);
             deleteEventButton.setVisibility(View.VISIBLE);
@@ -137,7 +137,7 @@ public class EventFormActivity extends AppCompatActivity
             // non owner can join the event, by default the owner is joining the event
             DialogHelper.showProgressDialog(this, getString(R.string.progress_dialog_wait));
             if (isEdit && this.event != null && !isJoining) {
-                eventsRef.child(event.getId()).child(FirebaseConstants.FIREBASE_CHILD_EVENTS_ATTENDANTS).orderByValue().equalTo(UserHelper.getCurrentUserId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                eventsRef.child(event.getId()).child(FirebaseConstants.FIREBASE_CHILD_EVENTS_ATTENDANTS).orderByKey().equalTo(UserHelper.getCurrentUserId()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -178,6 +178,7 @@ public class EventFormActivity extends AppCompatActivity
         int id = item.getItemId();
         if (id == android.R.id.home) {
             data = new Intent();
+            if (!isJoining) data.putExtra(GeneralConstants.EXTRA_EVENT_JOINING, event.getId());
             setResult(Activity.RESULT_OK, data);
             finish();
         }
@@ -233,7 +234,7 @@ public class EventFormActivity extends AppCompatActivity
         DateTime date = DateHelper.parseDateFromString(String.valueOf(dateInput.getText()));
         DateTime time = DateHelper.parseTimeFromString(String.valueOf(timeInput.getText()));
         DateTime dateTime = date.withTime(time.getHourOfDay(), time.getMinuteOfHour(), time.getSecondOfMinute(), time.getMillisOfSecond());
-        String ownerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String ownerId = UserHelper.getCurrentUserId();
         String id = isEdit ? event.getId() : null;
         Event createdEvent = ModelFactory.createNewEvent(id, eventName, place, description, DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
         storeNewEvent(createdEvent);
@@ -293,7 +294,8 @@ public class EventFormActivity extends AppCompatActivity
     public void joinEvent() {
         if (isEdit && event != null) {
             if (!isJoining) {
-                eventsRef.child(event.getId()).child(FirebaseConstants.FIREBASE_CHILD_EVENTS_ATTENDANTS).push().child(UserHelper.getCurrentUserId()).setValue(UserHelper.getCurrentUserId());
+                //event.getAttendantIds().add(UserHelper.getCurrentUserId());
+                eventsRef.child(event.getId()).child(FirebaseConstants.FIREBASE_CHILD_EVENTS_ATTENDANTS).child(UserHelper.getCurrentUserId()).setValue(true);
                 isJoining = true;
                 event.setJoining(true);
                 joinEventButton.setText(getString(R.string.leave_event));

@@ -5,7 +5,6 @@ import android.os.Parcelable;
 
 import com.google.firebase.database.Exclude;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,7 +15,7 @@ public class Event implements Parcelable{
     //date for filtering
     private String id, name, description, owner, place;
     private long dateTime, date;
-    private List<Map<String, String>> attendantIds;
+    private Map<String, Boolean> attendantIds;
     @Exclude
     private boolean isJoining;
 
@@ -112,11 +111,11 @@ public class Event implements Parcelable{
         this.place = place;
     }
 
-    public List<Map<String, String>> getAttendantIds() {
+    public Map<String, Boolean> getAttendantIds() {
         return attendantIds;
     }
 
-    public void setAttendantIds(List<Map<String,String>> attendantIds) {
+    public void setAttendantIds(Map<String, Boolean> attendantIds) {
         this.attendantIds = attendantIds;
     }
 

@@ -32,6 +32,7 @@ import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
@@ -53,6 +54,7 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
     private DatabaseReference eventsRef;
     private ValueEventListener valueEventListener;
     private long eventDate;
+    private String joinedEvent = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,15 +70,31 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
             setTitle("Events on " + DateHelper.parseDateFromLong(eventDate) );
         }
 
+
         eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
 
-
         eventsRef.orderByChild(FIREBASE_CHILD_EVENTS_DATE).equalTo(eventDate).addListenerForSingleValueEvent(setValueEventListener());
+
 
         application = (ChatApplication) getApplication();
         application.addObserver(this);
 
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (getIntent().hasExtra(GeneralConstants.EXTRA_EVENT_JOINING)) {
+            joinedEvent = getIntent().getStringExtra(GeneralConstants.EXTRA_EVENT_JOINING);
+        }
+        if (eventList != null && joinedEvent != null) {
+            for (Event event : eventList) {
+                if (event.getId().equals(joinedEvent)) {
+                    event.setJoining(true);
+                }
+            }
+        }
     }
 
     @Override
@@ -92,7 +110,6 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
         int id = item.getItemId();
         if (id == android.R.id.home) {
             data = new Intent();
-            // if (saved )
             setResult(Activity.RESULT_OK, data);
             finish();
         }
@@ -128,7 +145,7 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     Event event = postSnapshot.getValue(Event.class);
-                    if ( event.getAttendantIds() != null && event.getAttendantIds().contains(UserHelper.getCurrentUserId())) {
+                    if ( event.getAttendantIds() != null && event.getAttendantIds().containsKey(UserHelper.getCurrentUserId())) {
                         event.setJoining(true);
                     } else {
                         event.setJoining(false);
