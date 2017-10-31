@@ -56,7 +56,6 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.toolbar) Toolbar toolbar;
 
     private ChatApplication application;
-    private FirebaseAuth firebaseAuth;
     private DatabaseReference firebaseDatabase;
     private Class fragmentClass;
 
@@ -73,7 +72,6 @@ public class MainActivity extends AppCompatActivity
         setupNavigationHeader();
         setUpFragment("Chat");
         application.startAdvertise();
-
     }
 
     @Override
@@ -106,7 +104,6 @@ public class MainActivity extends AppCompatActivity
 
     private void setUpVariables() {
         application = (ChatApplication) getApplication();
-        firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
@@ -207,11 +204,20 @@ public class MainActivity extends AppCompatActivity
 
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+<<<<<<< HEAD
+                        Log.d(TAG, "Retrieving user with uid " + getUserId());
+                        User user = dataSnapshot.getValue(User.class);
+
+                        setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
+                        application.setLoggedUser(new User(user.getId(), user.getPhoto(), user.getEmail(),
+                                user.getName()));
+=======
                         Log.d(TAG, "Retrieving user with uid " + UserHelper.getCurrentUserId());
                         User user = null;
                         while (user == null) user = dataSnapshot.getValue(User.class);
 
                         setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
+>>>>>>> master
                     }
 
                     @Override
@@ -227,23 +233,7 @@ public class MainActivity extends AppCompatActivity
         if (navigationView != null) {
             View header = navigationView.getHeaderView(0);
             CircleImageView profilePhoto = (CircleImageView) header.findViewById(R.id.user_photo);
-
-            if (photo != null) {
-                // TODO get photo from the external storage
-                if (photo.contains("https")) {
-                    if (photo.contains("facebook")) {
-                        Picasso.with(this).load(UserHelper.getFacebookPhotoUrl(firebaseAuth.getCurrentUser())).into(profilePhoto);
-                    } else {
-                        Picasso.with(this).load(UserHelper.getGooglePhotoUrl(firebaseAuth.getCurrentUser().getPhotoUrl())).into(profilePhoto);
-                    }
-                } else if (!photo.isEmpty()) {
-                    profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
-                } else {
-                    TextDrawable textDrawable = TextDrawable.builder()
-                            .buildRoundRect(name.substring(0,1), Color.RED, 10);
-                    profilePhoto.setImageDrawable(textDrawable);
-                }
-            }
+            profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
 
             TextView nameView = (TextView) header.findViewById(R.id.header_name);
             nameView.setText(name);

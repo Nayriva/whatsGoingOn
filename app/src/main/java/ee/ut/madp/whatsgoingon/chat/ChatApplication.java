@@ -68,6 +68,15 @@ public class ChatApplication extends Application implements Observable {
     //TODO handle user profile change (mainly photo)
 
     private List<Observer> mObservers;
+    private User loggedUser;
+
+    public User getLoggedUser() {
+        return loggedUser;
+    }
+
+    public void setLoggedUser(User loggedUser) {
+        this.loggedUser = loggedUser;
+    }
 
     public void checkIn() {
         FirebaseApp.initializeApp(this);
