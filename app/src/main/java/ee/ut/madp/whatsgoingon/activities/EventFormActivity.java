@@ -178,7 +178,7 @@ public class EventFormActivity extends AppCompatActivity
         int id = item.getItemId();
         if (id == android.R.id.home) {
             data = new Intent();
-            if (!isJoining) data.putExtra(GeneralConstants.EXTRA_EVENT_JOINING, event.getId());
+            data.putExtra(GeneralConstants.EXTRA_EVENT_JOINING, event.getId());
             setResult(Activity.RESULT_OK, data);
             finish();
         }
