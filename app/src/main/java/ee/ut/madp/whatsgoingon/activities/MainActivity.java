@@ -202,16 +202,16 @@ public class MainActivity extends AppCompatActivity
 
     private void setupNavigationHeader() {
         // TODO get information from the shared preferences and storage
-        firebaseDatabase.child(FIREBASE_CHILD_USERS).child(getUserId()).addListenerForSingleValueEvent(
+        firebaseDatabase.child(FIREBASE_CHILD_USERS).child(UserHelper.getCurrentUserId()).addListenerForSingleValueEvent(
                 new ValueEventListener() {
 
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Log.d(TAG, "Retrieving user with uid " + getUserId());
+                        Log.d(TAG, "Retrieving user with uid " + UserHelper.getCurrentUserId());
                         User user = null;
-//                        while (user == null) user = dataSnapshot.getValue(User.class);
-//
-//                        setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
+                        while (user == null) user = dataSnapshot.getValue(User.class);
+
+                        setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
                     }
 
                     @Override
@@ -253,9 +253,6 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private String getUserId() {
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
-    }
 
     @Override
     public synchronized void update(Observable o, int qualifier, String data) {
