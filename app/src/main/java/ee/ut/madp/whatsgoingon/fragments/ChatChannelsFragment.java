@@ -47,6 +47,7 @@ import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
+import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.Group;
@@ -162,7 +163,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                 for (DataSnapshot groupSnapshot: dataSnapshot.getChildren()) {
                         Group group = groupSnapshot.getValue(Group.class);
                     if (group != null) {
-                        if (group.getReceivers().contains(firebaseAuth.getCurrentUser().getUid())) {
+                        if (group.getReceivers().contains(UserHelper.getCurrentUserId())) {
                             application.createGroup(group.getId(), group.getReceivers().toArray(new String[0]));
                         }
                     }
