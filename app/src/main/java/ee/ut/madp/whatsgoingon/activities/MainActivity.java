@@ -204,20 +204,12 @@ public class MainActivity extends AppCompatActivity
 
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-<<<<<<< HEAD
-                        Log.d(TAG, "Retrieving user with uid " + getUserId());
+                        Log.d(TAG, "Retrieving user with uid ");
                         User user = dataSnapshot.getValue(User.class);
 
                         setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
                         application.setLoggedUser(new User(user.getId(), user.getPhoto(), user.getEmail(),
                                 user.getName()));
-=======
-                        Log.d(TAG, "Retrieving user with uid " + UserHelper.getCurrentUserId());
-                        User user = null;
-                        while (user == null) user = dataSnapshot.getValue(User.class);
-
-                        setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
->>>>>>> master
                     }
 
                     @Override

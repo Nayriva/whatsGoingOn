@@ -26,23 +26,12 @@ import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD
 public class UserHelper {
 
     public static final String TAG = UserHelper.class.getSimpleName();
-<<<<<<< HEAD
     private static DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference().child(FIREBASE_CHILD_USERS);
-=======
-    private static DatabaseReference firebaseDatabase;
 
     public static String getCurrentUserId() {
         return FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
-
-
-    private static DatabaseReference getFirebaseDatabase() {
-        if (firebaseDatabase == null) {
-            firebaseDatabase = FirebaseDatabase.getInstance().getReference();
-        }
-        return firebaseDatabase;
-    }
->>>>>>> master
+    
 
     public static void saveNewUserToDB(String name, FirebaseUser firebaseUser, String photo) {
         User user = ModelFactory.createUser(firebaseUser.getUid(), photo, firebaseUser.getEmail(), name);
