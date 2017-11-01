@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
@@ -52,12 +53,15 @@ public class ChatApplication extends Application implements Observable {
     private Map<String, List<ChatMessage>> chatHistory;
     private Map<String, String[]> groupChatsReceiversMap;
 
-    private Handler mBusHandler;
+    private Handler mBusChatHandler;
+    private Handler mBusControlHandler;
     private Handler advertiseHandler;
     private Runnable advertiseCode;
 
     private final int HISTORY_MAX = 20;
     private static final int MESSAGE_CHAT = 1;
+    private static final int MESSAGE_CONTROL = 2;
+
     public static final int GROUP_MESSAGE_RECEIVED = 1;
     public static final int ONE_TO_ONE_MESSAGE_RECEIVED = 2;
     public static final int GROUP_RECEIVERS_CHANGED = 3;
@@ -68,14 +72,29 @@ public class ChatApplication extends Application implements Observable {
     //TODO handle user profile change (mainly photo)
 
     private List<Observer> mObservers;
-    private User loggedUser;
+    public static User loggedUser;
 
-    public User getLoggedUser() {
-        return loggedUser;
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        HandlerThread busControlThread = new HandlerThread("BusControlHandler");
+        busControlThread.start();
+        HandlerThread busChatThread = new HandlerThread("BusChatHandler");
+        busChatThread.start();
+
+        mBusChatHandler = new Handler(busChatThread.getLooper(), new ChatBusHandlerCallback());
+        mBusChatHandler.sendEmptyMessage(ChatBusHandlerCallback.CONNECT);
+
+        mBusControlHandler = new Handler(busControlThread.getLooper(), new ControlBusHandlerCallback());
+        mBusControlHandler.sendEmptyMessage(ControlBusHandlerCallback.CONNECT);
     }
 
-    public void setLoggedUser(User loggedUser) {
-        this.loggedUser = loggedUser;
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        stopAdvertise();
+        mBusChatHandler.sendEmptyMessage(ChatBusHandlerCallback.DISCONNECT);
+        mBusControlHandler.sendEmptyMessage(ControlBusHandlerCallback.DISCONNECT);
     }
 
     public void checkIn() {
@@ -102,9 +121,28 @@ public class ChatApplication extends Application implements Observable {
                 if (currentUser == null) {
                     return;
                 }
-                String msg = ChatHelper.advertiseMessage(firebaseAuth.getCurrentUser().getUid());
-                Message message = mBusHandler.obtainMessage(BusHandlerCallback.CHAT, msg);
-                mBusHandler.sendMessage(message);
+                String msg = ChatHelper.advertiseMessage(loggedUser.getId());
+                Message message = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL, msg);
+                mBusControlHandler.sendMessage(message);
+
+                //advertise test
+                message = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL,
+                        ChatHelper.advertiseMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3"));
+                mBusControlHandler.sendMessage(message);
+
+                //1-2-1 test
+                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
+                        ChatHelper.oneToOneMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová",
+                                loggedUser.getId(), "Test message 1_2_1" + new Random().nextInt()));
+                mBusChatHandler.sendMessage(message);
+
+                //group test
+                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
+                        ChatHelper.groupMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová", "d94282264c994168a919554f90af9c4c",
+                                new String[] { loggedUser.getId()}, "Test group text"  + new Random().nextInt()));
+                mBusChatHandler.sendMessage(message);
+
+
                 advertiseHandler.postDelayed(this, 10000);
             }
         };
@@ -115,29 +153,16 @@ public class ChatApplication extends Application implements Observable {
     }
 
     public synchronized void stopAdvertise() {
-        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-        if (currentUser == null) {
-            return;
-        }
-        sendMessage(ChatHelper.cancelAdvertiseMessage(firebaseAuth.getCurrentUser().getUid()));
+        sendChatMessage(ChatHelper.cancelAdvertiseMessage(loggedUser.getId()));
         advertiseHandler.removeCallbacks(advertiseCode);
         channelsNearDevice = new HashMap<>();
         chatHistory = new HashMap<>();
         groupChatsReceiversMap = new HashMap<>();
     }
 
-    public ChatMessage getLastMessage(String channelId) {
-        List<ChatMessage> chatMessages = chatHistory.get(channelId);
-        if (chatMessages != null) {
-            int size = chatMessages.size();
-            if (size > 0) {
-                return chatMessages.get(size - 1);
-            }
-        }
-        return null;
-    }
+    //***** HANDLERS *****\\
 
-    private Handler mHandler = new Handler(new Handler.Callback() {
+    private Handler mChatHandler = new Handler(new Handler.Callback() {
 
         @Override
         public boolean handleMessage(Message msg) {
@@ -151,15 +176,6 @@ public class ChatApplication extends Application implements Observable {
                     case ChatHelper.GROUP_MESSAGE: {
                         dealWithGroupMessage(receivedMsg);
                     } break;
-                    case ChatHelper.ADVERTISE_MESSAGE: {
-                        dealWithAdvertiseMessage(receivedMsg);
-                    } break;
-                    case ChatHelper.GROUP_ADVERTISE_MESSAGE: {
-                        dealWithGroupAdvertiseMessage(receivedMsg);
-                    } break;
-                    case ChatHelper.CANCEL_ADVERTISE_MESSAGE: {
-                        dealWithCancelAdvertiseMessage(receivedMsg);
-                    } break;
                     default:
                         break;
                 }
@@ -169,12 +185,38 @@ public class ChatApplication extends Application implements Observable {
         }
     });
 
+    private Handler mControlHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message message) {
+            if (firebaseAuth.getCurrentUser() != null && message.what == MESSAGE_CONTROL) {
+                String receivedMsg = (String) message.obj;
+                String messageType = ChatHelper.getMessageType(receivedMsg);
+                switch (messageType) {
+                    case ChatHelper.ADVERTISE_MESSAGE: {
+                        dealWithAdvertiseMessage(receivedMsg);
+                    }
+                    break;
+                    case ChatHelper.GROUP_ADVERTISE_MESSAGE: {
+                        dealWithGroupAdvertiseMessage(receivedMsg);
+                    }
+                    break;
+                    case ChatHelper.CANCEL_ADVERTISE_MESSAGE: {
+                        dealWithCancelAdvertiseMessage(receivedMsg);
+                    }
+                    break;
+                    default:
+                        break;
+                }
+            }
+            return true;
+        }
+    });
 
+    //***** MESSAGES METHODS *****\\
 
     private void dealWithCancelAdvertiseMessage(String receivedMsg) {
         String sender = ChatHelper.cancelAdvertiseMessageSender(receivedMsg);
-        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-        if (currentUser == null || sender.equals(currentUser.getUid())) {
+        if (loggedUser == null || sender.equals(loggedUser.getId())) {
             return;
         }
         String channelId = ChatHelper.cancelAdvertiseMessageSender(receivedMsg);
@@ -182,20 +224,19 @@ public class ChatApplication extends Application implements Observable {
     }
 
     private void dealWithGroupAdvertiseMessage(final String receivedMsg) {
-        final String gid = ChatHelper.groupAdvertiseMessageId(receivedMsg);
+        String gid = ChatHelper.groupAdvertiseMessageId(receivedMsg);
         if (channelsNearDevice.containsKey(gid)) {
             return;
         }
 
         String[] receivers = ChatHelper.groupAdvertiseMessageReceivers(receivedMsg);
         boolean found = false;
-        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-        if (currentUser == null) {
+        if (loggedUser == null) {
             return;
         }
 
         for (String receiver: receivers) {
-            if (receiver.equals(currentUser.getUid())) {
+            if (receiver.equals(loggedUser.getId())) {
                 found = true;
                 break;
             }
@@ -214,13 +255,12 @@ public class ChatApplication extends Application implements Observable {
                 }
                 ChatChannel newGroupChannel = new ChatChannel(group.getId(), group.getDisplayName(),
                         group.getPhoto(), true);
-                newGroupChannel.setReceivers(group.getReceivers().toArray(new String[0]));
                 channelsNearDevice.put(newGroupChannel.getId(), newGroupChannel);
                 groupChatsReceiversMap.put(newGroupChannel.getId(),
                         group.getReceivers().toArray(new String[0]));
                 //TODO download history from firebase
                 chatHistory.put(newGroupChannel.getId(), new ArrayList<ChatMessage>());
-                notifyObservers(GROUP_CHANNEL_DISCOVERED, gid);
+                notifyObservers(GROUP_CHANNEL_DISCOVERED, group.getId());
             }
 
             @Override
@@ -231,7 +271,7 @@ public class ChatApplication extends Application implements Observable {
     }
 
     private void dealWithAdvertiseMessage(String receivedMsg) {
-        final String uid = ChatHelper.advertiseMessageDisplayName(receivedMsg);
+        String uid = ChatHelper.advertiseMessageDisplayName(receivedMsg);
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if (currentUser == null ||
                 currentUser.getUid().equals(uid) || channelsNearDevice.containsKey(uid)) {
@@ -249,7 +289,7 @@ public class ChatApplication extends Application implements Observable {
                 channelsNearDevice.put(user.getId(), newUserChannel);
                 //TODO download history from firebase
                 chatHistory.put(user.getId(), new ArrayList<ChatMessage>());
-                notifyObservers(USER_CHANNEL_DISCOVERED, uid);
+                notifyObservers(USER_CHANNEL_DISCOVERED, user.getId());
             }
 
             @Override
@@ -262,14 +302,13 @@ public class ChatApplication extends Application implements Observable {
     private void dealWithGroupMessage(String receivedMsg) {
         String[] messageReceivers = ChatHelper.groupMessageReceivers(receivedMsg);
         String sender = ChatHelper.groupMessageSender(receivedMsg);
-        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-        if (currentUser == null || sender.equals(currentUser.getUid())) {
+        if (loggedUser == null || sender.equals(loggedUser.getId())) {
             return;
         }
 
         boolean found = false;
         for (String messageReceiver : messageReceivers) {
-            if (messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
+            if (messageReceiver.equals(loggedUser.getId())) {
                 found = true;
                 break;
             }
@@ -295,7 +334,7 @@ public class ChatApplication extends Application implements Observable {
         List<ChatMessage> hist = chatHistory.get(group);
 
         ChatMessage newMessage = new ChatMessage(text, displayName, sender,
-                firebaseAuth.getCurrentUser().getUid().equals(sender));
+                loggedUser.getId().equals(sender));
         if (hist.size() > HISTORY_MAX) {
             hist.remove(0);
             //TODO store messages to DB
@@ -306,10 +345,9 @@ public class ChatApplication extends Application implements Observable {
     private void dealWithOneToOneMessage(String receivedMsg) {
         String messageReceiver = ChatHelper.oneToOneMessageReceiver(receivedMsg);
         String sender = ChatHelper.oneToOneMessageSender(receivedMsg);
-        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-        if (currentUser == null || sender.equals(currentUser.getUid())) {
+        if (loggedUser == null || sender.equals(loggedUser.getId())) {
             return;
-        } else if (!messageReceiver.equals(firebaseAuth.getCurrentUser().getUid())) {
+        } else if (!messageReceiver.equals(loggedUser.getId())) {
             return;
         }
         storeOneToOneMessage(receivedMsg);
@@ -326,7 +364,7 @@ public class ChatApplication extends Application implements Observable {
         List<ChatMessage> hist = chatHistory.get(sender);
 
         ChatMessage newMessage = new ChatMessage(text, senderName, sender,
-                firebaseAuth.getCurrentUser().getUid().equals(sender));
+                loggedUser.getId().equals(sender));
         if (hist.size() > HISTORY_MAX) {
             hist.remove(0);
             //TODO store messages to DB
@@ -334,15 +372,18 @@ public class ChatApplication extends Application implements Observable {
         hist.add(newMessage);
     }
 
-    public boolean isGroup(String gid) {
-        return groupChatsReceiversMap.containsKey(gid);
+    public ChatMessage getLastMessage(String channelId) {
+        List<ChatMessage> chatMessages = chatHistory.get(channelId);
+        if (chatMessages != null) {
+            int size = chatMessages.size();
+            if (size > 0) {
+                return chatMessages.get(size - 1);
+            }
+        }
+        return null;
     }
 
-    public synchronized String[] getGroupReceivers(String gid) {
-        return groupChatsReceiversMap.get(gid);
-    }
-
-    public void sendMessage(String message) {
+    public void sendChatMessage(String message) {
         String type = ChatHelper.getMessageType(message);
         switch (type) {
             case "S": {
@@ -364,8 +405,13 @@ public class ChatApplication extends Application implements Observable {
                 storeGroupMessage(message);
             } break;
         }
-        Message msg = mBusHandler.obtainMessage(BusHandlerCallback.CHAT, message);
-        mBusHandler.sendMessage(msg);
+        Message msg = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT, message);
+        mBusChatHandler.sendMessage(msg);
+    }
+
+    public void sendControlMessage(String message) {
+        Message msg = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL, message);
+        mBusControlHandler.sendMessage(msg);
     }
 
     public synchronized List<ChatMessage> getHistory(String key) {
@@ -377,12 +423,28 @@ public class ChatApplication extends Application implements Observable {
         return copy;
     }
 
+    //***** CHANNELS METHODS *****\\
+
+    public boolean isGroup(String gid) {
+        return groupChatsReceiversMap.containsKey(gid);
+    }
+
     public synchronized Set<ChatChannel> getChannels() {
         Set<ChatChannel> channelsCopy = new HashSet<>();
         for (ChatChannel channel : channelsNearDevice.values()) {
-            channelsCopy.add(channel);
+            channelsCopy.add(new ChatChannel(channel.getId(), channel.getName(), channel.getPhoto(), channel.isGroup()));
         }
         return channelsCopy;
+    }
+
+    public ChatChannel getChannel(String channelId) {
+        return channelsNearDevice.get(channelId);
+    }
+
+    //***** GROUPS METHODS *****\\
+
+    public void createGroup(String gId, String[] receivers) {
+        sendControlMessage(ChatHelper.groupAdvertiseMessage(gId, receivers));
     }
 
     public synchronized void deleteGroup(String groupId, boolean onlyDelete) {
@@ -398,127 +460,8 @@ public class ChatApplication extends Application implements Observable {
         }
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        HandlerThread busThread = new HandlerThread("BusHandler");
-        busThread.start();
-
-        mBusHandler = new Handler(busThread.getLooper(), new BusHandlerCallback());
-        mBusHandler.sendEmptyMessage(BusHandlerCallback.CONNECT);
-    }
-
-    @Override
-    public void onTerminate() {
-        super.onTerminate();
-        mBusHandler.sendEmptyMessage(BusHandlerCallback.DISCONNECT);
-    }
-
-    public void createGroup(String gId, String[] receivers) {
-        sendMessage(ChatHelper.groupAdvertiseMessage(
-                gId, receivers
-        ));
-    }
-
-    public ChatChannel getChannel(String channelId) {
-        return channelsNearDevice.get(channelId);
-    }
-
-    /* The class that is our AllJoyn service.  It implements the ChatInterface. */
-    private class ChatService implements ChatInterface, BusObject {
-        private BusAttachment   bus;
-
-        public ChatService(BusAttachment bus) {
-            this.bus = bus;
-        }
-
-        @BusSignalHandler(iface = "ee.ut.madp.whatisgoingon.chat", signal = "Chat")
-        public void Chat(String message) {
-            Log.i(TAG, "Signal  : " + message);
-            sendMessage(MESSAGE_CHAT, message);
-        }
-
-        private void sendMessage(int what, Object obj) {
-            mHandler.sendMessage(mHandler.obtainMessage(what, obj));
-        }
-    }
-
-    /* This Callback class will handle all AllJoyn calls. See onCreate(). */
-    private class BusHandlerCallback implements Handler.Callback {
-
-        /* The AllJoyn BusAttachment */
-        private BusAttachment mBus;
-
-        /* The AllJoyn SignalEmitter used to emit sessionless signals */
-        private SignalEmitter emitter;
-
-        private ChatInterface mChatInterface = null;
-        private ChatService mChatService = null;
-
-        /* These are the messages sent to the BusHandlerCallback from the UI. */
-        private static final int CONNECT = 1;
-        private static final int DISCONNECT = 2;
-        private static final int CHAT = 3;
-
-        @Override
-        public boolean handleMessage(Message msg) {
-            switch (msg.what) {
-                case CONNECT: {
-                    org.alljoyn.bus.alljoyn.DaemonInit.PrepareDaemon(getApplicationContext());
-                    mBus = new BusAttachment(getPackageName(), BusAttachment.RemoteMessage.Receive);
-                    mChatService = new ChatService(mBus);
-                    Status status = mBus.registerBusObject(mChatService, "/ChatService");
-                    if (Status.OK != status) {
-                        Log.i(TAG + ".RegBus()", status.toString());
-                        return false;
-                    }
-                    status = mBus.connect();
-                    Log.i(TAG, status.toString());
-                    if (status != Status.OK) {
-                        Log.i(TAG + ".BusCon()", "BusAtt");
-                        return false;
-                    }
-                    status = mBus.registerSignalHandlers(mChatService);
-                    if (status != Status.OK) {
-                        Log.i(TAG, "Problem while registering signal handler");
-                        return false;
-                    }
-                    status = mBus.addMatch("sessionless='t'");
-                    if (status == Status.OK) {
-                        Log.i(TAG, "AddMatch was called successfully");
-                    }
-                    break;
-                } case DISCONNECT: {
-                    mBus.disconnect();
-                    mBusHandler.getLooper().quit();
-                    break;
-                } case CHAT: {
-                    try {
-                        if (emitter == null) {
-                            emitter = new SignalEmitter(mChatService, 0, SignalEmitter.GlobalBroadcast.Off);
-                            emitter.setSessionlessFlag(true);
-                            mChatInterface = emitter.getInterface(ChatInterface.class);
-                        }
-                        if (mChatInterface != null) {
-                            String message = (String) msg.obj;
-                            Log.i(TAG, "Sending message " + msg);
-                            mChatInterface.Chat(message);
-                        }
-                    } catch (BusException ex) {
-                        Log.w(TAG, ex);
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
-            return true;
-        }
-    }
-
-    /* Load the native alljoyn_java library. */
-    static {
-        System.loadLibrary("alljoyn_java");
+    public synchronized String[] getGroupReceivers(String gid) {
+        return groupChatsReceiversMap.get(gid);
     }
 
     @Override
@@ -535,5 +478,218 @@ public class ChatApplication extends Application implements Observable {
         for (Observer obs : mObservers) {
             obs.update(this, arg, data);
         }
+    }
+
+    public User getLoggedUser() {
+        return loggedUser;
+    }
+
+    public void setLoggedUser(User loggedUser) {
+        this.loggedUser = loggedUser;
+    }
+
+    private class ControlService implements ControlInterface, BusObject {
+        private BusAttachment bus;
+
+        public ControlService(BusAttachment bus) {
+            this.bus = bus;
+        }
+
+        @BusSignalHandler(iface = "ee.ut.madp.whatisgoingon.control", signal = "Control")
+        public void Control(String message) throws BusException {
+            Log.i(TAG, "Signal : " + message);
+            sendControlMessage(MESSAGE_CONTROL, message);
+        }
+
+        private void sendControlMessage(int what, Object obj) {
+            mControlHandler.sendMessage(mControlHandler.obtainMessage(what, obj));
+        }
+    }
+
+    private class ChatService implements ChatInterface, BusObject {
+
+        private final String TAG = ChatService.class.getSimpleName();
+        private BusAttachment bus;
+
+        public ChatService(BusAttachment bus) {
+            this.bus = bus;
+        }
+
+        @BusSignalHandler(iface = "ee.ut.madp.whatisgoingon.chat", signal = "Chat")
+        public void Chat(String message) {
+            Log.i(TAG, "Signal  : " + message);
+            sendMessage(MESSAGE_CHAT, message);
+        }
+
+        private void sendMessage(int what, Object obj) {
+            mChatHandler.sendMessage(mChatHandler.obtainMessage(what, obj));
+        }
+    }
+
+    private class ControlBusHandlerCallback implements Handler.Callback {
+
+        private final String TAG = ControlBusHandlerCallback.class.getSimpleName();
+
+        private BusAttachment mBus;
+        private SignalEmitter emitter;
+        private ControlInterface mControlInterface = null;
+        private ControlService mControlService = null;
+
+        private static final int CONNECT = 1;
+        private static final int DISCONNECT = 2;
+        private static final int CONTROL = 3;
+
+        @Override
+        public boolean handleMessage(Message msg) {
+            switch (msg.what) {
+                case CONNECT: {
+                    connectToBus();
+                    break;
+                } case DISCONNECT: {
+                    disconnectFromBus();
+                    break;
+                } case CONTROL: {
+                    dealWithControl(msg);
+                    break;
+                }
+                default:
+                    break;
+            }
+            return true;
+        }
+
+        private void dealWithControl(Message msg) {
+            try {
+                if (emitter == null) {
+                    emitter = new SignalEmitter(mControlService, 0, SignalEmitter.GlobalBroadcast.Off);
+                    emitter.setSessionlessFlag(true);
+                    mControlInterface = emitter.getInterface(ControlInterface.class);
+                }
+                if (mControlInterface != null) {
+                    String message = (String) msg.obj;
+                    Log.i(TAG, "Sending message " + msg);
+                    mControlInterface.Control(message);
+                }
+            } catch (BusException ex) {
+                Log.w(TAG, ex);
+            }
+        }
+
+        private void disconnectFromBus() {
+            mBus.disconnect();
+            mBusChatHandler.getLooper().quit();
+        }
+
+        private void connectToBus() {
+            org.alljoyn.bus.alljoyn.DaemonInit.PrepareDaemon(getApplicationContext());
+            mBus = new BusAttachment(getPackageName(), BusAttachment.RemoteMessage.Receive);
+            mControlService = new ControlService(mBus);
+            Status status = mBus.registerBusObject(mControlService, "/ControlService");
+            if (Status.OK != status) {
+                Log.i(TAG + ".RegBus()", status.toString());
+                return;
+            }
+            status = mBus.connect();
+            Log.i(TAG, status.toString());
+            if (status != Status.OK) {
+                Log.i(TAG + ".BusCon()", "BusAtt");
+                return;
+            }
+            status = mBus.registerSignalHandlers(mControlService);
+            if (status != Status.OK) {
+                Log.i(TAG, "Problem while registering signal handler");
+                return;
+            }
+            status = mBus.addMatch("sessionless='t'");
+            if (status == Status.OK) {
+                Log.i(TAG, "AddMatch was called successfully");
+            }
+        }
+    }
+
+    private class ChatBusHandlerCallback implements Handler.Callback {
+
+        private final String TAG = ChatBusHandlerCallback.class.getSimpleName();
+
+        private BusAttachment mBus;
+        private SignalEmitter emitter;
+        private ChatInterface mChatInterface = null;
+        private ChatService mChatService = null;
+
+        private static final int CONNECT = 1;
+        private static final int DISCONNECT = 2;
+        private static final int CHAT = 3;
+
+        @Override
+        public boolean handleMessage(Message msg) {
+            switch (msg.what) {
+                case CONNECT: {
+                    connectToBus();
+                    break;
+                } case DISCONNECT: {
+                    disconnectFromBus();
+                    break;
+                } case CHAT: {
+                    dealWithChatMessage(msg);
+                    break;
+                }
+                default:
+                    break;
+            }
+            return true;
+        }
+
+        private void dealWithChatMessage(Message msg) {
+            try {
+                if (emitter == null) {
+                    emitter = new SignalEmitter(mChatService, 0, SignalEmitter.GlobalBroadcast.Off);
+                    emitter.setSessionlessFlag(true);
+                    mChatInterface = emitter.getInterface(ChatInterface.class);
+                }
+                if (mChatInterface != null) {
+                    String message = (String) msg.obj;
+                    Log.i(TAG, "Sending message " + msg);
+                    mChatInterface.Chat(message);
+                }
+            } catch (BusException ex) {
+                Log.w(TAG, ex);
+            }
+        }
+
+        private void disconnectFromBus() {
+            mBus.disconnect();
+            mBusChatHandler.getLooper().quit();
+        }
+
+        private void connectToBus() {
+            org.alljoyn.bus.alljoyn.DaemonInit.PrepareDaemon(getApplicationContext());
+            mBus = new BusAttachment(getPackageName(), BusAttachment.RemoteMessage.Receive);
+            mChatService = new ChatService(mBus);
+            Status status = mBus.registerBusObject(mChatService, "/ChatService");
+            if (Status.OK != status) {
+                Log.i(TAG + ".RegBus()", status.toString());
+                return;
+            }
+            status = mBus.connect();
+            Log.i(TAG, status.toString());
+            if (status != Status.OK) {
+                Log.i(TAG + ".BusCon()", "BusAtt");
+                return;
+            }
+            status = mBus.registerSignalHandlers(mChatService);
+            if (status != Status.OK) {
+                Log.i(TAG, "Problem while registering signal handler");
+                return;
+            }
+            status = mBus.addMatch("sessionless='t'");
+            if (status == Status.OK) {
+                Log.i(TAG, "AddMatch was called successfully");
+            }
+        }
+    }
+
+    /* Load the native alljoyn_java library. */
+    static {
+        System.loadLibrary("alljoyn_java");
     }
 }

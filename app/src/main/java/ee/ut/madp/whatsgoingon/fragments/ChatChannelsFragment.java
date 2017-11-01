@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -21,7 +22,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -64,7 +64,6 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     @BindView(R.id.tv_channels_status) TextView channelsStatus;
 
     private ChatApplication application;
-    private FirebaseAuth firebaseAuth;
     private DatabaseReference groupsRef;
     private ChatChannelAdapter chatChannelAdapter;
     private String groupPhotoResult;
@@ -73,26 +72,10 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     public void onAttach(Context context) {
         super.onAttach(context);
         application = (ChatApplication) context.getApplicationContext();
-        firebaseAuth = FirebaseAuth.getInstance();
         application.addObserver(this);
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
 
         downloadGroups();
-    }
-
-    private void setUpLastMessages() {
-        for (ChatChannel chatChannel: chatChannelAdapter.getChannels()) {
-            ChatMessage lastMessage = application.getLastMessage(chatChannel.getId());
-            if (lastMessage != null) {
-                if (chatChannel.isGroup()) {
-                    chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
-                } else {
-                    chatChannel.setLastMessage(lastMessage.getMessageText());
-                }
-                chatChannel.setTimeMessage(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
-                chatChannelAdapter.notifyDataSetChanged();
-            }
-        }
     }
 
     @Override
@@ -112,8 +95,10 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getActivity().setTitle(R.string.chat_item);
-        initialize();
+        setupRecyclerView();
+        getChannels();
+        setSwipeRefreshLayoutListener();
+        setUpLastMessages();
     }
 
     @Override
@@ -123,13 +108,6 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         if (bitmap != null) {
             groupPhotoResult = ImageHelper.encodeBitmap(bitmap);
         }
-    }
-
-    private void initialize() {
-        setupRecyclerView();
-        getChannels();
-        setSwipeRefreshLayoutListener();
-        setUpLastMessages();
     }
 
     private void setupRecyclerView() {
@@ -153,6 +131,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
             channelsStatus.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
         }
+        setUpLastMessages();
         chatChannelAdapter.notifyDataSetChanged();
     }
 
@@ -242,9 +221,13 @@ public class ChatChannelsFragment extends Fragment implements Observer {
             Toast.makeText(getContext(), R.string.group_too_small, Toast.LENGTH_SHORT).show();
             return false;
         }
+        if (groupPhotoResult == null) {
+            groupPhotoResult = ImageHelper.encodeBitmap(
+                    BitmapFactory.decodeResource(getResources(), R.drawable.user));
+        }
         String gid =  UUID.randomUUID().toString().replaceAll("-", "");
         Group group = new Group(gid, groupName, groupPhotoResult, selected);
-        FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS).child(gid).setValue(group);
+        FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS).setValue(group);
         application.createGroup(gid, selected.toArray(new String[0]));
         return true;
     }
@@ -259,6 +242,21 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         });
     }
 
+    private void setUpLastMessages() {
+        for (ChatChannel chatChannel: chatChannelAdapter.getChannels()) {
+            ChatMessage lastMessage = application.getLastMessage(chatChannel.getId());
+            if (lastMessage != null) {
+                if (chatChannel.isGroup()) {
+                    chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
+                } else {
+                    chatChannel.setLastMessage(lastMessage.getMessageText());
+                }
+                chatChannel.setLastMessageTime(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
+                chatChannelAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
     @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
@@ -267,6 +265,10 @@ public class ChatChannelsFragment extends Fragment implements Observer {
             case ChatApplication.GROUP_CHANNEL_DISCOVERED: {
                 //data contains id of channel
                 ChatChannel foundChannel = application.getChannel(data);
+                if (recyclerView.getVisibility() == View.GONE) {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    channelsStatus.setVisibility(View.GONE);
+                }
                 chatChannelAdapter.addChannel(foundChannel);
                 chatChannelAdapter.notifyDataSetChanged();
             } break;
@@ -292,22 +294,15 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void updateLastMessage(String data) {
-        String type = ChatHelper.getMessageType(data);
-        String channelId = null;
-        if (type.equals(ChatHelper.ONE_TO_ONE_MESSAGE)) {
-            channelId = ChatHelper.oneToOneMessageSender(data);
-        } else if (type.equals(ChatHelper.GROUP_MESSAGE)) {
-            channelId = ChatHelper.groupMessageGID(data);
-        }
-        ChatChannel chatChannel = chatChannelAdapter.getChannelById(channelId);
-        ChatMessage lastMessage = application.getLastMessage(channelId);
+        ChatChannel chatChannel = chatChannelAdapter.getChannelById(data);
+        ChatMessage lastMessage = application.getLastMessage(data);
         if (chatChannel != null && lastMessage != null) {
             if (chatChannel.isGroup()) {
                 chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
             } else {
                 chatChannel.setLastMessage(lastMessage.getMessageText());
             }
-            chatChannel.setTimeMessage(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
+            chatChannel.setLastMessageTime(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
             chatChannelAdapter.notifyDataSetChanged();
         }
     }

@@ -75,6 +75,12 @@ public class EventFragment extends Fragment {
         eventsRef.addListenerForSingleValueEvent(valueEventListener);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        eventsRef.removeEventListener(valueEventListener);
+    }
+
     private void setDaysWithEvents() {
         if (eventDays.size() > 0) {
             List<DayDecorator> decorators = new ArrayList<>();
@@ -135,12 +141,4 @@ public class EventFragment extends Fragment {
             }
         }
     }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        eventsRef.removeEventListener(valueEventListener);
-    }
-
-
 }

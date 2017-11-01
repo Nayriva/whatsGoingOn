@@ -9,17 +9,15 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
-import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.GroupParticipant;
 
 /**
@@ -29,13 +27,13 @@ import ee.ut.madp.whatsgoingon.models.GroupParticipant;
 public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
     private Context context;
     private int layoutResourceId;
-    private ArrayList<GroupParticipant> data = null;
+    private List<GroupParticipant> data = null;
 
     public GroupParticipantsAdapter(Context context, int resource, List<GroupParticipant> objects) {
         super(context, resource, objects);
         this.layoutResourceId = resource;
         this.context = context;
-        this.data = (ArrayList) objects;
+        this.data = objects;
     }
 
     @NonNull
@@ -49,7 +47,7 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
             row = inflater.inflate(layoutResourceId, parent, false);
 
             holder = new ChatChannelHolder();
-            holder.photo = (ImageView) row.findViewById(R.id.iw_group_participant_picture);
+            holder.photo = (CircleImageView) row.findViewById(R.id.ciw_group_participant_picture);
             holder.channelName = (TextView) row.findViewById(R.id.tw_group_participant_name);
             holder.isSelected = (CheckBox) row.findViewById(R.id.chb_group_participant);
 
@@ -79,7 +77,7 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
     }
 
     private class ChatChannelHolder {
-        ImageView photo;
+        CircleImageView photo;
         TextView channelName;
         CheckBox isSelected;
     }

@@ -146,10 +146,10 @@ public class ChatHelper {
 
     //ADVERTISE
 
-    public static String advertiseMessage(String displayName) {
+    public static String advertiseMessage(String uid) {
         return ADVERTISE_MESSAGE +
                 delimiter +
-                displayName;
+                uid;
     }
 
     public static boolean isAdvertiseMessage(String receivedMessage) {

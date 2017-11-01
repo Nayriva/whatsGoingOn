@@ -8,6 +8,9 @@ public class GeneralConstants {
     public static final int SETTINGS_REQUEST_CODE = 1 ;
     public static final int EVENTS_REQUEST_CODE = 2 ;
     public static final int EVENT_DAY_REQUEST_CODE = 3 ;
+
+    public static final String CHANNEL_ID = "channelId";
+
     public static final String PARCEL_CHAT_CHANNEL = "chatChannel";
     public static final String PARCEL_EVENT = "event";
     public static final String PARAM_EVENT_DAY = "eventDay";

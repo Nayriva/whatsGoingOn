@@ -14,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -33,15 +32,13 @@ import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.User;
 
 public class MyProfileActivity extends AppCompatActivity implements Observer {
 
     private ChatApplication application;
-    private FirebaseAuth firebaseAuth;
-    private FirebaseDatabase firebaseDatabase;
-    private Resources res;
     private User user;
     private String photo;
     private boolean photoChanged;
@@ -71,11 +68,9 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
 
         application = (ChatApplication) getApplication();
         application.addObserver(this);
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseDatabase = FirebaseDatabase.getInstance();
-        userReference = firebaseDatabase.getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS)
-                .child(firebaseAuth.getCurrentUser().getUid());
-        res = getResources();
+        userReference = FirebaseDatabase.getInstance().getReference()
+                .child(FirebaseConstants.FIREBASE_CHILD_USERS)
+                .child(application.getLoggedUser().getId());
         photoChanged = false;
 
         ButterKnife.bind(this);
@@ -138,6 +133,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
     }
 
     private void fillInitialInfo() {
+        DialogHelper.showProgressDialog(this, getString(R.string.downloading_data));
         userReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -147,7 +143,8 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
                 username.setText(user.getName());
                 email.setText(user.getEmail());
                 backupValues();
-                setBackupValues();
+                setBackedUpValues();
+                DialogHelper.hideProgressDialog();
             }
 
             @Override
@@ -157,14 +154,10 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         });
     }
 
-    private void setBackupValues() {
+    private void setBackedUpValues() {
         photo = backupValues.get("photo");
         if (photo != null) {
-            if (photo.contains("http")) {
-                Picasso.with(getApplicationContext()).load(photo).into(profilePhoto);
-            } else {
-                profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
-            }
+            profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
         }
         nationality.setText(user.getNationality() == null
                 ? "" : backupValues.get("nationality"));
@@ -213,7 +206,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
             @Override
             public void onClick(View view) {
                 setETEditable(false);
-                setBackupValues();
+                setBackedUpValues();
                 editActiveLayout.setVisibility(View.INVISIBLE);
                 editButton.setVisibility(View.VISIBLE);
             }

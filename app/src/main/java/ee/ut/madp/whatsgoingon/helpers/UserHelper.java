@@ -19,6 +19,7 @@ import com.squareup.picasso.Target;
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.ModelFactory;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.chat.ChatApplication;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
@@ -31,10 +32,13 @@ public class UserHelper {
     public static String getCurrentUserId() {
         return FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
-    
 
-    public static void saveNewUserToDB(String name, FirebaseUser firebaseUser, String photo) {
+
+    public static void saveNewUserToDB(String name, FirebaseUser firebaseUser, String photo, boolean store) {
         User user = ModelFactory.createUser(firebaseUser.getUid(), photo, firebaseUser.getEmail(), name);
+        if (store) {
+            ChatApplication.loggedUser = user;
+        }
         usersRef.child(firebaseUser.getUid()).setValue(user);
         usersRef.child(FIREBASE_CHILD_USERS).child(firebaseUser.getUid()).keepSynced(true);
     }
@@ -59,7 +63,7 @@ public class UserHelper {
                           public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                               try {
                                   saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser,
-                                          ImageHelper.encodeBitmap(bitmap));
+                                          ImageHelper.encodeBitmap(bitmap), true);
                                   LayoutInflater inflater = (LayoutInflater) context
                                           .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                   View view = inflater.inflate(R.layout.nav_header_main, null);
@@ -92,7 +96,7 @@ public class UserHelper {
                           public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                               try {
                                   saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser,
-                                          ImageHelper.encodeBitmap(bitmap));
+                                          ImageHelper.encodeBitmap(bitmap), true);
                                   LayoutInflater inflater = (LayoutInflater) context
                                           .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                   View view = inflater.inflate(R.layout.nav_header_main, null);

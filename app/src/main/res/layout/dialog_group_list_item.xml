@@ -4,8 +4,8 @@
                 android:orientation="vertical" android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/iw_group_participant_picture"
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/ciw_group_participant_picture"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_alignParentStart="true"
@@ -18,8 +18,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="13dp"
-        android:layout_alignBottom="@+id/iw_group_participant_picture"
-        android:layout_toEndOf="@+id/iw_group_participant_picture"
+        android:layout_alignBottom="@+id/ciw_group_participant_picture"
+        android:layout_toEndOf="@+id/ciw_group_participant_picture"
         android:layout_marginBottom="11dp"/>
 
 

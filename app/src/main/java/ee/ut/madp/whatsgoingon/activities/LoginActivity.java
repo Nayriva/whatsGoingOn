@@ -53,11 +53,9 @@ public class LoginActivity extends AppCompatActivity
     private ChatApplication application;
 
     @BindView(R.id.coordinator_layout) CoordinatorLayout coordinatorLayout;
-
     @BindView(R.id.input_email) TextInputEditText emailInput;
     @BindView(R.id.input_password) TextInputEditText passwordInput;
     @BindView(R.id.login_title) TextView loginTitle;
-
     @BindView(R.id.btn_facebook) LoginButton facebookButton;
 
     private GoogleApiClient mGoogleApiClient;
@@ -68,9 +66,7 @@ public class LoginActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
-        //TODO check if works without initialization
         FacebookSdk.sdkInitialize(getApplicationContext());
-
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
@@ -111,6 +107,11 @@ public class LoginActivity extends AppCompatActivity
                 DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.success_signup));
             }
         }
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        //left blank intentionally
     }
 
     @OnClick(R.id.btn_login)
@@ -250,14 +251,10 @@ public class LoginActivity extends AppCompatActivity
     }
 
     private void startMainActivity() {
-        application.startAdvertise();
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
+        application.checkIn();
+        application.startAdvertise();
         finish();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        //left blank intentionally
     }
 }

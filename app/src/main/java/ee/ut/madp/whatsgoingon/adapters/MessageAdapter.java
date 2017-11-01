@@ -5,7 +5,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -50,6 +49,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
     @Override
     public void onBindViewHolder(MessageAdapter.MyViewHolder holder, int position) {
         ChatMessage chatMessage = chatMessages.get(position);
+        holder.author.setText(chatMessage.getDisplayName());
         holder.message.setText(chatMessage.getMessageText());
         holder.messageTime.setText(DateHelper.createMessageTime(context, chatMessage.getMessageTime()));
         holder.photo.setImageBitmap(ImageHelper.decodeBitmap(photosMap.get(chatMessage.getSender())));
@@ -66,13 +66,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder  {
-        TextView messageTime, message;
+        TextView messageTime, message, author;
         CircleImageView photo;
 
         public MyViewHolder(View view) {
             super(view);
-            message = (TextView) view.findViewById(R.id.tv_chat_text);
-            messageTime = (TextView) view.findViewById(R.id.tv_time);
+            message = (TextView) view.findViewById(R.id.tv_message_text);
+            messageTime = (TextView) view.findViewById(R.id.tv_message_time);
+            author = (TextView) view.findViewById(R.id.tv_message_author);
             photo = (CircleImageView) view.findViewById(R.id.civ_message_user_photo);
         }
 
