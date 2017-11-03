@@ -22,10 +22,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.mvc.imagepicker.ImagePicker;
 
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.ChatApplication;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
+import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
+import ee.ut.madp.whatsgoingon.models.ChatChannel;
+import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 public class SettingsActivity extends AppCompatPreferenceActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener, Observer {
@@ -142,7 +145,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity
         switch (qualifier) {
             case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
             case ChatApplication.GROUP_MESSAGE_RECEIVED: {
-                //TODO show notification
+                ChatChannel chatChannel = application.getChannel(data);
+                ChatMessage lastMessage = application.getLastMessage(data);
+                if (chatChannel != null && lastMessage != null) {
+                    MessageNotificationHelper.showNotification(this, chatChannel.getName(),
+                            chatChannel.getLastMessage());
+                }
             } break;
         }
     }
@@ -183,12 +191,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
                     return true;
                 }
             });
-
-            //TODO udpate email
-
         }
-
-
     }
 
     private void storeUserProfilePhotoToStorage(String userId, byte[] newImage) {

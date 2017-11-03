@@ -15,7 +15,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,12 +33,13 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.adapters.MessageAdapter;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
-import ee.ut.madp.whatsgoingon.chat.GroupParticipantsAdapter;
+import ee.ut.madp.whatsgoingon.ChatApplication;
+import ee.ut.madp.whatsgoingon.adapters.GroupParticipantsAdapter;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
+import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.Group;
@@ -48,7 +48,6 @@ import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.R.string.add_members;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.CHANNEL_ID;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_CHAT_CHANNEL;
 
 public class ConversationActivity extends AppCompatActivity implements Observer {
     public static final String TAG = ConversationActivity.class.getSimpleName();
@@ -116,7 +115,12 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
                 if (data.equals(chatChannel.getId())) {
                     updateHistory();
                 } else {
-                    //TODO show notification of incoming message
+                    ChatChannel chatChannel = application.getChannel(data);
+                    ChatMessage lastMessage = application.getLastMessage(data);
+                    if (chatChannel != null && lastMessage != null) {
+                        MessageNotificationHelper.showNotification(this, chatChannel.getName(),
+                                chatChannel.getLastMessage());
+                    }
                 }
             }
             break;

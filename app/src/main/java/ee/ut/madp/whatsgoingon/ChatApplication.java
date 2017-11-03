@@ -1,6 +1,7 @@
-package ee.ut.madp.whatsgoingon.chat;
+package ee.ut.madp.whatsgoingon;
 
 import android.app.Application;
+import android.app.NotificationManager;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
@@ -31,8 +32,13 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import ee.ut.madp.whatsgoingon.chat.ChatInterface;
+import ee.ut.madp.whatsgoingon.chat.ControlInterface;
+import ee.ut.madp.whatsgoingon.chat.Observable;
+import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
+import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.Group;
@@ -42,7 +48,7 @@ import ee.ut.madp.whatsgoingon.models.User;
  * Created by dominikf on 16. 10. 2017.
  */
 
-public class ChatApplication extends Application implements Observable {
+public class ChatApplication extends Application implements Observable, Observer {
 
     public static final String TAG = "chat.ChatApp";
     private FirebaseAuth firebaseAuth;
@@ -104,6 +110,8 @@ public class ChatApplication extends Application implements Observable {
         firebaseUsersRef = FirebaseDatabase.getInstance()
                 .getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
 
+        MessageNotificationHelper.setManager((NotificationManager) getSystemService(NOTIFICATION_SERVICE));
+
         chatHistory = new HashMap<>();
         groupChatsReceiversMap = new HashMap<>();
         firebaseAuth = FirebaseAuth.getInstance();
@@ -121,26 +129,26 @@ public class ChatApplication extends Application implements Observable {
                 if (currentUser == null) {
                     return;
                 }
-                String msg = ChatHelper.advertiseMessage(loggedUser.getId());
-                Message message = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL, msg);
-                mBusControlHandler.sendMessage(message);
+                //String msg = ChatHelper.advertiseMessage(loggedUser.getId());
+                //Message message = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL, msg);
+                //mBusControlHandler.sendMessage(message);
 
                 //advertise test
-                message = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL,
-                        ChatHelper.advertiseMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3"));
-                mBusControlHandler.sendMessage(message);
+                //message = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL,
+                //        ChatHelper.advertiseMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3"));
+                //mBusControlHandler.sendMessage(message);
 
                 //1-2-1 test
-                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
-                        ChatHelper.oneToOneMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová",
-                                loggedUser.getId(), "Test message 1_2_1" + new Random().nextInt()));
-                mBusChatHandler.sendMessage(message);
+                //message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
+                //        ChatHelper.oneToOneMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová",
+                //                loggedUser.getId(), "Test message 1_2_1" + new Random().nextInt()));
+                //mBusChatHandler.sendMessage(message);
 
                 //group test
-                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
-                        ChatHelper.groupMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová", "d94282264c994168a919554f90af9c4c",
-                                new String[] { loggedUser.getId()}, "Test group text"  + new Random().nextInt()));
-                mBusChatHandler.sendMessage(message);
+                //message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
+                //        ChatHelper.groupMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová", "d94282264c994168a919554f90af9c4c",
+                //                new String[] { loggedUser.getId()}, "Test group text"  + new Random().nextInt()));
+                //mBusChatHandler.sendMessage(message);
 
 
                 advertiseHandler.postDelayed(this, 10000);
@@ -466,12 +474,33 @@ public class ChatApplication extends Application implements Observable {
 
     @Override
     public synchronized void addObserver(Observer obs) {
+        if (mObservers.contains(this)) {
+            mObservers.remove(this);
+        }
         mObservers.add(obs);
     }
 
     @Override
     public synchronized void deleteObserver(Observer obs) {
         mObservers.remove(obs);
+        if (mObservers.size() == 0) {
+            mObservers.add(this);
+        }
+    }
+
+    @Override
+    public void update(Observable o, int qualifier, String data) {
+        switch (qualifier) {
+            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+                ChatChannel chatChannel = getChannel(data);
+                ChatMessage lastMessage = getLastMessage(data);
+                if (chatChannel != null && lastMessage != null) {
+                    MessageNotificationHelper.showNotification(this, chatChannel.getName(),
+                            chatChannel.getLastMessage());
+                }
+            } break;
+        }
     }
 
     private void notifyObservers(int arg, String data) {
@@ -485,7 +514,7 @@ public class ChatApplication extends Application implements Observable {
     }
 
     public void setLoggedUser(User loggedUser) {
-        this.loggedUser = loggedUser;
+        ChatApplication.loggedUser = loggedUser;
     }
 
     private class ControlService implements ControlInterface, BusObject {

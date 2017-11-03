@@ -2,7 +2,6 @@ package ee.ut.madp.whatsgoingon.activities;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,11 +12,16 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.ChatApplication;
+import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.FontHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
@@ -52,6 +56,7 @@ public class SplashActivity extends AppCompatActivity {
                     ChatApplication.loggedUser = new User(currentUser.getUid(),
                             ImageHelper.encodeBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.user)),
                             currentUser.getEmail(), currentUser.getDisplayName());
+
                     application.checkIn();
                     application.startAdvertise();
                     startActivity(new Intent(SplashActivity.this, MainActivity.class));

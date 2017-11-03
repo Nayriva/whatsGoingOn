@@ -53,6 +53,7 @@ public class DialogHelper {
     public static void hideProgressDialog() {
         if (progressDialog != null) {
             progressDialog.dismiss();
+            progressDialog = null;
         }
     }
 

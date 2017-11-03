@@ -53,7 +53,6 @@
     <string name="help">Help</string>
     <string name="header_email">Your email</string>
     <string name="header_name">Your name</string>
-
     <string name="facebook_app_id">753013854886290</string>
     <string name="unsuccessful_login">Login wasn\'t successful.</string>
     <string name="settings_change_user_info">User profile info</string>
@@ -131,15 +130,10 @@
     <string-array name="multi_select_list_preference_default_value" />
 
     <string name="pref_title_system_sync_settings">System sync settings</string>
-
-    <!-- Example settings for Notifications -->
     <string name="pref_header_notifications">Notifications</string>
-
     <string name="pref_title_new_message_notifications">New message notifications</string>
-
     <string name="pref_title_ringtone">Ringtone</string>
     <string name="pref_ringtone_silent">Silent</string>
-
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="reset_password_instructions_sent">The email for reseting the old password has been sent</string>
     <string name="reset_password_instructions_not_sent">The email for reseting the old password hasn\'t been sent</string>
@@ -151,9 +145,6 @@
     <string name="hint_university">School</string>
     <string name="hint_work">Work</string>
     <string name="hint_birthday">Birthday</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="gender">Gender</string>
     <string name="title_activity_my_profile">My profile</string>
     <string name="host_channel">Host channel</string>
@@ -188,15 +179,16 @@
     <string name="delete_event">Delete event</string>
     <string name="success_message_deleted_event">Event was deleted</string>
     <string name="success_message_edit_event">Event was edited</string>
-    <string name="sychronize_events">Synchronize with my calendars</string>
+    <string name="synchronize_events">Synchronize with my calendars</string>
     <string name="join_event">Join event</string>
-    <string name="hint_eventplace">Place</string>
+    <string name="hint_event_place">Place</string>
     <string name="hint_enter_message">Enter your message</string>
     <string name="hint_city">City</string>
     <string name="leave_event">Leave event</string>
     <string name="message_join_event">You have joined the event</string>
     <string name="message_leave_event">You left the event.</string>
-    <string name="group_deleted">\"Group has been deleted due to too few members...\"</string>
-    <string name="downloading_data">Downloading data...</string>
+    <string name="group_deleted">Group has been deleted due to too few members…</string>
+    <string name="downloading_data">Downloading data…</string>
+    <string name="user_profile_preferences">user_profile_preferences</string>
 
 </resources>

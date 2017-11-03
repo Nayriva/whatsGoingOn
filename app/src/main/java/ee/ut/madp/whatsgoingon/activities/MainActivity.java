@@ -2,6 +2,7 @@ package ee.ut.madp.whatsgoingon.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -29,9 +30,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
-import ee.ut.madp.whatsgoingon.chat.Observable;
-import ee.ut.madp.whatsgoingon.chat.Observer;
+import ee.ut.madp.whatsgoingon.ChatApplication;
 import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
 import ee.ut.madp.whatsgoingon.fragments.EventFragment;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
@@ -53,7 +52,8 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.toolbar) Toolbar toolbar;
 
     private ChatApplication application;
-    private DatabaseReference firebaseDatabase;
+    private DatabaseReference userRef;
+    private ValueEventListener valueEventListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,13 +62,46 @@ public class MainActivity extends AppCompatActivity
         ButterKnife.bind(this);
 
         application = (ChatApplication) getApplication();
-        firebaseDatabase = FirebaseDatabase.getInstance().getReference();
+        userRef = FirebaseDatabase.getInstance().getReference().child(FIREBASE_CHILD_USERS)
+                .child(ChatApplication.loggedUser.getId());
 
+        setUpDbListener();
         setSupportActionBar(toolbar);
         setUpNavigationView();
         setUpDrawer();
-        setUpNavigationHeader();
+        setupDataForDrawer();
         setUpFragment("Chat");
+    }
+
+    private void setUpDbListener() {
+        valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                if (user != null) {
+                    ChatApplication.loggedUser.setPhoto(user.getPhoto());
+                    setupDataForDrawer();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        userRef.addListenerForSingleValueEvent(valueEventListener);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        userRef.removeEventListener(valueEventListener);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        userRef.addValueEventListener(valueEventListener);
     }
 
     @Override
@@ -188,38 +221,17 @@ public class MainActivity extends AppCompatActivity
         startActivity(new Intent(context, LoginActivity.class));
     }
 
-    private void setUpNavigationHeader() {
-        firebaseDatabase.child(FIREBASE_CHILD_USERS).child(UserHelper.getCurrentUserId()).addListenerForSingleValueEvent(
-                new ValueEventListener() {
-
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Log.d(TAG, "Retrieving user with uid ");
-                        User user = dataSnapshot.getValue(User.class);
-                        if (user != null) {
-                            setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
-                            application.setLoggedUser(new User(user.getId(), user.getPhoto(), user.getEmail(), user.getName()));
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.w(TAG, "Failed to read value ", databaseError.toException());
-                        DialogHelper.showAlertDialog(MainActivity.this, databaseError.toString());
-                    }
-                });
-    }
-
-    public void setupDataForDrawer(String name, String email, String photo) {
+    public void setupDataForDrawer() {
         if (navigationView != null) {
+            User user = ChatApplication.loggedUser;
             View header = navigationView.getHeaderView(0);
             CircleImageView profilePhoto = (CircleImageView) header.findViewById(R.id.user_photo);
-            profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
+            profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(user.getPhoto()));
 
             TextView nameView = (TextView) header.findViewById(R.id.header_name);
-            nameView.setText(name);
+            nameView.setText(user.getName());
             TextView emailView = (TextView) header.findViewById(R.id.header_email);
-            emailView.setText(email);
+            emailView.setText(user.getEmail());
         }
     }
 }

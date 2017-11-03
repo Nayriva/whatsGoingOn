@@ -1,7 +1,6 @@
 package ee.ut.madp.whatsgoingon.activities;
 
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -20,7 +19,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.mvc.imagepicker.ImagePicker;
-import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,12 +26,15 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.ChatApplication;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
+import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
+import ee.ut.madp.whatsgoingon.models.ChatChannel;
+import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.User;
 
 public class MyProfileActivity extends AppCompatActivity implements Observer {
@@ -105,7 +106,12 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         switch (qualifier) {
             case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
             case ChatApplication.GROUP_MESSAGE_RECEIVED: {
-                //TODO show notification
+                ChatChannel chatChannel = application.getChannel(data);
+                ChatMessage lastMessage = application.getLastMessage(data);
+                if (chatChannel != null && lastMessage != null) {
+                    MessageNotificationHelper.showNotification(this, chatChannel.getName(),
+                            chatChannel.getLastMessage());
+                }
             } break;
         }
     }

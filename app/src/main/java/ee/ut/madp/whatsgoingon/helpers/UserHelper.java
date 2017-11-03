@@ -3,7 +3,6 @@ package ee.ut.madp.whatsgoingon.helpers;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +18,7 @@ import com.squareup.picasso.Target;
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.ModelFactory;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.ChatApplication;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
@@ -30,9 +29,8 @@ public class UserHelper {
     private static DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference().child(FIREBASE_CHILD_USERS);
 
     public static String getCurrentUserId() {
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+        return ChatApplication.loggedUser.getId();
     }
-
 
     public static void saveNewUserToDB(String name, FirebaseUser firebaseUser, String photo, boolean store) {
         User user = ModelFactory.createUser(firebaseUser.getUid(), photo, firebaseUser.getEmail(), name);
