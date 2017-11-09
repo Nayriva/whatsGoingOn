@@ -3,12 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <PreferenceCategory android:title="@string/settings_change_user_info">
-        <!--TODO email change-->
-        <!--<EditTextPreference-->
-        <!--android:inputType="textEmailAddress"-->
-        <!--android:key="email"-->
-        <!--android:summary="@string/prompt_enter_email"-->
-        <!--android:title="@string/prompt_email" />-->
+
         <Preference
             android:inputType="textPassword"
             android:key="password"

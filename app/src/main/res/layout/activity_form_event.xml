@@ -41,7 +41,7 @@
                 android:drawableLeft="@drawable/ic_place"
                 android:descendantFocusability="blocksDescendants"
                 android:drawablePadding="@dimen/spacing_small"
-                android:hint="@string/hint_eventplace" />
+                android:hint="@string/hint_event_place" />
         </android.support.design.widget.TextInputLayout>
 
         <!-- Date -->
@@ -135,7 +135,7 @@
             android:layout_marginTop="@dimen/spacing_large"
             android:background="@color/colorAccent"
             android:visibility="gone"
-            android:text="@string/sychronize_events" />
+            android:text="@string/synchronize_events" />
 
 
     </LinearLayout>

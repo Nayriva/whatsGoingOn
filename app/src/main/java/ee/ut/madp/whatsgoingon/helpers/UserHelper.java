@@ -3,12 +3,10 @@ package ee.ut.madp.whatsgoingon.helpers;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.DatabaseReference;
@@ -19,6 +17,7 @@ import com.squareup.picasso.Target;
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.ModelFactory;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
@@ -29,12 +28,14 @@ public class UserHelper {
     private static DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference().child(FIREBASE_CHILD_USERS);
 
     public static String getCurrentUserId() {
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+        return ApplicationClass.loggedUser.getId();
     }
-    
 
-    public static void saveNewUserToDB(String name, FirebaseUser firebaseUser, String photo) {
+    public static void saveNewUserToDB(String name, FirebaseUser firebaseUser, String photo, boolean store) {
         User user = ModelFactory.createUser(firebaseUser.getUid(), photo, firebaseUser.getEmail(), name);
+        if (store) {
+            ApplicationClass.loggedUser = user;
+        }
         usersRef.child(firebaseUser.getUid()).setValue(user);
         usersRef.child(FIREBASE_CHILD_USERS).child(firebaseUser.getUid()).keepSynced(true);
     }
@@ -59,7 +60,7 @@ public class UserHelper {
                           public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                               try {
                                   saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser,
-                                          ImageHelper.encodeBitmap(bitmap));
+                                          ImageHelper.encodeBitmap(bitmap), true);
                                   LayoutInflater inflater = (LayoutInflater) context
                                           .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                   View view = inflater.inflate(R.layout.nav_header_main, null);
@@ -92,7 +93,7 @@ public class UserHelper {
                           public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                               try {
                                   saveNewUserToDB(firebaseUser.getDisplayName(), firebaseUser,
-                                          ImageHelper.encodeBitmap(bitmap));
+                                          ImageHelper.encodeBitmap(bitmap), true);
                                   LayoutInflater inflater = (LayoutInflater) context
                                           .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                   View view = inflater.inflate(R.layout.nav_header_main, null);

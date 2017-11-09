@@ -1,6 +1,7 @@
 package ee.ut.madp.whatsgoingon.activities;
 
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
@@ -15,7 +16,6 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
-import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
@@ -30,6 +30,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import butterknife.BindView;
@@ -37,11 +38,13 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.FirebaseExceptionsChecker;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.FontHelper;
+import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
+import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.GOOGLE_SIGN_IN_REQUEST_CODE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SIGN_UP_REQUEST_CODE;
@@ -50,14 +53,12 @@ public class LoginActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
-    private ChatApplication application;
+    private ApplicationClass application;
 
     @BindView(R.id.coordinator_layout) CoordinatorLayout coordinatorLayout;
-
     @BindView(R.id.input_email) TextInputEditText emailInput;
     @BindView(R.id.input_password) TextInputEditText passwordInput;
     @BindView(R.id.login_title) TextView loginTitle;
-
     @BindView(R.id.btn_facebook) LoginButton facebookButton;
 
     private GoogleApiClient mGoogleApiClient;
@@ -68,9 +69,7 @@ public class LoginActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
-        //TODO check if works without initialization
         FacebookSdk.sdkInitialize(getApplicationContext());
-
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
@@ -78,7 +77,7 @@ public class LoginActivity extends AppCompatActivity
 
         callbackManager = CallbackManager.Factory.create();
 
-        application = (ChatApplication) getApplication();
+        application = (ApplicationClass) getApplication();
         initializeAuth();
     }
 
@@ -111,6 +110,11 @@ public class LoginActivity extends AppCompatActivity
                 DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.success_signup));
             }
         }
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        //left blank intentionally
     }
 
     @OnClick(R.id.btn_login)
@@ -250,14 +254,16 @@ public class LoginActivity extends AppCompatActivity
     }
 
     private void startMainActivity() {
-        application.startAdvertise();
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser != null) {
+            ApplicationClass.loggedUser = new User(currentUser.getUid(),
+                    ImageHelper.encodeBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.user)),
+                    currentUser.getEmail(), currentUser.getDisplayName());
+        }
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
+        application.checkIn();
+        application.startAdvertise();
         finish();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        //left blank intentionally
     }
 }

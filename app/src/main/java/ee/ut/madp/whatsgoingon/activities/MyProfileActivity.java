@@ -1,7 +1,6 @@
 package ee.ut.madp.whatsgoingon.activities;
 
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -14,14 +13,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.mvc.imagepicker.ImagePicker;
-import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,19 +26,20 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
+import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
+import ee.ut.madp.whatsgoingon.models.ChatChannel;
+import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.User;
 
 public class MyProfileActivity extends AppCompatActivity implements Observer {
 
-    private ChatApplication application;
-    private FirebaseAuth firebaseAuth;
-    private FirebaseDatabase firebaseDatabase;
-    private Resources res;
+    private ApplicationClass application;
     private User user;
     private String photo;
     private boolean photoChanged;
@@ -69,13 +67,11 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_profile);
 
-        application = (ChatApplication) getApplication();
+        application = (ApplicationClass) getApplication();
         application.addObserver(this);
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseDatabase = FirebaseDatabase.getInstance();
-        userReference = firebaseDatabase.getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS)
-                .child(firebaseAuth.getCurrentUser().getUid());
-        res = getResources();
+        userReference = FirebaseDatabase.getInstance().getReference()
+                .child(FirebaseConstants.FIREBASE_CHILD_USERS)
+                .child(application.getLoggedUser().getId());
         photoChanged = false;
 
         ButterKnife.bind(this);
@@ -108,9 +104,14 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
     @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
-            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
-            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
-                //TODO show notification
+            case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
+                ChatChannel chatChannel = application.getChannel(data);
+                ChatMessage lastMessage = application.getLastMessage(data);
+                if (chatChannel != null && lastMessage != null) {
+                    MessageNotificationHelper.showNotification(this, chatChannel.getName(),
+                            chatChannel.getLastMessage());
+                }
             } break;
         }
     }
@@ -138,6 +139,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
     }
 
     private void fillInitialInfo() {
+        DialogHelper.showProgressDialog(this, getString(R.string.downloading_data));
         userReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -147,7 +149,8 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
                 username.setText(user.getName());
                 email.setText(user.getEmail());
                 backupValues();
-                setBackupValues();
+                setBackedUpValues();
+                DialogHelper.hideProgressDialog();
             }
 
             @Override
@@ -157,14 +160,10 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         });
     }
 
-    private void setBackupValues() {
+    private void setBackedUpValues() {
         photo = backupValues.get("photo");
         if (photo != null) {
-            if (photo.contains("http")) {
-                Picasso.with(getApplicationContext()).load(photo).into(profilePhoto);
-            } else {
-                profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
-            }
+            profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
         }
         nationality.setText(user.getNationality() == null
                 ? "" : backupValues.get("nationality"));
@@ -213,7 +212,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
             @Override
             public void onClick(View view) {
                 setETEditable(false);
-                setBackupValues();
+                setBackedUpValues();
                 editActiveLayout.setVisibility(View.INVISIBLE);
                 editButton.setVisibility(View.VISIBLE);
             }

@@ -45,7 +45,7 @@ import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 
 import static ee.ut.madp.whatsgoingon.activities.SplashActivity.TAG;
 
-public class SignUpActivity extends AppCompatActivity implements Validator.ValidationListener{
+public class SignUpActivity extends AppCompatActivity implements Validator.ValidationListener {
 
     @NotEmpty @Email @BindView(R.id.input_layout_email) TextInputLayout email;
     @NotEmpty @BindView(R.id.input_layout_username) TextInputLayout name;
@@ -173,9 +173,9 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
         if (photo == null || photo.isEmpty()) {
             photo = ImageHelper.encodeBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.user));
         }
-        UserHelper.saveNewUserToDB(displayName, firebaseUser, photo);
+        UserHelper.saveNewUserToDB(displayName, firebaseUser, photo, false);
         if (firebaseUser != null) {
-            // TODO store user information to shared prefences
+            // TODO store user information to shared preferences
         }
         setResult(Activity.RESULT_OK);
         DialogHelper.hideProgressDialog();

@@ -15,7 +15,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,12 +33,13 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.adapters.MessageAdapter;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
-import ee.ut.madp.whatsgoingon.chat.GroupParticipantsAdapter;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
+import ee.ut.madp.whatsgoingon.adapters.GroupParticipantsAdapter;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
+import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.Group;
@@ -47,7 +47,7 @@ import ee.ut.madp.whatsgoingon.models.GroupParticipant;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.R.string.add_members;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_CHAT_CHANNEL;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.CHANNEL_ID;
 
 public class ConversationActivity extends AppCompatActivity implements Observer {
     public static final String TAG = ConversationActivity.class.getSimpleName();
@@ -55,15 +55,13 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     @BindView(R.id.recyclerView) RecyclerView recyclerView;
     @BindView(R.id.et_message) EditText editTextMessage;
 
+    private LinearLayoutManager linearLayoutManager;
     private MessageAdapter messageAdapter;
     private List<ChatMessage> chatMessageList = new ArrayList<>();
-    private FirebaseAuth firebaseAuth;
     private DatabaseReference groupsRef;
     private DatabaseReference usersRef;
-    private ChatApplication application;
+    private ApplicationClass application;
     private ChatChannel chatChannel;
-    private boolean isGroup;
-    private String[] receivers;
     private Map<String, String> photosMap;
 
     @Override
@@ -72,50 +70,25 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         setContentView(R.layout.activity_conversation);
         ButterKnife.bind(this);
 
-        application = (ChatApplication) getApplication();
-        firebaseAuth = FirebaseAuth.getInstance();
+        application = (ApplicationClass) getApplication();
         application.addObserver(this);
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
         photosMap = new HashMap<>();
 
-        if (getIntent().hasExtra(PARCEL_CHAT_CHANNEL)) {
-            chatChannel = getIntent().getParcelableExtra(PARCEL_CHAT_CHANNEL);
-
-            isGroup = application.getChannel(chatChannel.getId()).isGroup();
+        if (getIntent().hasExtra(CHANNEL_ID)) {
+            chatChannel = application.getChannel(getIntent().getStringExtra(CHANNEL_ID));
             setTitle(chatChannel.getName());
-            if (isGroup) {
-                this.receivers = application.getGroupReceivers(chatChannel.getId());
-            }
         }
 
         setupRecyclerView();
-        if (isGroup) {
+        if (chatChannel.isGroup()) {
             downloadPhotos();
         } else {
             photosMap.put(application.getLoggedUser().getId(), application.getLoggedUser().getPhoto());
             photosMap.put(chatChannel.getId(), chatChannel.getPhoto());
         }
         updateHistory();
-    }
-
-    private void downloadPhotos() {
-        for (String receiver: receivers) {
-            usersRef.child(receiver).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    User user = dataSnapshot.getValue(User.class);
-                    if (user != null && user.getId() != null && user.getPhoto() != null) {
-                        photosMap.put(user.getId(), user.getPhoto());
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        }
     }
 
     @Override
@@ -136,28 +109,29 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
     @Override
     public synchronized void update(Observable o, int qualifier, String data) {
-        switch(qualifier) {
-            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
-            case ChatApplication.GROUP_MESSAGE_RECEIVED:
-            {
+        switch (qualifier) {
+            case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
                 if (data.equals(chatChannel.getId())) {
                     updateHistory();
                 } else {
-                    //TODO show notification of incoming message
+                    ChatChannel chatChannel = application.getChannel(data);
+                    ChatMessage lastMessage = application.getLastMessage(data);
+                    if (chatChannel != null && lastMessage != null) {
+                        MessageNotificationHelper.showNotification(this, chatChannel.getName(),
+                                chatChannel.getLastMessage());
+                    }
                 }
-            } break;
-            case ChatApplication.GROUP_RECEIVERS_CHANGED: {
+            }
+            break;
+            case ApplicationClass.GROUP_DELETED: {
                 if (data.equals(chatChannel.getId())) {
-                    receivers = application.getGroupReceivers(chatChannel.getId());
-                }
-            } break;
-            case ChatApplication.GROUP_DELETED: {
-                if (data.equals(chatChannel.getId())) {
-                    Toast.makeText(ConversationActivity.this, "Group has been deleted due to too few members...",
+                    Toast.makeText(ConversationActivity.this, R.string.group_deleted,
                             Toast.LENGTH_SHORT).show();
                     finish();
                 }
-            } break;
+            }
+            break;
             default:
                 break;
         }
@@ -169,31 +143,53 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         if (messageText == null || messageText.isEmpty()) {
             return;
         }
-        String sender = firebaseAuth.getCurrentUser().getUid();
+        String sender = application.getLoggedUser().getId();
+        String displayName = application.getLoggedUser().getName();
         String message;
-        if (isGroup) {
-            message = ChatHelper.groupMessage(sender, firebaseAuth.getCurrentUser().getDisplayName(),
-                    chatChannel.getId(), receivers, messageText);
+        if (chatChannel.isGroup()) {
+            message = ChatHelper.groupMessage(sender, displayName,
+                    chatChannel.getId(), application.getGroupReceivers(chatChannel.getId()), messageText);
         } else {
-            message = ChatHelper.oneToOneMessage(sender, firebaseAuth.getCurrentUser().getDisplayName(),
+            message = ChatHelper.oneToOneMessage(sender, displayName,
                     chatChannel.getId(), messageText);
         }
-        application.sendMessage(message);
+        application.sendChatMessage(message);
         editTextMessage.setText("");
         updateHistory();
     }
 
     private void setupRecyclerView() {
         messageAdapter = new MessageAdapter(this, chatMessageList, photosMap);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerView.setLayoutManager(layoutManager);
+        linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(messageAdapter);
+    }
+
+    private void downloadPhotos() {
+        //TODO load locally stored photos + download them if they are not stored
+        for (String receiver : application.getGroupReceivers(chatChannel.getId())) {
+            usersRef.child(receiver).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    User user = dataSnapshot.getValue(User.class);
+                    if (user != null && user.getId() != null && user.getPhoto() != null) {
+                        photosMap.put(user.getId(), user.getPhoto());
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    //left blank intentionally
+                }
+            });
+        }
     }
 
     private void updateHistory() {
         chatMessageList.clear();
         chatMessageList.addAll(application.getHistory(chatChannel.getId()));
+        linearLayoutManager.scrollToPosition(chatMessageList.size() - 1);
         messageAdapter.notifyDataSetChanged();
     }
 
@@ -205,36 +201,23 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         Button buttonOk = (Button) dialog.findViewById(R.id.btn_add_group_members_ok);
         Button buttonCancel = (Button) dialog.findViewById(R.id.btn_add_group_members_cancel);
         ListView peopleListView = (ListView) dialog.findViewById(R.id.lv_add_group_members_list);
+
         Set<ChatChannel> channelsNearDevice = application.getChannels();
-        for (ChatChannel chatChannel: channelsNearDevice) { //remove groups
+        for (ChatChannel chatChannel : channelsNearDevice) { //remove groups
             if (application.isGroup(chatChannel.getId())) {
                 channelsNearDevice.remove(chatChannel);
             } else {
-                for (String receiver: receivers) { //remove receivers
+                for (String receiver : application.getGroupReceivers(chatChannel.getId())) { //remove receivers
                     if (chatChannel.getId().equals(receiver)) {
                         channelsNearDevice.remove(chatChannel);
                     }
                 }
             }
-
         }
 
-        final List<GroupParticipant> possibleParticipants = new ArrayList<>();
-
-        for (ChatChannel member: channelsNearDevice) {
-            usersRef.child(member.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    User user = dataSnapshot.getValue(User.class);
-                    possibleParticipants.add(new GroupParticipant(user.getId(),
-                            user.getName(), user.getPhoto(), false));
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
+        List<GroupParticipant> possibleParticipants = new ArrayList<>();
+        for (ChatChannel channel: channelsNearDevice) {
+            possibleParticipants.add(new GroupParticipant(channel.getId(), channel.getName(), channel.getPhoto(), false));
         }
         final GroupParticipantsAdapter adapter = new GroupParticipantsAdapter(ConversationActivity.this,
                 R.layout.dialog_group_list_item, possibleParticipants);
@@ -271,8 +254,8 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     private void addGroupMembers(List<GroupParticipant> selected) {
         String groupId = chatChannel.getId();
         List<String> newParticipants = new ArrayList<>();
-        Collections.addAll(newParticipants, receivers);
-        for (GroupParticipant participant: selected) {
+        Collections.addAll(newParticipants, application.getGroupReceivers(chatChannel.getId()));
+        for (GroupParticipant participant : selected) {
             newParticipants.add(participant.getId());
         }
         application.deleteGroup(groupId, false);
@@ -302,9 +285,9 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
     private void leaveGroup() {
         String groupId = chatChannel.getId();
-        final List<String> newReceivers = new ArrayList<>();
-        for(String receiver : receivers) {
-            if (! receiver.equals(firebaseAuth.getCurrentUser().getUid())) {
+        List<String> newReceivers = new ArrayList<>();
+        for (String receiver : application.getGroupReceivers(chatChannel.getId())) {
+            if (!receiver.equals(application.getLoggedUser().getId())) {
                 newReceivers.add(receiver);
             }
         }

@@ -2,7 +2,6 @@ package ee.ut.madp.whatsgoingon.activities;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -18,7 +17,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.amulyakhare.textdrawable.TextDrawable;
 import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -26,20 +24,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
-import ee.ut.madp.whatsgoingon.chat.Observable;
-import ee.ut.madp.whatsgoingon.chat.Observer;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
 import ee.ut.madp.whatsgoingon.fragments.EventFragment;
-import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
-import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
@@ -47,7 +40,7 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENTS_REQUEST_
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SETTINGS_REQUEST_CODE;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, Observer {
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -55,9 +48,9 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @BindView(R.id.toolbar) Toolbar toolbar;
 
-    private ChatApplication application;
-    private DatabaseReference firebaseDatabase;
-    private Class fragmentClass;
+    private ApplicationClass application;
+    private DatabaseReference userRef;
+    private ValueEventListener valueEventListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,13 +58,47 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        application = (ApplicationClass) getApplication();
+        userRef = FirebaseDatabase.getInstance().getReference().child(FIREBASE_CHILD_USERS)
+                .child(ApplicationClass.loggedUser.getId());
+
+        setUpDbListener();
         setSupportActionBar(toolbar);
-        setUpVariables();
         setUpNavigationView();
         setUpDrawer();
-        setupNavigationHeader();
+        setupDataForDrawer();
         setUpFragment("Chat");
-        application.startAdvertise();
+    }
+
+    private void setUpDbListener() {
+        valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                if (user != null) {
+                    ApplicationClass.loggedUser.setPhoto(user.getPhoto());
+                    setupDataForDrawer();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        userRef.addListenerForSingleValueEvent(valueEventListener);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        userRef.removeEventListener(valueEventListener);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        userRef.addValueEventListener(valueEventListener);
     }
 
     @Override
@@ -102,20 +129,13 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void setUpVariables() {
-        application = (ChatApplication) getApplication();
-        firebaseDatabase = FirebaseDatabase.getInstance().getReference();
-    }
-
     private void setUpFragment(String type) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment fragment = null;
         try {
             if (type.equalsIgnoreCase("Chat")) {
-                fragmentClass = ChatChannelsFragment.class;
                 fragment = ChatChannelsFragment.class.newInstance();
             } else if (type.equalsIgnoreCase("Events")) {
-                fragmentClass = EventFragment.class;
                 fragment = EventFragment.class.newInstance();
             }
 
@@ -124,7 +144,7 @@ public class MainActivity extends AppCompatActivity
         }
         fragmentManager.beginTransaction().replace(
                 R.id.containerView, fragment).commit();
-        setTitle("Chat");
+        setTitle(type);
     }
 
     private void setUpNavigationView() {
@@ -165,6 +185,7 @@ public class MainActivity extends AppCompatActivity
                 startActivityForResult(new Intent(MainActivity.this, SettingsActivity.class), SETTINGS_REQUEST_CODE);
                 break;
             case R.id.nav_help:
+                //TODO implement help screen
                 break;
             case R.id.nav_logout:
                 signOutUser(this);
@@ -197,56 +218,17 @@ public class MainActivity extends AppCompatActivity
         startActivity(new Intent(context, LoginActivity.class));
     }
 
-    private void setupNavigationHeader() {
-        // TODO get information from the shared preferences and storage
-        firebaseDatabase.child(FIREBASE_CHILD_USERS).child(UserHelper.getCurrentUserId()).addListenerForSingleValueEvent(
-                new ValueEventListener() {
-
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Log.d(TAG, "Retrieving user with uid ");
-                        User user = dataSnapshot.getValue(User.class);
-
-                        setupDataForDrawer(user.getName(), user.getEmail(), user.getPhoto());
-                        application.setLoggedUser(new User(user.getId(), user.getPhoto(), user.getEmail(),
-                                user.getName()));
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.w(TAG, "Failed to read value ", databaseError.toException());
-                        DialogHelper.showAlertDialog(MainActivity.this, databaseError.toString());
-
-                    }
-                });
-    }
-
-    public void setupDataForDrawer(String name, String email, String photo) {
+    public void setupDataForDrawer() {
         if (navigationView != null) {
+            User user = ApplicationClass.loggedUser;
             View header = navigationView.getHeaderView(0);
             CircleImageView profilePhoto = (CircleImageView) header.findViewById(R.id.user_photo);
-            profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
+            profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(user.getPhoto()));
 
             TextView nameView = (TextView) header.findViewById(R.id.header_name);
-            nameView.setText(name);
+            nameView.setText(user.getName());
             TextView emailView = (TextView) header.findViewById(R.id.header_email);
-            emailView.setText(email);
-        }
-
-    }
-
-
-    @Override
-    public synchronized void update(Observable o, int qualifier, String data) {
-        switch (qualifier) {
-            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
-            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
-                if (fragmentClass.equals(ChatChannelsFragment.class)) {
-                    //TODO add message to the views
-                } else if (fragmentClass.equals(EventFragment.class)) {
-                    //TODO show notification of incoming message
-                }
-            } break;
+            emailView.setText(user.getEmail());
         }
     }
 }

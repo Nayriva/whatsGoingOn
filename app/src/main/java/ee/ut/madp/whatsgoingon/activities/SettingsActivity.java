@@ -22,10 +22,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.mvc.imagepicker.ImagePicker;
 
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
+import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
+import ee.ut.madp.whatsgoingon.models.ChatChannel;
+import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 public class SettingsActivity extends AppCompatPreferenceActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener, Observer {
@@ -41,7 +44,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
     private static DatabaseReference databaseReference;
     private static CoordinatorLayout coordinatorLayout;
     private Intent intent;
-    private ChatApplication application;
+    private ApplicationClass application;
 
 
     @Override
@@ -49,7 +52,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        application = (ChatApplication) getApplication();
+        application = (ApplicationClass) getApplication();
         application.addObserver(this);
 
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
@@ -140,9 +143,14 @@ public class SettingsActivity extends AppCompatPreferenceActivity
     @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
-            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
-            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
-                //TODO show notification
+            case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
+                ChatChannel chatChannel = application.getChannel(data);
+                ChatMessage lastMessage = application.getLastMessage(data);
+                if (chatChannel != null && lastMessage != null) {
+                    MessageNotificationHelper.showNotification(this, chatChannel.getName(),
+                            chatChannel.getLastMessage());
+                }
             } break;
         }
     }
@@ -183,12 +191,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
                     return true;
                 }
             });
-
-            //TODO udpate email
-
         }
-
-
     }
 
     private void storeUserProfilePhotoToStorage(String userId, byte[] newImage) {
