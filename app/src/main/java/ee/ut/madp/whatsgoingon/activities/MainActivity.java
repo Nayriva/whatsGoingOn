@@ -2,7 +2,6 @@ package ee.ut.madp.whatsgoingon.activities;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -30,12 +29,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
 import ee.ut.madp.whatsgoingon.fragments.EventFragment;
-import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
-import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
@@ -51,7 +48,7 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @BindView(R.id.toolbar) Toolbar toolbar;
 
-    private ChatApplication application;
+    private ApplicationClass application;
     private DatabaseReference userRef;
     private ValueEventListener valueEventListener;
 
@@ -61,9 +58,9 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        application = (ChatApplication) getApplication();
+        application = (ApplicationClass) getApplication();
         userRef = FirebaseDatabase.getInstance().getReference().child(FIREBASE_CHILD_USERS)
-                .child(ChatApplication.loggedUser.getId());
+                .child(ApplicationClass.loggedUser.getId());
 
         setUpDbListener();
         setSupportActionBar(toolbar);
@@ -79,7 +76,7 @@ public class MainActivity extends AppCompatActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 User user = dataSnapshot.getValue(User.class);
                 if (user != null) {
-                    ChatApplication.loggedUser.setPhoto(user.getPhoto());
+                    ApplicationClass.loggedUser.setPhoto(user.getPhoto());
                     setupDataForDrawer();
                 }
             }
@@ -223,7 +220,7 @@ public class MainActivity extends AppCompatActivity
 
     public void setupDataForDrawer() {
         if (navigationView != null) {
-            User user = ChatApplication.loggedUser;
+            User user = ApplicationClass.loggedUser;
             View header = navigationView.getHeaderView(0);
             CircleImageView profilePhoto = (CircleImageView) header.findViewById(R.id.user_photo);
             profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(user.getPhoto()));

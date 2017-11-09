@@ -38,7 +38,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.FirebaseExceptionsChecker;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.FontHelper;
@@ -53,7 +53,7 @@ public class LoginActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
-    private ChatApplication application;
+    private ApplicationClass application;
 
     @BindView(R.id.coordinator_layout) CoordinatorLayout coordinatorLayout;
     @BindView(R.id.input_email) TextInputEditText emailInput;
@@ -77,7 +77,7 @@ public class LoginActivity extends AppCompatActivity
 
         callbackManager = CallbackManager.Factory.create();
 
-        application = (ChatApplication) getApplication();
+        application = (ApplicationClass) getApplication();
         initializeAuth();
     }
 
@@ -256,7 +256,7 @@ public class LoginActivity extends AppCompatActivity
     private void startMainActivity() {
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if (currentUser != null) {
-            ChatApplication.loggedUser = new User(currentUser.getUid(),
+            ApplicationClass.loggedUser = new User(currentUser.getUid(),
                     ImageHelper.encodeBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.user)),
                     currentUser.getEmail(), currentUser.getDisplayName());
         }

@@ -33,7 +33,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.ModelFactory;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
@@ -74,7 +74,7 @@ public class EventFormActivity extends AppCompatActivity
     private Event event;
     private List<String> attendants;
 
-    private ChatApplication application;
+    private ApplicationClass application;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +91,7 @@ public class EventFormActivity extends AppCompatActivity
             setupContent();
         }
 
-        application = (ChatApplication) getApplication();
+        application = (ApplicationClass) getApplication();
         application.addObserver(this);
         setValidation();
     }
@@ -167,8 +167,8 @@ public class EventFormActivity extends AppCompatActivity
     @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
-            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
-            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+            case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
                 ChatChannel chatChannel = application.getChannel(data);
                 ChatMessage lastMessage = application.getLastMessage(data);
                 if (chatChannel != null && lastMessage != null) {
@@ -194,7 +194,8 @@ public class EventFormActivity extends AppCompatActivity
 
         Intent resultIntent = new Intent();
         resultIntent.putExtra(GeneralConstants.EXTRA_ADDED_EVENT, createdEvent);
-        resultIntent.putStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS, (ArrayList<String>) event.getAttendantIds());
+        resultIntent.putStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS,
+                (ArrayList<String>) createdEvent.getAttendantIds());
         setResult(RESULT_OK, resultIntent);
         finish();
     }

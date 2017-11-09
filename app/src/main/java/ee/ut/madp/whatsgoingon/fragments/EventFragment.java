@@ -5,8 +5,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Parcelable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -32,7 +30,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import ee.ut.madp.whatsgoingon.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
 import ee.ut.madp.whatsgoingon.activities.EventsOnDayActivity;
@@ -64,7 +62,7 @@ public class EventFragment extends Fragment implements Observer {
     private List<Date> daysWithEvents = new ArrayList<>();
     private List<Event> events = new ArrayList<>();
     private ValueEventListener valueEventListener;
-    private ChatApplication application;
+    private ApplicationClass application;
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -88,7 +86,7 @@ public class EventFragment extends Fragment implements Observer {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        application = (ChatApplication) getActivity().getApplication();
+        application = (ApplicationClass) getActivity().getApplication();
 
         DialogHelper.showProgressDialog(getContext(), getResources().getString(R.string.downloading_data));
         eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
@@ -174,8 +172,8 @@ public class EventFragment extends Fragment implements Observer {
     @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
-            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
-            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+            case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
                 ChatChannel chatChannel = application.getChannel(data);
                 ChatMessage lastMessage = application.getLastMessage(data);
                 if (chatChannel != null && lastMessage != null) {

@@ -48,7 +48,7 @@ import ee.ut.madp.whatsgoingon.models.User;
  * Created by dominikf on 16. 10. 2017.
  */
 
-public class ChatApplication extends Application implements Observable, Observer {
+public class ApplicationClass extends Application implements Observable, Observer {
 
     public static final String TAG = "chat.ChatApp";
     private FirebaseAuth firebaseAuth;
@@ -70,7 +70,6 @@ public class ChatApplication extends Application implements Observable, Observer
 
     public static final int GROUP_MESSAGE_RECEIVED = 1;
     public static final int ONE_TO_ONE_MESSAGE_RECEIVED = 2;
-    public static final int GROUP_RECEIVERS_CHANGED = 3;
     public static final int GROUP_CHANNEL_DISCOVERED = 4;
     public static final int GROUP_DELETED = 5;
     public static final int USER_CHANNEL_DISCOVERED = 6;
@@ -129,14 +128,11 @@ public class ChatApplication extends Application implements Observable, Observer
                 if (currentUser == null) {
                     return;
                 }
-                //String msg = ChatHelper.advertiseMessage(loggedUser.getId());
-                //Message message = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL, msg);
-                //mBusControlHandler.sendMessage(message);
 
                 //advertise test
-                //message = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL,
-                //        ChatHelper.advertiseMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3"));
-                //mBusControlHandler.sendMessage(message);
+                Message message = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL,
+                        ChatHelper.advertiseMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3"));
+                mBusControlHandler.sendMessage(message);
 
                 //1-2-1 test
                 //message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
@@ -145,10 +141,10 @@ public class ChatApplication extends Application implements Observable, Observer
                 //mBusChatHandler.sendMessage(message);
 
                 //group test
-                //message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
-                //        ChatHelper.groupMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová", "d94282264c994168a919554f90af9c4c",
-                //                new String[] { loggedUser.getId()}, "Test group text"  + new Random().nextInt()));
-                //mBusChatHandler.sendMessage(message);
+                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
+                        ChatHelper.groupMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová", "d94282264c994168a919554f90af9c4c",
+                                new String[] { loggedUser.getId()}, "Test group text"  + new Random().nextInt()));
+                mBusChatHandler.sendMessage(message);
 
 
                 advertiseHandler.postDelayed(this, 10000);
@@ -491,8 +487,8 @@ public class ChatApplication extends Application implements Observable, Observer
     @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
-            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
-            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+            case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
                 ChatChannel chatChannel = getChannel(data);
                 ChatMessage lastMessage = getLastMessage(data);
                 if (chatChannel != null && lastMessage != null) {
@@ -514,7 +510,7 @@ public class ChatApplication extends Application implements Observable, Observer
     }
 
     public void setLoggedUser(User loggedUser) {
-        ChatApplication.loggedUser = loggedUser;
+        ApplicationClass.loggedUser = loggedUser;
     }
 
     private class ControlService implements ControlInterface, BusObject {

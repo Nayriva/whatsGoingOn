@@ -12,16 +12,11 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.ChatApplication;
-import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.FontHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
@@ -52,8 +47,8 @@ public class SplashActivity extends AppCompatActivity {
             public void run() {
                 if (firebaseAuth.getCurrentUser() != null) {
                     FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-                    ChatApplication application = (ChatApplication) getApplication();
-                    ChatApplication.loggedUser = new User(currentUser.getUid(),
+                    ApplicationClass application = (ApplicationClass) getApplication();
+                    ApplicationClass.loggedUser = new User(currentUser.getUid(),
                             ImageHelper.encodeBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.user)),
                             currentUser.getEmail(), currentUser.getDisplayName());
 

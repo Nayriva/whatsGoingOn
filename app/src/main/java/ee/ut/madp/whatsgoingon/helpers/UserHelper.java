@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.DatabaseReference;
@@ -18,7 +17,7 @@ import com.squareup.picasso.Target;
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.ModelFactory;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
@@ -29,13 +28,13 @@ public class UserHelper {
     private static DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference().child(FIREBASE_CHILD_USERS);
 
     public static String getCurrentUserId() {
-        return ChatApplication.loggedUser.getId();
+        return ApplicationClass.loggedUser.getId();
     }
 
     public static void saveNewUserToDB(String name, FirebaseUser firebaseUser, String photo, boolean store) {
         User user = ModelFactory.createUser(firebaseUser.getUid(), photo, firebaseUser.getEmail(), name);
         if (store) {
-            ChatApplication.loggedUser = user;
+            ApplicationClass.loggedUser = user;
         }
         usersRef.child(firebaseUser.getUid()).setValue(user);
         usersRef.child(FIREBASE_CHILD_USERS).child(firebaseUser.getUid()).keepSynced(true);

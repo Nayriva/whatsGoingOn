@@ -26,7 +26,7 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
@@ -39,7 +39,7 @@ import ee.ut.madp.whatsgoingon.models.User;
 
 public class MyProfileActivity extends AppCompatActivity implements Observer {
 
-    private ChatApplication application;
+    private ApplicationClass application;
     private User user;
     private String photo;
     private boolean photoChanged;
@@ -67,7 +67,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_profile);
 
-        application = (ChatApplication) getApplication();
+        application = (ApplicationClass) getApplication();
         application.addObserver(this);
         userReference = FirebaseDatabase.getInstance().getReference()
                 .child(FirebaseConstants.FIREBASE_CHILD_USERS)
@@ -104,8 +104,8 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
     @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
-            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
-            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+            case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
                 ChatChannel chatChannel = application.getChannel(data);
                 ChatMessage lastMessage = application.getLastMessage(data);
                 if (chatChannel != null && lastMessage != null) {

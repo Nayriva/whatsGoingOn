@@ -33,7 +33,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.adapters.MessageAdapter;
-import ee.ut.madp.whatsgoingon.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.adapters.GroupParticipantsAdapter;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
@@ -60,7 +60,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     private List<ChatMessage> chatMessageList = new ArrayList<>();
     private DatabaseReference groupsRef;
     private DatabaseReference usersRef;
-    private ChatApplication application;
+    private ApplicationClass application;
     private ChatChannel chatChannel;
     private Map<String, String> photosMap;
 
@@ -70,7 +70,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         setContentView(R.layout.activity_conversation);
         ButterKnife.bind(this);
 
-        application = (ChatApplication) getApplication();
+        application = (ApplicationClass) getApplication();
         application.addObserver(this);
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
@@ -110,8 +110,8 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     @Override
     public synchronized void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
-            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
-            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+            case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
                 if (data.equals(chatChannel.getId())) {
                     updateHistory();
                 } else {
@@ -124,7 +124,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
                 }
             }
             break;
-            case ChatApplication.GROUP_DELETED: {
+            case ApplicationClass.GROUP_DELETED: {
                 if (data.equals(chatChannel.getId())) {
                     Toast.makeText(ConversationActivity.this, R.string.group_deleted,
                             Toast.LENGTH_SHORT).show();

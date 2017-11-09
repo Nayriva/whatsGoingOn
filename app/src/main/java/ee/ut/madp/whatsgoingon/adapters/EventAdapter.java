@@ -13,11 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
-import ee.ut.madp.whatsgoingon.ChatApplication;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
@@ -39,6 +37,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.MyViewHolder
     public EventAdapter(Activity context, List<Event> eventList) {
         this.eventList = eventList;
         this.context = context;
+    }
+
+    public List<Event> getData() {
+        return eventList;
     }
 
     @Override

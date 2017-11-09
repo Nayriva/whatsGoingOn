@@ -19,15 +19,17 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.adapters.EventAdapter;
-import ee.ut.madp.whatsgoingon.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
+import ee.ut.madp.whatsgoingon.comparators.EventComparator;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
@@ -48,7 +50,7 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
     @BindView(R.id.recyclerView) RecyclerView recyclerView;
     @BindView(R.id.event_day) TextView eventDay;
 
-    private ChatApplication application;
+    private ApplicationClass application;
     private List<Event> eventList;
     private EventAdapter eventAdapter;
     private DatabaseReference eventsRef;
@@ -79,7 +81,7 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
         eventsRef.orderByChild(FIREBASE_CHILD_EVENTS_DATE).equalTo(dateOfEvents)
                 .addListenerForSingleValueEvent(setValueEventListener(this));
 
-        application = (ChatApplication) getApplication();
+        application = (ApplicationClass) getApplication();
         application.addObserver(this);
     }
 
@@ -131,6 +133,8 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
                     eventList.add(editedEvent);
                 }
             }
+            Collections.sort(eventAdapter.getData(), new EventComparator());
+            Collections.reverse(eventAdapter.getData());
             eventAdapter.notifyDataSetChanged();
         }
     }
@@ -146,8 +150,8 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
     @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
-            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
-            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
+            case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
                 ChatChannel chatChannel = application.getChannel(data);
                 ChatMessage lastMessage = application.getLastMessage(data);
                 if (chatChannel != null && lastMessage != null) {
