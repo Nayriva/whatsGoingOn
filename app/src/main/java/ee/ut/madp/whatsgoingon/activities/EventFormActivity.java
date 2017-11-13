@@ -104,17 +104,20 @@ public class EventFormActivity extends AppCompatActivity
         descriptionInput.setText(event.getDescription());
 
         addEventButton.setVisibility(View.GONE);
-        if (canEdit) {
-            editEventButton.setVisibility(View.VISIBLE);
-            deleteEventButton.setVisibility(View.VISIBLE);
-        } else {
-            if (event.getAttendantIds().contains(UserHelper.getCurrentUserId())) {
-                joinEventButton.setText(getString(R.string.leave_event));
+        DateTime now = DateTime.now();
+        if (now.isBefore(event.getDateTime())) {
+            if (canEdit) {
+                editEventButton.setVisibility(View.VISIBLE);
+                deleteEventButton.setVisibility(View.VISIBLE);
             } else {
-                joinEventButton.setText(getString(R.string.join_event));
+                if (event.getAttendantIds().contains(UserHelper.getCurrentUserId())) {
+                    joinEventButton.setText(getString(R.string.leave_event));
+                } else {
+                    joinEventButton.setText(getString(R.string.join_event));
+                }
+                joinEventButton.setVisibility(View.VISIBLE);
+                lockEdits();
             }
-            joinEventButton.setVisibility(View.VISIBLE);
-            lockEdits();
         }
 
         synchronizeEventButton.setVisibility(View.VISIBLE);

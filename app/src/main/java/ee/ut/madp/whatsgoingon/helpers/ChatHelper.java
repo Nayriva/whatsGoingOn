@@ -24,6 +24,9 @@ public class ChatHelper {
     public static final String GROUP_ADVERTISE_MESSAGE = "AG";
     public static final String ONE_TO_ONE_MESSAGE = "S";
     public static final String GROUP_MESSAGE = "G";
+    public static final String GROUP_RECEIVERS_CHANGED_MESSAGE = "GR";
+    public static final String GROUP_DELETED_MESSAGE = "GD";
+    public static final String IMAGE_TEXT = "IMG_B64_*";
 
     //ONE TO ONE
 
@@ -202,10 +205,66 @@ public class ChatHelper {
         return parts[1];
     }
 
+    //GROUP RECEIVERS CHANGED
+
+    public static String groupReceiversChanged(String gid, String[] receivers) {
+        String msg = GROUP_RECEIVERS_CHANGED_MESSAGE
+                + delimiter
+                + gid
+                + delimiter
+                + receivers[0];
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 1; i < receivers.length; i++) {
+            stringBuilder.append(groupReceiversDelimiter);
+            stringBuilder.append(receivers[i]);
+        }
+        msg = msg + stringBuilder.toString();
+        return msg;
+    }
+
+    public static String groupReceiversChangedGid(String receivedMsg) {
+        String[] parts = receivedMsg.split(delimiter);
+        return parts[1];
+    }
+
+    public static String[] groupReceiversChangedReceivers(String receivedMsg) {
+        String[] parts = receivedMsg.split(delimiter);
+        return parts[2].split(groupReceiversDelimiter);
+    }
+
+    //GROUP DELETED
+    public static String groupDeleted(String gid) {
+        return GROUP_DELETED_MESSAGE +
+                delimiter +
+                gid;
+    }
+
+    public static String groupDeletedGid(String receivedMsg) {
+        String[] parts = receivedMsg.split(delimiter);
+        return parts[1];
+    }
+
     //COMMON
 
     public static String getMessageType(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
         return parts[0];
+    }
+
+    public static String imageText(String base64) {
+        return IMAGE_TEXT + base64;
+    }
+
+    public static boolean isImageText(String text) {
+        if (text.length() <= IMAGE_TEXT.length()) {
+            return false;
+        }
+        String subs = text.substring(0, IMAGE_TEXT.length());
+        return IMAGE_TEXT.equals(subs);
+    }
+
+    public static String getImageBase64(String messageText) {
+        messageText = messageText.replace(IMAGE_TEXT, "");
+        return messageText;
     }
 }
