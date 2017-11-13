@@ -48,6 +48,7 @@ import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.comparators.GroupParticipantComparator;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
@@ -85,6 +86,8 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     public void onResume() {
         super.onResume();
         application.addObserver(this);
+        getChannels();
+        setUpLastMessages();
     }
 
     @Override
@@ -228,6 +231,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                 selected.add(item.getId());
             }
         }
+        selected.add(ApplicationClass.loggedUser.getId());
         if (selected.size() <= 2) {
             Toast.makeText(getContext(), R.string.group_too_small, Toast.LENGTH_SHORT).show();
             return false;
@@ -238,7 +242,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         }
         String gid =  UUID.randomUUID().toString().replaceAll("-", "");
         Group group = new Group(gid, groupName, groupPhotoResult, selected);
-        FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS).setValue(group);
+        FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS).child(gid).setValue(group);
         application.createGroup(gid, selected.toArray(new String[0]));
         return true;
     }
@@ -311,9 +315,17 @@ public class ChatChannelsFragment extends Fragment implements Observer {
 
     private void updateLastMessage(ChatChannel chatChannel, ChatMessage lastMessage) {
         if (chatChannel.isGroup()) {
-            chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
+            if (ChatHelper.isImageText(lastMessage.getMessageText())) {
+                chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + "Sent a picture");
+            } else {
+                chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
+            }
         } else {
-            chatChannel.setLastMessage(lastMessage.getMessageText());
+            if (ChatHelper.isImageText(lastMessage.getMessageText())) {
+                chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + "Sent a picture");
+            } else {
+                chatChannel.setLastMessage(lastMessage.getMessageText());
+            }
         }
         chatChannel.setLastMessageTime(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
         Collections.sort(chatChannelAdapter.getChannels(), new ChatChannelComparator());

@@ -5,6 +5,7 @@
     android:gravity="center_vertical"
     android:padding="@dimen/spacing_medium"
     android:layout_marginLeft="@dimen/spacing_xlarge">
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -36,6 +37,18 @@
             android:drawableRight="@drawable/ic_clock"
             android:textColor="@color/colorTextInfo"
             android:textSize="@dimen/h4" />
+
+        <ImageView
+            android:id="@+id/iv_message_photo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/spacing_medium"
+            android:maxWidth="120dp"
+            android:maxHeight="120dp"
+            android:adjustViewBounds="true"
+            android:visibility="gone"
+            android:background="@drawable/bg_message_me" />
+
         <TextView
             android:id="@+id/tv_message_text"
             android:layout_width="wrap_content"
@@ -43,8 +56,7 @@
             android:padding="@dimen/spacing_medium"
             android:textColor="@android:color/white"
             android:textSize="@dimen/h3"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
             android:background="@drawable/bg_message_me"/>
+
     </LinearLayout>
 </RelativeLayout>

@@ -31,13 +31,25 @@
                 android:textSize="@dimen/h4"
                 android:textColor="@color/colorTextBlack"/>
 
+            <ImageView
+                android:id="@+id/iv_message_photo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/spacing_medium"
+                android:maxWidth="120dp"
+                android:maxHeight="120dp"
+                android:visibility="gone"
+                android:adjustViewBounds="true"
+                android:background="@drawable/bg_message_me"/>
+
             <TextView
                 android:id="@+id/tv_message_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingTop="@dimen/spacing_medium"
-                android:textColor="@color/colorTextBlack"
-                android:textSize="@dimen/h3"/>
+                android:padding="@dimen/spacing_medium"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/h3"
+                android:background="@drawable/bg_message_me"/>
 
         </LinearLayout>
 
