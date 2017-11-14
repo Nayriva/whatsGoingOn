@@ -178,7 +178,7 @@ public class EventFragment extends Fragment implements Observer {
                 ChatMessage lastMessage = application.getLastMessage(data);
                 if (chatChannel != null && lastMessage != null) {
                     MessageNotificationHelper.showNotification(getContext(), chatChannel.getName(),
-                            chatChannel.getLastMessage());
+                            chatChannel.getLastMessage(), chatChannel.getId());
                 }
             } break;
         }

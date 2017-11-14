@@ -12,6 +12,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
@@ -33,16 +34,14 @@ import ee.ut.madp.whatsgoingon.models.ChatMessage;
 public class SettingsActivity extends AppCompatPreferenceActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener, Observer {
 
-    public static final String PREFERENCE_EMAIL = "email";
     public static final String PREFERENCE_PASSWORD = "password";
-    private static final String PREFERENCE_PHOTO = "profile_photo";
-    private static final String PREFERENCE_MESSAGE_NOTIFICATION = "notifications_message";
-    private static final String PREFERENCE_NOTIFICATION_VIBRATE = "notification_vibrate";
-    private static final String PREFERENCE_NOTIFICATION_RINGTONE = "notification_ringtone";
+    public static final String PREFERENCE_PHOTO = "profile_photo";
+    public static final String PREFERENCE_MESSAGE_NOTIFICATION = "notifications_message";
+    public static final String PREFERENCE_NOTIFICATION_VIBRATE = "notification_vibrate";
+    public static final String PREFERENCE_NOTIFICATION_RINGTONE = "notification_ringtone";
 
     private static FirebaseAuth firebaseAuth;
-    private static DatabaseReference databaseReference;
-    private static CoordinatorLayout coordinatorLayout;
+    private CoordinatorLayout coordinatorLayout;
     private Intent intent;
     private ApplicationClass application;
 
@@ -60,13 +59,14 @@ public class SettingsActivity extends AppCompatPreferenceActivity
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
+        MyPreferenceFragment prefFragment = new MyPreferenceFragment();
+        prefFragment.setCoordinatorLayout(coordinatorLayout);
+        getFragmentManager().beginTransaction().replace(android.R.id.content, prefFragment).commit();
 
         firebaseAuth = FirebaseAuth.getInstance();
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
     }
 
     @Override
@@ -98,20 +98,27 @@ public class SettingsActivity extends AppCompatPreferenceActivity
             boolean isAllowed = sharedPreferences.getBoolean(key, true);
             editor.putBoolean(PREFERENCE_MESSAGE_NOTIFICATION, isAllowed);
             editor.apply();
+            ApplicationClass.notificationsOn = isAllowed;
         }
 
         if (key.equals(PREFERENCE_NOTIFICATION_VIBRATE)) {
             boolean isAllowed = sharedPreferences.getBoolean(key, true);
             editor.putBoolean(PREFERENCE_NOTIFICATION_VIBRATE, isAllowed);
             editor.commit();
+            ApplicationClass.vibrateOn = isAllowed;
         }
 
         if (key.equals(PREFERENCE_NOTIFICATION_RINGTONE)) {
-            String ringtonePreference = sharedPreferences.getString("notification_ringtone", "DEFAULT_SOUND");
+            String ringtonePreference = sharedPreferences.getString(PREFERENCE_NOTIFICATION_RINGTONE, "DEFAULT_SOUND");
             editor.putString(PREFERENCE_NOTIFICATION_RINGTONE, ringtonePreference);
             editor.commit();
+            ApplicationClass.setRingtone(ringtonePreference);
         }
 
+    }
+
+    public CoordinatorLayout getCoordinatorLayout() {
+        return coordinatorLayout;
     }
 
     @Override
@@ -149,7 +156,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
                 ChatMessage lastMessage = application.getLastMessage(data);
                 if (chatChannel != null && lastMessage != null) {
                     MessageNotificationHelper.showNotification(this, chatChannel.getName(),
-                            chatChannel.getLastMessage());
+                            chatChannel.getLastMessage(), chatChannel.getId());
                 }
             } break;
         }
@@ -157,19 +164,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity
 
     public static class MyPreferenceFragment extends PreferenceFragment {
 
+        private CoordinatorLayout coordinatorLayout;
+
+        public void setCoordinatorLayout(CoordinatorLayout coordinatorLayout) {
+            this.coordinatorLayout = coordinatorLayout;
+        }
+
         @Override
         public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.settings);
-
-            Preference profilePreference = findPreference(PREFERENCE_PHOTO);
-            profilePreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    ImagePicker.pickImage(getActivity(), getString(R.string.choose_photo));
-                    return true;
-                }
-            });
 
             Preference passwordPreference = findPreference(PREFERENCE_PASSWORD);
             passwordPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -181,7 +185,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
                                         DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.reset_password_instructions_sent));
-                                        //DialogHelper.hideProgressDialog();
                                     } else {
                                         DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.reset_password_instructions_not_sent));
                                     }
@@ -192,9 +195,5 @@ public class SettingsActivity extends AppCompatPreferenceActivity
                 }
             });
         }
-    }
-
-    private void storeUserProfilePhotoToStorage(String userId, byte[] newImage) {
-        //TODO implement
     }
 }

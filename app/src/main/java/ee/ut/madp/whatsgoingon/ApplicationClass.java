@@ -2,6 +2,9 @@ package ee.ut.madp.whatsgoingon;
 
 import android.app.Application;
 import android.app.NotificationManager;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
@@ -33,6 +36,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import ee.ut.madp.whatsgoingon.activities.SettingsActivity;
 import ee.ut.madp.whatsgoingon.chat.ChatInterface;
 import ee.ut.madp.whatsgoingon.chat.ControlInterface;
 import ee.ut.madp.whatsgoingon.chat.Observable;
@@ -81,7 +85,10 @@ public class ApplicationClass extends Application implements Observable, Observe
     public static final int USER_CHANNEL_LEAVING = 7;
 
     private List<Observer> mObservers;
+    public static boolean notificationsOn;
+    public static boolean vibrateOn;
     public static User loggedUser;
+    public static Uri ringtone;
 
     @Override
     public void onCreate() {
@@ -96,6 +103,12 @@ public class ApplicationClass extends Application implements Observable, Observe
 
         mBusControlHandler = new Handler(busControlThread.getLooper(), new ControlBusHandlerCallback());
         mBusControlHandler.sendEmptyMessage(ControlBusHandlerCallback.CONNECT);
+
+        SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon",
+                Context.MODE_WORLD_READABLE);
+        notificationsOn = prefs.getBoolean(SettingsActivity.PREFERENCE_MESSAGE_NOTIFICATION, true);
+        vibrateOn = prefs.getBoolean(SettingsActivity.PREFERENCE_NOTIFICATION_VIBRATE, true);
+        ringtone = Uri.parse(prefs.getString(SettingsActivity.PREFERENCE_NOTIFICATION_RINGTONE, "DEFAULT_SOUND"))   ;
     }
 
     @Override
@@ -150,11 +163,11 @@ public class ApplicationClass extends Application implements Observable, Observe
                 message = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL,
                         ChatHelper.advertiseMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3"));
                 mBusControlHandler.sendMessage(message);
-//                //1-2-1 test
-//                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
-//                        ChatHelper.oneToOneMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová",
-//                                loggedUser.getId(), "Test message 1_2_1" + new Random().nextInt()));
-//                mBusChatHandler.sendMessage(message);
+                //1-2-1 test
+                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
+                        ChatHelper.oneToOneMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová",
+                                loggedUser.getId(), "Test message 1_2_1" + new Random().nextInt()));
+                mBusChatHandler.sendMessage(message);
 //
 //                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
 //                        ChatHelper.oneToOneMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová", loggedUser.getId(),
@@ -170,6 +183,14 @@ public class ApplicationClass extends Application implements Observable, Observe
                 advertiseHandler.postDelayed(this, 10000);
             }
         };
+    }
+
+    public static Uri getRingtone() {
+        return ringtone;
+    }
+
+    public static void setRingtone(String ringtoneName) {
+        ringtone = Uri.parse(ringtoneName);
     }
 
     /**
@@ -574,7 +595,7 @@ public class ApplicationClass extends Application implements Observable, Observe
                 ChatMessage lastMessage = getLastMessage(data);
                 if (chatChannel != null && lastMessage != null) {
                     MessageNotificationHelper.showNotification(this, chatChannel.getName(),
-                            chatChannel.getLastMessage());
+                            chatChannel.getLastMessage(), chatChannel.getId());
                 }
             } break;
         }
@@ -602,6 +623,9 @@ public class ApplicationClass extends Application implements Observable, Observe
     public void groupDeletedAdvertise(String gid) {
         String message = ChatHelper.groupDeleted(gid);
         sendControlMessage(message);
+    }
+
+    public void tearDown() {
     }
 
     private class ControlService implements ControlInterface, BusObject {

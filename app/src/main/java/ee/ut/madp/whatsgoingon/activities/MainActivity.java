@@ -13,6 +13,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -51,6 +52,13 @@ public class MainActivity extends AppCompatActivity
     private ApplicationClass application;
     private DatabaseReference userRef;
     private ValueEventListener valueEventListener;
+    private Menu menu;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        this.menu = menu;
+        return super.onCreateOptionsMenu(menu);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,12 +128,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            if (requestCode == SETTINGS_REQUEST_CODE) {
-                setUpFragment("Chat");
-            } else if (requestCode == EVENTS_REQUEST_CODE) {
-                setUpFragment("Events");
-            }
+        if (requestCode == SETTINGS_REQUEST_CODE) {
+            setUpFragment("Chat");
+        } else if (requestCode == EVENTS_REQUEST_CODE) {
+            setUpFragment("Events");
         }
     }
 
@@ -135,8 +141,10 @@ public class MainActivity extends AppCompatActivity
         try {
             if (type.equalsIgnoreCase("Chat")) {
                 fragment = ChatChannelsFragment.class.newInstance();
+                navigationView.setCheckedItem(R.id.nav_chat);
             } else if (type.equalsIgnoreCase("Events")) {
                 fragment = EventFragment.class.newInstance();
+                navigationView.setCheckedItem(R.id.nav_events);
             }
 
         } catch (InstantiationException | IllegalAccessException e) {
@@ -145,6 +153,7 @@ public class MainActivity extends AppCompatActivity
         fragmentManager.beginTransaction().replace(
                 R.id.containerView, fragment).commit();
         setTitle(type);
+
     }
 
     private void setUpNavigationView() {
@@ -196,7 +205,9 @@ public class MainActivity extends AppCompatActivity
         }
 
         try {
-            fragment = (Fragment) fragmentClass.newInstance();
+            if (fragmentClass != null) {
+                fragment = (Fragment) fragmentClass.newInstance();
+            }
         } catch (Exception e) {
             Log.e(TAG, "Failed to obtain the fragment " + e.getMessage());
         }
@@ -216,6 +227,7 @@ public class MainActivity extends AppCompatActivity
         FirebaseAuth.getInstance().signOut();
         LoginManager.getInstance().logOut();
         startActivity(new Intent(context, LoginActivity.class));
+        finish();
     }
 
     public void setupDataForDrawer() {

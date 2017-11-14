@@ -59,7 +59,7 @@
     <string name="settings_notifications">Notifications</string>
     <string name="prompt_password">Password</string>
     <string name="prompt_photo">Profile photo</string>
-    <string name="settings_allow_notifications">Turn on message notifications</string>
+    <string name="settings_allow_sound_notifications">Turn on sound notifications</string>
     <string name="settings_event_reminder">Turn on event reminder</string>
     <string name="settings_notification_vibrate">Turn on vibrate</string>
     <string name="settings_notification_ringtone">Choose sounds</string>

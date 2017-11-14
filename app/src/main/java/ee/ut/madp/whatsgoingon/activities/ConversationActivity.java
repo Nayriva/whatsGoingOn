@@ -16,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -126,11 +127,11 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         } else if (requestCode == TAKE_PHOTO_REQUEST_CODE && resultCode == RESULT_OK) {
             Uri selectedImage = imageUri;
             getContentResolver().notifyChange(selectedImage, null);
-            Bitmap bitmap;
             try {
-                bitmap = android.provider.MediaStore.Images.Media
-                        .getBitmap(getContentResolver(), selectedImage);
-                sendMessage(ChatHelper.imageText(ImageHelper.encodeBitmap(bitmap)));
+                Bitmap reducedSizeBitmap = getBitmap(selectedImage.getPath());
+                if(reducedSizeBitmap != null) {
+                    sendMessage(ChatHelper.imageText(ImageHelper.encodeBitmap(reducedSizeBitmap)));
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -173,7 +174,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
                     ChatMessage lastMessage = application.getLastMessage(data);
                     if (chatChannel != null && lastMessage != null) {
                         MessageNotificationHelper.showNotification(this, chatChannel.getName(),
-                                chatChannel.getLastMessage());
+                                chatChannel.getLastMessage(), chatChannel.getId());
                     }
                 }
             }
@@ -263,6 +264,62 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
                     //left blank intentionally
                 }
             });
+        }
+    }
+
+    private Bitmap getBitmap(String path) {
+
+        Uri uri = Uri.fromFile(new File(path));
+        InputStream in;
+        try {
+            final int IMAGE_MAX_SIZE = 1200000; // 1.2MP
+            in = getContentResolver().openInputStream(uri);
+
+            // Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(in, null, o);
+            assert in != null;
+            in.close();
+
+            int scale = 1;
+            while ((o.outWidth * o.outHeight) * (1 / Math.pow(scale, 2)) >
+                    IMAGE_MAX_SIZE) {
+                scale++;
+            }
+
+            Bitmap b;
+            in = getContentResolver().openInputStream(uri);
+            if (scale > 1) {
+                scale--;
+                // scale to max possible inSampleSize that still yields an image
+                // larger than target
+                o = new BitmapFactory.Options();
+                o.inSampleSize = scale;
+                b = BitmapFactory.decodeStream(in, null, o);
+
+                // resize to desired dimensions
+                int height = b.getHeight();
+                int width = b.getWidth();
+
+                double y = Math.sqrt(IMAGE_MAX_SIZE
+                        / (((double) width) / height));
+                double x = (y / height) * width;
+
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(b, (int) x,
+                        (int) y, true);
+                b.recycle();
+                b = scaledBitmap;
+
+                System.gc();
+            } else {
+                b = BitmapFactory.decodeStream(in);
+            }
+            assert in != null;
+            in.close();
+            return b;
+        } catch (IOException e) {
+            return null;
         }
     }
 

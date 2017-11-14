@@ -11,11 +11,6 @@
             android:summary="@string/prompt_enter_password"
             android:title="@string/prompt_password" />
 
-        <Preference
-            android:key="profile_photo"
-            android:summary="@string/prompt_enter_photo"
-            android:title="@string/prompt_photo" />
-
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/settings_notifications">
@@ -23,16 +18,16 @@
             android:defaultValue="true"
             android:key="notifications_message"
             android:summary="@string/settings_notifications_summary"
-            android:title="@string/settings_allow_notifications" />
+            android:title="@string/settings_allow_sound_notifications" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="notification_vibrate"
+            android:title="@string/settings_notification_vibrate" />
         <SwitchPreference
             android:defaultValue="true"
             android:key="notification_reminders"
             android:summary="@string/settings_reminder_summary"
             android:title="@string/settings_event_reminder" />
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="notification_vibrate"
-            android:title="@string/settings_notification_vibrate" />
         <RingtonePreference
             android:defaultValue="content://settings/system/notification_sound"
             android:key="notification_ringtone"

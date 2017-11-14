@@ -156,7 +156,7 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
                 ChatMessage lastMessage = application.getLastMessage(data);
                 if (chatChannel != null && lastMessage != null) {
                     MessageNotificationHelper.showNotification(this, chatChannel.getName(),
-                            chatChannel.getLastMessage());
+                            chatChannel.getLastMessage(), chatChannel.getId());
                 }
             } break;
         }

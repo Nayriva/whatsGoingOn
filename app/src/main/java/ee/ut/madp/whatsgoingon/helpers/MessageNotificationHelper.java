@@ -2,11 +2,14 @@ package ee.ut.madp.whatsgoingon.helpers;
 
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 
 import java.util.Random;
 
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.R;
 
 /**
@@ -21,14 +24,20 @@ public class MessageNotificationHelper {
         MessageNotificationHelper.manager = manager;
     }
 
-    public static void showNotification(Context context, String sender, String text) {
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.logo)
-                        .setContentTitle(sender)
-                        .setContentText(text)
-                        .setVibrate(new long[] { 100, 200, 100} )
-                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-        manager.notify(new Random().nextInt(), builder.build());
+    public static void showNotification(Context context, String sender, String text, String id) {
+        if (ApplicationClass.notificationsOn || ApplicationClass.vibrateOn) {
+            NotificationCompat.Builder builder =
+                    new NotificationCompat.Builder(context)
+                            .setSmallIcon(R.drawable.logo)
+                            .setContentTitle(sender)
+                            .setContentText(text);
+            if (ApplicationClass.notificationsOn) {
+                builder.setSound(ApplicationClass.getRingtone());
+            }
+            if (ApplicationClass.vibrateOn) {
+                builder.setVibrate(new long[]{100, 200, 100});
+            }
+            manager.notify(id.hashCode(), builder.build());
+        }
     }
 }

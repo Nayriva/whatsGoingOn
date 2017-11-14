@@ -307,7 +307,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                 if (chatChannel != null && lastMessage != null) {
                     updateLastMessage(chatChannel, lastMessage);
                     MessageNotificationHelper.showNotification(getContext(), chatChannel.getName(),
-                            chatChannel.getLastMessage());
+                            chatChannel.getLastMessage(), chatChannel.getId());
                 }
             } break;
         }
