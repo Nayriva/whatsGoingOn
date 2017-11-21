@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,6 +54,8 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARAM_EVENT_DAY
 
 public class EventFragment extends Fragment implements Observer {
 
+    private static final String TAG = EventFragment.class.getSimpleName();
+
     private static final int CREATE_EVENT_REQUEST_CODE = 0;
     @BindView(R.id.calendar_view)
     CustomCalendarView calendarView;
@@ -66,6 +69,7 @@ public class EventFragment extends Fragment implements Observer {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CREATE_EVENT_REQUEST_CODE && resultCode == RESULT_OK) {
             if (data.hasExtra(GeneralConstants.EXTRA_ADDED_EVENT)) {
@@ -85,6 +89,7 @@ public class EventFragment extends Fragment implements Observer {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         application = (ApplicationClass) getActivity().getApplication();
 
@@ -93,6 +98,7 @@ public class EventFragment extends Fragment implements Observer {
         valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "onCreate.onDataChange");
                 for (DataSnapshot eventSnapshot : dataSnapshot.getChildren()) {
                     Event event = eventSnapshot.getValue(Event.class);
                     if (event != null) {
@@ -120,18 +126,21 @@ public class EventFragment extends Fragment implements Observer {
 
     @Override
     public void onDestroy() {
+        Log.i(TAG, "onDestroy");
         super.onDestroy();
         eventsRef.removeEventListener(valueEventListener);
     }
 
     @Override
     public void onResume() {
+        Log.i(TAG, "onResume");
         super.onResume();
         application.addObserver(this);
         setDaysWithEvents();
         calendarView.setCalendarListener(new CalendarListener() {
             @Override
             public void onDateSelected(Date date) {
+                Log.i(TAG, "onResume.onDateSelected");
                 if (daysWithEvents.contains(DateHelper.removeTimeFromDate(date))) {
                     Intent intent = new Intent(getActivity(), EventsOnDayActivity.class);
                     intent.putExtra(PARAM_EVENT_DAY, DateHelper.removeTimeFromDate(date).getTime());
@@ -148,13 +157,14 @@ public class EventFragment extends Fragment implements Observer {
 
     @Override
     public void onPause() {
+        Log.i(TAG, "onPause");
         super.onPause();
         application.deleteObserver(this);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.i(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_event, container, false);
         ButterKnife.bind(this, view);
 
@@ -164,9 +174,9 @@ public class EventFragment extends Fragment implements Observer {
 
     @OnClick(R.id.btn_add_event)
     public void showAddEventForm() {
-        startActivityForResult(
-                new Intent(getActivity(), EventFormActivity.class),
-                CREATE_EVENT_REQUEST_CODE);
+        Log.i(TAG, "showAddEventForm");
+        Intent intent = new Intent(getActivity(), EventFormActivity.class);
+        startActivityForResult(intent, CREATE_EVENT_REQUEST_CODE);
     }
 
     @Override
@@ -185,6 +195,7 @@ public class EventFragment extends Fragment implements Observer {
     }
 
     private void setDaysWithEvents() {
+        Log.i(TAG, "setDaysWithEvents");
         if (daysWithEvents.size() > 0) {
             List<DayDecorator> decorators = new ArrayList<>();
             decorators.add(new EventColorDecorator());
@@ -198,6 +209,7 @@ public class EventFragment extends Fragment implements Observer {
         @RequiresApi(api = Build.VERSION_CODES.M)
         @Override
         public void decorate(DayView dayView) {
+            Log.i(TAG, "EventColorDecorator.decorate");
             for (Date eventDay : daysWithEvents) {
                 if (DateHelper.removeTimeFromDate(dayView.getDate()).equals(eventDay)) {
                     dayView.setTextColor(Color.WHITE);

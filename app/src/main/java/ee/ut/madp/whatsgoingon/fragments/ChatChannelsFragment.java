@@ -14,6 +14,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,7 +63,7 @@ import static android.widget.AdapterView.OnClickListener;
 
 public class ChatChannelsFragment extends Fragment implements Observer {
 
-    private static final String TAG = "chat.ChannelsActivity";
+    private static final String TAG = ChatChannelsFragment.class.getSimpleName();
 
     @BindView(R.id.swiperefresh) SwipeRefreshLayout swipeRefreshLayout;
     @BindView(R.id.rv_channels_list) RecyclerView recyclerView;
@@ -75,6 +76,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         application = (ApplicationClass) getActivity().getApplicationContext();
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
@@ -84,14 +86,15 @@ public class ChatChannelsFragment extends Fragment implements Observer {
 
     @Override
     public void onResume() {
+        Log.i(TAG, "onResume");
         super.onResume();
         application.addObserver(this);
         getChannels();
-        setUpLastMessages();
     }
 
     @Override
     public void onPause() {
+        Log.i(TAG, "onPause");
         super.onPause();
         application.deleteObserver(this);
     }
@@ -99,6 +102,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.i(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_chat_channels, container, false);
         ButterKnife.bind(this, view);
         return view;
@@ -106,15 +110,15 @@ public class ChatChannelsFragment extends Fragment implements Observer {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        Log.i(TAG, "onViewCreated");
         super.onViewCreated(view, savedInstanceState);
         setupRecyclerView();
-        getChannels();
         setSwipeRefreshLayoutListener();
-        setUpLastMessages();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         super.onActivityResult(requestCode, resultCode, data);
         Bitmap bitmap = ImagePicker.getImageFromResult(getActivity(), requestCode, resultCode, data);
         if (bitmap != null) {
@@ -123,7 +127,8 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void setupRecyclerView() {
-        chatChannelAdapter = new ChatChannelAdapter(getContext(), new ArrayList<ChatChannel>());
+        Log.i(TAG, "setupRecyclerView");
+        chatChannelAdapter = new ChatChannelAdapter(new ArrayList<ChatChannel>());
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -131,6 +136,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void getChannels() {
+        Log.i(TAG, "getChannels");
         chatChannelAdapter.clearChannels();
         Set<ChatChannel> channels = application.getChannels();
         for (ChatChannel chatChannel : channels) {
@@ -149,9 +155,11 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void downloadGroups() {
+        Log.i(TAG, "downloadGroups");
         groupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "downloadGroups.onDataChange");
                 for (DataSnapshot groupSnapshot: dataSnapshot.getChildren()) {
                         Group group = groupSnapshot.getValue(Group.class);
                     if (group != null) {
@@ -171,6 +179,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
 
     @OnClick(R.id.fab_add_channel)
     public void addGroup() {
+        Log.i(TAG, "addGroup");
         final Dialog dialog = new Dialog(getContext());
         dialog.setContentView(R.layout.dialog_add_group);
         dialog.setTitle(getString(R.string.select_participants));
@@ -221,6 +230,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private boolean createGroup(String groupName, List<GroupParticipant> participants) {
+        Log.i(TAG, "createGroup: " + groupName + ", " + participants);
         if (groupName == null || groupName.isEmpty()) {
             Toast.makeText(getContext(), R.string.no_group_name, Toast.LENGTH_SHORT).show();
             return false;
@@ -258,6 +268,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void setUpLastMessages() {
+        Log.i(TAG, "setUpLastMessages");
         for (ChatChannel chatChannel: chatChannelAdapter.getChannels()) {
             ChatMessage lastMessage = application.getLastMessage(chatChannel.getId());
             if (lastMessage != null) {
@@ -272,7 +283,6 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
@@ -286,6 +296,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                     channelsStatus.setVisibility(View.GONE);
                 }
                 chatChannelAdapter.addChannel(foundChannel);
+                updateLastMessage(foundChannel,application.getLastMessage(foundChannel.getId()));
                 chatChannelAdapter.notifyDataSetChanged();
             } break;
             //DELETING CHANNELS
@@ -314,6 +325,10 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void updateLastMessage(ChatChannel chatChannel, ChatMessage lastMessage) {
+        Log.i(TAG, "updateLastMessage: " + chatChannel);
+        if (lastMessage == null) {
+            return;
+        }
         if (chatChannel.isGroup()) {
             if (ChatHelper.isImageText(lastMessage.getMessageText())) {
                 chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + "Sent a picture");

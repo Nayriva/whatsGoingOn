@@ -25,6 +25,14 @@ public class ChatMessage {
         this.isMe = isMe;
     }
 
+    public ChatMessage(String messageText, String displayName, String sender, boolean isMe, long time) {
+        this.messageText = messageText;
+        this.displayName = displayName;
+        this.sender = sender;
+        this.messageTime = time;
+        this.isMe = isMe;
+    }
+
     public ChatMessage() {
     }
 

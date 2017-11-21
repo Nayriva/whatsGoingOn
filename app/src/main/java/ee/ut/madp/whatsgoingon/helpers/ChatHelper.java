@@ -11,9 +11,7 @@ package ee.ut.madp.whatsgoingon.helpers;
  *  GROUP_MESSAGE: G~&&~senderId~&&~senderDisplayName~&&~groupName~&&~
  *                  receiver1~&~&~receiver2~&~&~...~&~&~receiverX~&&~message_text
  *
- *
  * Created by dominikf on 16. 10. 2017.
- *
  */
 
 public class ChatHelper {
@@ -69,6 +67,11 @@ public class ChatHelper {
         return parts[1];
     }
 
+    /**
+     * Extractor of sender's display name from one-to-one message
+     * @param receivedMessage message from which the display name should be extracted
+     * @return sender's display name if found, null otherwise
+     */
     public static String oneToOneMessageSenderDisplayName(String receivedMessage) {
         String[] parts = receivedMessage.split(delimiter);
         return parts[2];
@@ -96,6 +99,15 @@ public class ChatHelper {
 
     //GROUP
 
+    /**
+     * Constructs group chat message with defined format
+     * @param sender sender of message
+     * @param authorDisplayName display name of sender
+     * @param gid id of group
+     * @param receivers array of receivers
+     * @param text text of message
+     * @return constructed message in defined format
+     */
     public static String groupMessage(String sender, String authorDisplayName,
                                       String gid, String[] receivers, String text ) {
         StringBuilder message = new StringBuilder();
@@ -233,6 +245,7 @@ public class ChatHelper {
     }
 
     //GROUP DELETED
+
     public static String groupDeleted(String gid) {
         return GROUP_DELETED_MESSAGE +
                 delimiter +

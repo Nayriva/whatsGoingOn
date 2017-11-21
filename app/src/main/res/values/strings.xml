@@ -127,7 +127,7 @@
         <item>3</item>
     </string-array>
 
-    <string-array name="multi_select_list_preference_default_value" />
+    <string-array name="multi_select_list_preference_default_value"/>
 
     <string name="pref_title_system_sync_settings">System sync settings</string>
     <string name="pref_header_notifications">Notifications</string>
@@ -190,5 +190,6 @@
     <string name="group_deleted">Group has been deleted due to too few members…</string>
     <string name="downloading_data">Downloading data…</string>
     <string name="user_profile_preferences">user_profile_preferences</string>
+    <string name="show_profile">Show profile</string>
 
 </resources>

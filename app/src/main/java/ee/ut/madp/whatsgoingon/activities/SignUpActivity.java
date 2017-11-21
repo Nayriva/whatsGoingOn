@@ -43,9 +43,12 @@ import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 
-import static ee.ut.madp.whatsgoingon.activities.SplashActivity.TAG;
-
+/**
+ * Activity with options for registering new user.
+ */
 public class SignUpActivity extends AppCompatActivity implements Validator.ValidationListener {
+
+    private static final String TAG = SignUpActivity.class.getSimpleName();
 
     @NotEmpty @Email @BindView(R.id.input_layout_email) TextInputLayout email;
     @NotEmpty @BindView(R.id.input_layout_username) TextInputLayout name;
@@ -60,12 +63,12 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
     @BindView(R.id.input_password) TextInputEditText passwordInput;
 
     private String profilePhoto = "";
-
     private List<TextInputLayout> inputLayoutList;
     private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
         ButterKnife.bind(this);
@@ -105,6 +108,7 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
 
     @Override
     public void onValidationFailed(List<ValidationError> errors) {
+        Log.i(TAG, "onValidationFailed: " + errors);
         MyTextWatcherHelper.clearAllInputs(inputLayoutList);
         for (ValidationError error : errors) {
             View view = error.getView();
@@ -121,11 +125,13 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
 
     @OnClick(R.id.iw_profile_photo)
     public void addUserProfilePhoto() {
+        Log.i(TAG, "addUserProfilePhoto");
         ImagePicker.pickImage(this, getString(R.string.choose_photo));
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         Bitmap bitmap = ImagePicker.getImageFromResult(this, requestCode, resultCode, data);
         if (bitmap != null) {
             photo.setImageBitmap(bitmap);
@@ -138,8 +144,8 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
     }
 
     @OnClick(R.id.btn_register)
-    public void register() {
-        Log.i(TAG, "register()");
+    public void signUp() {
+        Log.i(TAG, "singUp");
         String username = String.valueOf(usernameInput.getText());
         String email = String.valueOf(emailInput.getText());
         String password = String.valueOf(passwordInput.getText());
@@ -151,32 +157,30 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
     }
 
     private void createNewUser(String email, String password, final String name, final String photo) {
+        Log.i(TAG, "createNewUser: " + email);
         DialogHelper.showProgressDialog(SignUpActivity.this, getString(R.string.progress_dialog_title_signup));
 
         firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "createUserWithEmail: onComplete:" + task.isSuccessful());
+                        Log.i(TAG, "createUserWithEmail: onComplete:" + task.isSuccessful());
                         if (!task.isSuccessful()) {
                             FirebaseExceptionsChecker.checkFirebaseAuth(SignUpActivity.this, task);
                             DialogHelper.hideProgressDialog();
                         } else {
                             onAuthSuccess(name, task.getResult().getUser(), photo);
                         }
-
                     }
                 });
     }
 
     private void onAuthSuccess(String displayName, FirebaseUser firebaseUser, String photo) {
+        Log.i(TAG, "onAuthSuccess: " + displayName + ", " + firebaseUser);
         if (photo == null || photo.isEmpty()) {
             photo = ImageHelper.encodeBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.user));
         }
         UserHelper.saveNewUserToDB(displayName, firebaseUser, photo, false);
-        if (firebaseUser != null) {
-            // TODO store user information to shared preferences
-        }
         setResult(Activity.RESULT_OK);
         DialogHelper.hideProgressDialog();
         finish();

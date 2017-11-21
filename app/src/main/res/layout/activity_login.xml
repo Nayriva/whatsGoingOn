@@ -102,7 +102,7 @@
             android:clickable="true">
 
             <TextView
-                android:id="@+id/register_link"
+                android:id="@+id/sign_up_link"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"

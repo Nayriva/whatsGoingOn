@@ -2,9 +2,13 @@ package ee.ut.madp.whatsgoingon;
 
 import android.app.Application;
 import android.app.NotificationManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
@@ -35,6 +39,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 import ee.ut.madp.whatsgoingon.activities.SettingsActivity;
 import ee.ut.madp.whatsgoingon.chat.ChatInterface;
@@ -42,6 +47,10 @@ import ee.ut.madp.whatsgoingon.chat.ControlInterface;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.database.IncomingMessagesDbHelper;
+import ee.ut.madp.whatsgoingon.database.MessagesDbContract.IncomingMessagesTable;
+import ee.ut.madp.whatsgoingon.database.MessagesDbContract.OutgoingMessagesTable;
+import ee.ut.madp.whatsgoingon.database.OutgoingMessagesDbHelper;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
 import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
@@ -62,6 +71,10 @@ public class ApplicationClass extends Application implements Observable, Observe
     private FirebaseAuth firebaseAuth;
     private DatabaseReference firebaseGroupsRef;
     private DatabaseReference firebaseUsersRef;
+    private IncomingMessagesDbHelper incDbHelper;
+    private OutgoingMessagesDbHelper outDbHelper;
+    private SQLiteDatabase incomingDb;
+    private SQLiteDatabase outgoingDb;
 
     private Map<String, ChatChannel> channelsNearDevice;
     private Map<String, List<ChatMessage>> chatHistory;
@@ -72,7 +85,6 @@ public class ApplicationClass extends Application implements Observable, Observe
     private Handler advertiseHandler;
     private Runnable advertiseCode;
 
-    private final int HISTORY_MAX = 20;
     private static final int MESSAGE_CHAT = 1;
     private static final int MESSAGE_CONTROL = 2;
 
@@ -115,6 +127,12 @@ public class ApplicationClass extends Application implements Observable, Observe
     public void onTerminate() {
         super.onTerminate();
         stopAdvertise();
+
+        incomingDb.close();
+        outgoingDb.close();
+        incDbHelper.close();
+        outDbHelper.close();
+
         mBusChatHandler.sendEmptyMessage(ChatBusHandlerCallback.DISCONNECT);
         mBusControlHandler.sendEmptyMessage(ControlBusHandlerCallback.DISCONNECT);
     }
@@ -136,7 +154,135 @@ public class ApplicationClass extends Application implements Observable, Observe
         firebaseAuth = FirebaseAuth.getInstance();
         mObservers = new ArrayList<>();
         channelsNearDevice = new HashMap<>();
+
+        incDbHelper = new IncomingMessagesDbHelper(getApplicationContext());
+        outDbHelper = new OutgoingMessagesDbHelper(getApplicationContext());
+        incomingDb = incDbHelper.getWritableDatabase();
+        outgoingDb = outDbHelper.getWritableDatabase();
+        try {
+            Map<String, List<ChatMessage>> readMessages = new ReadMessagesFromDb().execute().get();
+            for (String key: readMessages.keySet()) {
+                List<ChatMessage> messages = readMessages.get(key);
+                if (chatHistory.containsKey(key)) {
+                    chatHistory.get(key).addAll(messages);
+                } else {
+                    chatHistory.put(key, messages);
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
         setUpAdvertising();
+    }
+
+    private class ReadMessagesFromDb extends AsyncTask<Void, Void, Map<String, List<ChatMessage>>> {
+        private String incomingTable = IncomingMessagesTable.TABLE_NAME;
+        private String outgoingTable = OutgoingMessagesTable.TABLE_NAME;
+        private String loggedUserId = ApplicationClass.loggedUser.getId();
+
+        @Override
+        protected Map<String, List<ChatMessage>> doInBackground(Void... voids) {
+            Map<String, List<ChatMessage>> readMessages = new HashMap<>();
+            String[] incomingProjection = getIncomingProjection();
+            String[] outgoingProjection = getOutgoingProjection();
+            readIncomingDb(readMessages, incomingProjection);
+            readOutgoingDb(readMessages, outgoingProjection);
+            return readMessages;
+        }
+
+        private void readIncomingDb(Map<String, List<ChatMessage>> readMessages, String[] projection) {
+            String selection = IncomingMessagesTable.COLUMN_NAME_LOGGED_USER + " = ?";
+            String[] selectionArgs = { loggedUserId };
+            Cursor incomingCursor = incomingDb.query(incomingTable, projection, selection, selectionArgs, null, null, null);
+
+            int senderIndex = incomingCursor.getColumnIndex(IncomingMessagesTable.COLUMN_NAME_SENDER);
+            int senderDisplIndex = incomingCursor.getColumnIndex(IncomingMessagesTable.COLUMN_NAME_SENDER_DISPL_NAME);
+            int gidIndex = incomingCursor.getColumnIndex(IncomingMessagesTable.COLUMN_NAME_GID);
+            int textIndex = incomingCursor.getColumnIndex(IncomingMessagesTable.COLUMN_NAME_TEXT);
+            int timeIndex = incomingCursor.getColumnIndex(IncomingMessagesTable.COLUMN_NAME_TIME);
+
+            while (incomingCursor.moveToNext()) {
+                String sender = incomingCursor.getString(senderIndex);
+                String senderDispl = incomingCursor.getString(senderDisplIndex);
+                String gid = incomingCursor.getString(gidIndex);
+                String text = incomingCursor.getString(textIndex);
+                long time = incomingCursor.getLong(timeIndex);
+                ChatMessage msg = new ChatMessage(text, senderDispl, sender, false, time);
+                if (gid != null) {
+                    if (readMessages.containsKey(gid)) {
+                        readMessages.get(gid).add(msg);
+                    } else {
+                        readMessages.put(gid, new ArrayList<ChatMessage>());
+                        readMessages.get(gid).add(msg);
+                    }
+                } else {
+                    if (readMessages.containsKey(sender)) {
+                        readMessages.get(sender).add(msg);
+                    } else {
+                        readMessages.put(sender, new ArrayList<ChatMessage>());
+                        readMessages.get(sender).add(msg);
+                    }
+                }
+            }
+            incomingCursor.close();
+        }
+
+        private void readOutgoingDb(Map<String, List<ChatMessage>> readMessages, String[] projection) {
+            String selection = OutgoingMessagesTable.COLUMN_NAME_LOGGED_USER + " = ?";
+            String[] selectionArgs = { loggedUserId };
+            Cursor outgoingCursor = outgoingDb.query(outgoingTable, projection, selection, selectionArgs, null, null, null);
+
+            int receiverIndex = outgoingCursor.getColumnIndex(OutgoingMessagesTable.COLUMN_NAME_RECEIVER);
+            int gidIndex = outgoingCursor.getColumnIndex(OutgoingMessagesTable.COLUMN_NAME_GID);
+            int textIndex = outgoingCursor.getColumnIndex(OutgoingMessagesTable.COLUMN_NAME_TEXT);
+            int timeIndex = outgoingCursor.getColumnIndex(OutgoingMessagesTable.COLUMN_NAME_TIME);
+
+            while (outgoingCursor.moveToNext()) {
+                String receiver = outgoingCursor.getString(receiverIndex);
+                String gid = outgoingCursor.getString(gidIndex);
+                String text = outgoingCursor.getString(textIndex);
+                long time = outgoingCursor.getLong(timeIndex);
+                ChatMessage msg = new ChatMessage(text, loggedUser.getName(), loggedUser.getId(), true, time);
+                if (gid != null) {
+                    if (readMessages.containsKey(gid)) {
+                        readMessages.get(gid).add(msg);
+                    } else {
+                        readMessages.put(gid, new ArrayList<ChatMessage>());
+                        readMessages.get(gid).add(msg);
+                    }
+                } else {
+                    if (readMessages.containsKey(receiver)) {
+                        readMessages.get(receiver).add(msg);
+                    } else {
+                        readMessages.put(receiver, new ArrayList<ChatMessage>());
+                        readMessages.get(receiver).add(msg);
+                    }
+                }
+            }
+            outgoingCursor.close();
+        }
+
+        public String[] getIncomingProjection() {
+            String[] incomingProjection = new String[] {
+                    IncomingMessagesTable.COLUMN_NAME_SENDER,
+                    IncomingMessagesTable.COLUMN_NAME_SENDER_DISPL_NAME,
+                    IncomingMessagesTable.COLUMN_NAME_GID,
+                    IncomingMessagesTable.COLUMN_NAME_TEXT,
+                    IncomingMessagesTable.COLUMN_NAME_TIME
+            };
+            return incomingProjection;
+        }
+
+        public String[] getOutgoingProjection() {
+            String[] outgoingProjection = new String[]{
+                    OutgoingMessagesTable.COLUMN_NAME_RECEIVER,
+                    OutgoingMessagesTable.COLUMN_NAME_GID,
+                    OutgoingMessagesTable.COLUMN_NAME_TEXT,
+                    OutgoingMessagesTable.COLUMN_NAME_TIME
+            };
+            return outgoingProjection;
+        }
     }
 
     /**
@@ -164,10 +310,10 @@ public class ApplicationClass extends Application implements Observable, Observe
                         ChatHelper.advertiseMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3"));
                 mBusControlHandler.sendMessage(message);
                 //1-2-1 test
-                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
-                        ChatHelper.oneToOneMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová",
-                                loggedUser.getId(), "Test message 1_2_1" + new Random().nextInt()));
-                mBusChatHandler.sendMessage(message);
+//                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
+//                        ChatHelper.oneToOneMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová",
+//                                loggedUser.getId(), "Test message 1_2_1" + new Random().nextInt()));
+//                mBusChatHandler.sendMessage(message);
 //
 //                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
 //                        ChatHelper.oneToOneMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová", loggedUser.getId(),
@@ -206,9 +352,9 @@ public class ApplicationClass extends Application implements Observable, Observe
     public synchronized void stopAdvertise() {
         sendChatMessage(ChatHelper.cancelAdvertiseMessage(loggedUser.getId()));
         advertiseHandler.removeCallbacks(advertiseCode);
-        channelsNearDevice = new HashMap<>();
-        chatHistory = new HashMap<>();
-        groupChatsReceiversMap = new HashMap<>();
+        channelsNearDevice = new ConcurrentHashMap<>();
+        chatHistory = new ConcurrentHashMap<>();
+        groupChatsReceiversMap = new ConcurrentHashMap<>();
     }
 
     //***** HANDLERS *****\\
@@ -335,8 +481,9 @@ public class ApplicationClass extends Application implements Observable, Observe
                 channelsNearDevice.put(newGroupChannel.getId(), newGroupChannel);
                 groupChatsReceiversMap.put(newGroupChannel.getId(),
                         group.getReceivers().toArray(new String[0]));
-                //TODO download history from firebase
-                chatHistory.put(newGroupChannel.getId(), new ArrayList<ChatMessage>());
+                if (! chatHistory.containsKey(newGroupChannel.getId())) {
+                    chatHistory.put(newGroupChannel.getId(), new ArrayList<ChatMessage>());
+                }
                 notifyObservers(GROUP_CHANNEL_DISCOVERED, group.getId());
             }
 
@@ -364,8 +511,9 @@ public class ApplicationClass extends Application implements Observable, Observe
                 }
                 ChatChannel newUserChannel = new ChatChannel(user.getId(), user.getName(), user.getPhoto(), false);
                 channelsNearDevice.put(user.getId(), newUserChannel);
-                //TODO download history from firebase
-                chatHistory.put(user.getId(), new ArrayList<ChatMessage>());
+                if (! chatHistory.containsKey(user.getId())) {
+                    chatHistory.put(user.getId(), new ArrayList<ChatMessage>());
+                }
                 notifyObservers(USER_CHANNEL_DISCOVERED, user.getId());
             }
 
@@ -393,12 +541,12 @@ public class ApplicationClass extends Application implements Observable, Observe
         if (!found) {
             return;
         }
-        storeGroupMessage(receivedMsg);
+        storeGroupMessage(receivedMsg, true);
         String gid = ChatHelper.groupMessageGID(receivedMsg);
         notifyObservers(GROUP_MESSAGE_RECEIVED, gid);
     }
 
-    private void storeGroupMessage(String receivedMsg) {
+    private void storeGroupMessage(String receivedMsg, boolean incoming) {
         String group = ChatHelper.groupMessageGID(receivedMsg);
         if (! chatHistory.containsKey(group)) {
             chatHistory.put(group, new ArrayList<ChatMessage>());
@@ -412,9 +560,10 @@ public class ApplicationClass extends Application implements Observable, Observe
 
         ChatMessage newMessage = new ChatMessage(text, displayName, sender,
                 loggedUser.getId().equals(sender));
-        if (hist.size() > HISTORY_MAX) {
-            hist.remove(0);
-            //TODO store messages to DB
+        if (incoming) {
+            storeIncomingMessage(sender, displayName, group, text, newMessage.getMessageTime());
+        } else {
+            storeOutgoingMessage(null, group, text, newMessage.getMessageTime());
         }
         hist.add(newMessage);
     }
@@ -442,11 +591,51 @@ public class ApplicationClass extends Application implements Observable, Observe
 
         ChatMessage newMessage = new ChatMessage(text, senderName, sender,
                 loggedUser.getId().equals(sender));
-        if (hist.size() > HISTORY_MAX) {
-            hist.remove(0);
-            //TODO store messages to DB
-        }
+        storeIncomingMessage(sender, senderName, null, text, newMessage.getMessageTime());
         hist.add(newMessage);
+    }
+
+    private class StoreIncomingMessageAsyncTask extends AsyncTask<ContentValues, Void, Long> {
+
+        private String tableName = IncomingMessagesTable.TABLE_NAME;
+
+        @Override
+        protected Long doInBackground(ContentValues... contentValues) {
+            ContentValues values = contentValues[0];
+            return incomingDb.insert(tableName, null, values);
+        }
+    }
+
+    private class StoreOutgoingMessageAsyncTask extends AsyncTask<ContentValues, Void, Long> {
+
+        private String tableName = OutgoingMessagesTable.TABLE_NAME;
+
+        @Override
+        protected Long doInBackground(ContentValues... contentValues) {
+            ContentValues values = contentValues[0];
+            return outgoingDb.insert(tableName, null, values);
+        }
+    }
+
+    private void storeIncomingMessage(String sender, String senderDisplName, String gid, String text, long time) {
+        ContentValues values = new ContentValues();
+        values.put(IncomingMessagesTable.COLUMN_NAME_LOGGED_USER, loggedUser.getId());
+        values.put(IncomingMessagesTable.COLUMN_NAME_SENDER, sender);
+        values.put(IncomingMessagesTable.COLUMN_NAME_SENDER_DISPL_NAME, senderDisplName);
+        values.put(IncomingMessagesTable.COLUMN_NAME_GID, gid);
+        values.put(IncomingMessagesTable.COLUMN_NAME_TEXT, text);
+        values.put(IncomingMessagesTable.COLUMN_NAME_TIME, time);
+        new StoreIncomingMessageAsyncTask().execute(values);
+    }
+
+    private void storeOutgoingMessage(String receiver, String gid, String text, long time) {
+        ContentValues values = new ContentValues();
+        values.put(OutgoingMessagesTable.COLUMN_NAME_LOGGED_USER, loggedUser.getId());
+        values.put(OutgoingMessagesTable.COLUMN_NAME_RECEIVER, receiver);
+        values.put(OutgoingMessagesTable.COLUMN_NAME_GID, gid);
+        values.put(OutgoingMessagesTable.COLUMN_NAME_TEXT, text);
+        values.put(OutgoingMessagesTable.COLUMN_NAME_TIME, time);
+        new StoreOutgoingMessageAsyncTask().execute(values);
     }
 
     /**
@@ -481,14 +670,11 @@ public class ApplicationClass extends Application implements Observable, Observe
                 }
                 List<ChatMessage> hist = chatHistory.get(channel);
                 ChatMessage newMessage = new ChatMessage(text, name, channel, true);
-                if (hist.size() > HISTORY_MAX) {
-                    hist.remove(0);
-                    //TODO store messages to DB
-                }
+                storeOutgoingMessage(channel, null, text, newMessage.getMessageTime());
                 hist.add(newMessage);
             } break;
             case "G": {
-                storeGroupMessage(message);
+                storeGroupMessage(message, false);
             } break;
         }
         Message msg = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT, message);
@@ -563,6 +749,22 @@ public class ApplicationClass extends Application implements Observable, Observe
 
         if (onlyDelete) {
             notifyObservers(GROUP_DELETED, groupId);
+            new DeleteGroupFromDb().execute(groupId);
+        }
+    }
+
+    private class DeleteGroupFromDb extends AsyncTask<String, Void, Void> {
+        private String incomingTable = IncomingMessagesTable.TABLE_NAME;
+        private String outgoingTable = OutgoingMessagesTable.TABLE_NAME;
+
+        @Override
+        protected Void doInBackground(String... strings) {
+            String gid = strings[0];
+            String incomingSelection = IncomingMessagesTable.COLUMN_NAME_GID + " = ?";
+            String outgoingSelection = OutgoingMessagesTable.COLUMN_NAME_GID + " = ?";
+            incomingDb.delete(incomingTable, incomingSelection, new String[] { gid });
+            outgoingDb.delete(outgoingTable, outgoingSelection, new String[] { gid });
+            return null;
         }
     }
 
@@ -623,9 +825,6 @@ public class ApplicationClass extends Application implements Observable, Observe
     public void groupDeletedAdvertise(String gid) {
         String message = ChatHelper.groupDeleted(gid);
         sendControlMessage(message);
-    }
-
-    public void tearDown() {
     }
 
     private class ControlService implements ControlInterface, BusObject {

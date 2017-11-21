@@ -1,6 +1,5 @@
 package ee.ut.madp.whatsgoingon.activities;
 
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -12,16 +11,16 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
 import com.mvc.imagepicker.ImagePicker;
 
+import butterknife.BindView;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.chat.Observable;
@@ -34,27 +33,27 @@ import ee.ut.madp.whatsgoingon.models.ChatMessage;
 public class SettingsActivity extends AppCompatPreferenceActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener, Observer {
 
+    private static final String TAG = SettingsActivity.class.getSimpleName();
+
     public static final String PREFERENCE_PASSWORD = "password";
-    public static final String PREFERENCE_PHOTO = "profile_photo";
     public static final String PREFERENCE_MESSAGE_NOTIFICATION = "notifications_message";
     public static final String PREFERENCE_NOTIFICATION_VIBRATE = "notification_vibrate";
     public static final String PREFERENCE_NOTIFICATION_RINGTONE = "notification_ringtone";
 
     private static FirebaseAuth firebaseAuth;
-    private CoordinatorLayout coordinatorLayout;
     private Intent intent;
     private ApplicationClass application;
 
+    @BindView(R.id.coordinator_layout) CoordinatorLayout coordinatorLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
         application = (ApplicationClass) getApplication();
-        application.addObserver(this);
 
-        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -70,13 +69,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        application.deleteObserver(this);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.i(TAG, "onOptionsItemSelected");
         int id = item.getItemId();
         if (id == android.R.id.home) {
             if (intent == null) {
@@ -91,8 +85,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon",
-                Context.MODE_WORLD_READABLE);
+        Log.i(TAG, "onSharedPreferenceChanged: " + sharedPreferences + ", " + key);
+        SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         if (key.equals(PREFERENCE_MESSAGE_NOTIFICATION)) {
             boolean isAllowed = sharedPreferences.getBoolean(key, true);
@@ -117,33 +111,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity
 
     }
 
-    public CoordinatorLayout getCoordinatorLayout() {
-        return coordinatorLayout;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Bitmap bitmap = ImagePicker.getImageFromResult(this, requestCode, resultCode, data);
-        if (bitmap != null) {
-            // TODO save photo to the external storage
-            String userId = firebaseAuth.getCurrentUser().getUid();
-           // storeUserProfilePhotoToStorage(userId, );
-
-//            intent = getIntent();
-//            intent.putExtra(UPDATED_PHOTO, UPDATED_PHOTO);
-            DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.profile_photo_updated));
-        }
-    }
-
     @Override
     protected void onResume() {
+        Log.i(TAG, "onResume");
         super.onResume();
+        application.addObserver(this);
         getPreferences(MODE_PRIVATE).registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     protected void onPause() {
+        Log.i(TAG, "onPause");
         super.onPause();
+        application.deleteObserver(this);
         getPreferences(MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(this);
     }
 
@@ -188,7 +168,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity
                                     } else {
                                         DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.reset_password_instructions_not_sent));
                                     }
-
                                 }
                             });
                     return true;

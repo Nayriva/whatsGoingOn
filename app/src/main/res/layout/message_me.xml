@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -6,57 +7,62 @@
     android:padding="@dimen/spacing_medium"
     android:layout_marginLeft="@dimen/spacing_xlarge">
 
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/civ_message_user_photo"
+        android:visibility="gone"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/user"
+        android:layout_marginRight="@dimen/spacing_medium" />
+
     <LinearLayout
+        android:id="@+id/ll_auth_time"
+        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
         android:layout_alignParentRight="true">
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/civ_message_user_photo"
-            android:visibility="gone"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/user"
-            android:layout_marginRight="@dimen/spacing_medium"/>
+
+        <TextView
+            android:id="@+id/tv_message_time"
+            android:layout_marginLeft="@dimen/spacing_medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/spacing_small"
+            android:drawableLeft="@drawable/ic_clock"
+            android:textColor="@color/colorTextInfo"
+            android:layout_marginEnd="@dimen/spacing_small"
+            android:textSize="@dimen/h6"/>
 
         <TextView
             android:id="@+id/tv_message_author"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/h4"
-            android:visibility="gone"
-            android:textColor="@color/colorTextBlack"/>
-
-        <TextView
-            android:id="@+id/tv_message_time"
-            android:layout_marginRight="@dimen/spacing_medium"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawablePadding="@dimen/spacing_small"
-            android:drawableRight="@drawable/ic_clock"
-            android:textColor="@color/colorTextInfo"
-            android:textSize="@dimen/h4" />
-
-        <ImageView
-            android:id="@+id/iv_message_photo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="@dimen/spacing_medium"
-            android:maxWidth="120dp"
-            android:maxHeight="120dp"
-            android:adjustViewBounds="true"
-            android:visibility="gone"
-            android:background="@drawable/bg_message_me" />
-
-        <TextView
-            android:id="@+id/tv_message_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="@dimen/spacing_medium"
-            android:textColor="@android:color/white"
-            android:textSize="@dimen/h3"
-            android:background="@drawable/bg_message_me"/>
+            android:visibility="gone" />
 
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_message_photo"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ll_auth_time"
+        android:layout_alignParentRight="true"
+        android:padding="@dimen/spacing_medium"
+        android:maxWidth="120dp"
+        android:maxHeight="120dp"
+        android:adjustViewBounds="true"
+        android:background="@drawable/bg_message_me" />
+
+    <TextView
+        android:id="@+id/tv_message_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ll_auth_time"
+        android:layout_alignParentRight="true"
+        android:padding="@dimen/spacing_medium"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/h3"
+        android:background="@drawable/bg_message_me" />
+
 </RelativeLayout>

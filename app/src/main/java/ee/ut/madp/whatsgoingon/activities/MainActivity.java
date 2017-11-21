@@ -52,16 +52,10 @@ public class MainActivity extends AppCompatActivity
     private ApplicationClass application;
     private DatabaseReference userRef;
     private ValueEventListener valueEventListener;
-    private Menu menu;
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        this.menu = menu;
-        return super.onCreateOptionsMenu(menu);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -79,9 +73,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setUpDbListener() {
+        Log.i(TAG, "setUpDbListener");
         valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "setUpDbListener.onDataChange");
                 User user = dataSnapshot.getValue(User.class);
                 if (user != null) {
                     ApplicationClass.loggedUser.setPhoto(user.getPhoto());
@@ -99,18 +95,21 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onPause() {
+        Log.i(TAG, "onPause");
         super.onPause();
         userRef.removeEventListener(valueEventListener);
     }
 
     @Override
     protected void onResume() {
+        Log.i(TAG, "onResume");
         super.onResume();
         userRef.addValueEventListener(valueEventListener);
     }
 
     @Override
     public void onBackPressed() {
+        Log.i(TAG, "onBackPressed");
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
@@ -121,12 +120,14 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Log.i(TAG, "onNavigationItemSelected");
         selectDrawerItem(item);
         return true;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == SETTINGS_REQUEST_CODE) {
             setUpFragment("Chat");
@@ -136,6 +137,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setUpFragment(String type) {
+        Log.i(TAG, "setUpFragment: " + type);
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment fragment = null;
         try {
@@ -153,16 +155,17 @@ public class MainActivity extends AppCompatActivity
         fragmentManager.beginTransaction().replace(
                 R.id.containerView, fragment).commit();
         setTitle(type);
-
     }
 
     private void setUpNavigationView() {
+        Log.i(TAG, "setUpNavigationView");
         final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.nav_chat);
     }
 
     private void setUpDrawer() {
+        Log.i(TAG, "setUpDrawer");
         final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
@@ -177,6 +180,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void selectDrawerItem(MenuItem menuItem) {
+        Log.i(TAG, "selectDrawerItem: " + menuItem);
         Fragment fragment = null;
         Class fragmentClass = null;
 
@@ -223,6 +227,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void signOutUser(Context context) {
+        Log.i(TAG, "signOutUser");
         application.stopAdvertise();
         FirebaseAuth.getInstance().signOut();
         LoginManager.getInstance().logOut();
@@ -231,6 +236,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void setupDataForDrawer() {
+        Log.i(TAG, "setupDataForDrawer");
         if (navigationView != null) {
             User user = ApplicationClass.loggedUser;
             View header = navigationView.getHeaderView(0);

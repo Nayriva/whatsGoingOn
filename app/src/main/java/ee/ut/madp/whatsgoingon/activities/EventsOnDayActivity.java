@@ -10,6 +10,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -47,6 +48,8 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARAM_EVENT_DAY
 
 public class EventsOnDayActivity extends AppCompatActivity implements Observer {
 
+    private static final String TAG = EventsOnDayActivity.class.getSimpleName();
+
     @BindView(R.id.recyclerView) RecyclerView recyclerView;
     @BindView(R.id.event_day) TextView eventDay;
 
@@ -59,6 +62,7 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_events_on_day);
         ButterKnife.bind(this);
@@ -82,11 +86,11 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
                 .addListenerForSingleValueEvent(setValueEventListener(this));
 
         application = (ApplicationClass) getApplication();
-        application.addObserver(this);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == EVENT_DAY_REQUEST_CODE && resultCode == RESULT_OK) {
             //event has been joined
@@ -140,11 +144,24 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        application.deleteObserver(this);
-        eventsRef.removeEventListener(valueEventListener);
+    protected void onResume() {
+        Log.i(TAG, "onResume");
+        super.onResume();
+        application.addObserver(this);
+    }
 
+    @Override
+    protected void onPause() {
+        Log.i(TAG, "onPause");
+        super.onPause();
+        application.deleteObserver(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.i(TAG, "onDestroy");
+        super.onDestroy();
+        eventsRef.removeEventListener(valueEventListener);
     }
 
     @Override
@@ -163,6 +180,7 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
     }
 
     private void setupRecyclerView() {
+        Log.i(TAG, "setupRecyclerView");
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         eventAdapter = new EventAdapter(EventsOnDayActivity.this, eventList);
         recyclerView.setLayoutManager(layoutManager);
@@ -176,9 +194,11 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
     }
 
     private ValueEventListener setValueEventListener(final Context context) {
+        Log.i(TAG, "setValueEventListener");
         valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "setValueEventListener.onDataChange");
                 DialogHelper.showProgressDialog(context, getResources().getString(R.string.downloading_data));
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     Event event = postSnapshot.getValue(Event.class);

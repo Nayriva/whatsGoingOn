@@ -85,12 +85,12 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversation);
         ButterKnife.bind(this);
 
         application = (ApplicationClass) getApplication();
-        application.addObserver(this);
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
         photosMap = new HashMap<>();
@@ -111,7 +111,22 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     }
 
     @Override
+    protected void onResume() {
+        Log.i(TAG, "onResume");
+        super.onResume();
+        application.addObserver(this);
+    }
+
+    @Override
+    protected void onPause() {
+        Log.i(TAG, "onPause");
+        super.onPause();
+        application.deleteObserver(this);
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_PHOTO_REQUEST_CODE && resultCode == RESULT_OK) {
             Context context = this;
@@ -140,14 +155,18 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.i(TAG, "onCreateOptionsMenu");
         if (chatChannel.isGroup()) {
             getMenuInflater().inflate(R.menu.group_chat_menu, menu);
+        } else {
+            getMenuInflater().inflate(R.menu.one_to_one_chat_menu, menu);
         }
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.i(TAG, "onOptionsItemSelected: " + item);
         switch (item.getItemId()) {
             case R.id.group_menu_add_member: {
                 showAddMemberDialog();
@@ -155,6 +174,10 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
             }
             case R.id.group_menu_leave_group: {
                 showLeaveChannelDialog();
+                return true;
+            }
+            case R.id.one_to_one_menu_show_profile: {
+                openProfile();
                 return true;
             }
             default:
@@ -197,24 +220,9 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         }
     }
 
-    private void sendMessage(String text) {
-        String sender = application.getLoggedUser().getId();
-        String displayName = application.getLoggedUser().getName();
-        String message;
-        if (chatChannel.isGroup()) {
-            message = ChatHelper.groupMessage(sender, displayName,
-                    chatChannel.getId(), application.getGroupReceivers(chatChannel.getId()), text);
-        } else {
-            message = ChatHelper.oneToOneMessage(sender, displayName,
-                    chatChannel.getId(), text);
-        }
-        application.sendChatMessage(message);
-        editTextMessage.setText("");
-        updateHistory();
-    }
-
     @OnClick(R.id.bt_send)
     public void sendMessage() {
+        Log.i(TAG, "sendMessage");
         String messageText = String.valueOf(editTextMessage.getText());
         if (messageText == null || messageText.isEmpty()) {
             return;
@@ -224,6 +232,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
     @OnClick(R.id.btn_send_pick_photo)
     public void sendPickedPicture() {
+        Log.i(TAG, "sendPickedPicture");
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -232,6 +241,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
     @OnClick(R.id.btn_send_taken_photo)
     public void sendTakenPicture() {
+        Log.i(TAG, "sendTakenPicture");
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         File photo = new File(Environment.getExternalStorageDirectory(),  "Pic.jpg");
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
@@ -240,6 +250,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     }
 
     private void setupRecyclerView() {
+        Log.i(TAG, "setupRecyclerView");
         messageAdapter = new MessageAdapter(this, chatMessageList, photosMap);
         linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -248,11 +259,12 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     }
 
     private void downloadPhotos() {
-        //TODO load locally stored photos + download them if they are not stored
+        Log.i(TAG, "downloadPhotos");
         for (String receiver : application.getGroupReceivers(chatChannel.getId())) {
             usersRef.child(receiver).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    Log.i(TAG, "downloadPhotos.onDataChane");
                     User user = dataSnapshot.getValue(User.class);
                     if (user != null && user.getId() != null && user.getPhoto() != null) {
                         photosMap.put(user.getId(), user.getPhoto());
@@ -268,7 +280,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     }
 
     private Bitmap getBitmap(String path) {
-
+        Log.i(TAG, "getBitmap: " + path);
         Uri uri = Uri.fromFile(new File(path));
         InputStream in;
         try {
@@ -324,6 +336,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     }
 
     private void updateHistory() {
+        Log.i(TAG, "updateHistory");
         chatMessageList.clear();
         chatMessageList.addAll(application.getHistory(chatChannel.getId()));
         linearLayoutManager.scrollToPosition(chatMessageList.size() - 1);
@@ -331,6 +344,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     }
 
     private void showAddMemberDialog() {
+        Log.i(TAG, "showAddMemberDialog");
         final Dialog dialog = new Dialog(ConversationActivity.this);
         dialog.setContentView(R.layout.dialog_add_group_member);
         dialog.setTitle(add_members);
@@ -368,6 +382,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         buttonOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.i(TAG, "addMemberDialog: buttonOk.onClick");
                 List<GroupParticipant> allData = adapter.getItems();
                 List<GroupParticipant> selected = new ArrayList<>();
                 for (GroupParticipant participant : allData) {
@@ -394,6 +409,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     }
 
     private void addGroupMembers(List<GroupParticipant> selected) {
+        Log.i(TAG, "addGroupMembers: " + selected);
         String groupId = chatChannel.getId();
         List<String> newParticipants = new ArrayList<>();
         Collections.addAll(newParticipants, application.getGroupReceivers(chatChannel.getId()));
@@ -407,6 +423,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     }
 
     private void showLeaveChannelDialog() {
+        Log.i(TAG, "showLeaveChannelDialog");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(getString(R.string.leave_group_question));
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -426,6 +443,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     }
 
     private void leaveGroup() {
+        Log.i(TAG, "leaveGroup");
         String groupId = chatChannel.getId();
         List<String> newReceivers = new ArrayList<>();
         for (String receiver : application.getGroupReceivers(chatChannel.getId())) {
@@ -442,5 +460,32 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
             groupsRef.child(groupId).setValue(newGroup);
             application.groupReceiversChangedAdvertise(groupId, newReceivers.toArray(new String[0]));
         }
+    }
+
+    private void sendMessage(String text) {
+        Log.i(TAG, "sendMessage");
+        String sender = application.getLoggedUser().getId();
+        String displayName = application.getLoggedUser().getName();
+        String message;
+        if (chatChannel.isGroup()) {
+            message = ChatHelper.groupMessage(sender, displayName,
+                    chatChannel.getId(), application.getGroupReceivers(chatChannel.getId()), text);
+        } else {
+            message = ChatHelper.oneToOneMessage(sender, displayName,
+                    chatChannel.getId(), text);
+        }
+        application.sendChatMessage(message);
+        editTextMessage.setText("");
+        updateHistory();
+    }
+
+    private void openProfile() {
+        Log.i(TAG, "openProfile: " + chatChannel.getId());
+        String id = chatChannel.getId();
+        String name = chatChannel.getName();
+        Intent profileIntent = new Intent(this, UserProfileActivity.class);
+        profileIntent.putExtra(UserProfileActivity.EXTRA_STRING_USER_ID, id);
+        profileIntent.putExtra(UserProfileActivity.EXTRA_STRING_USER_NAME, name);
+        startActivity(profileIntent);
     }
 }

@@ -49,6 +49,9 @@ import ee.ut.madp.whatsgoingon.models.User;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.GOOGLE_SIGN_IN_REQUEST_CODE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SIGN_UP_REQUEST_CODE;
 
+/**
+ * Activity providing options for user to log in.
+ */
 public class LoginActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -67,7 +70,7 @@ public class LoginActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG, "onCreate()");
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -92,7 +95,7 @@ public class LoginActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i(TAG, "onActivityResult");
+        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         super.onActivityResult(requestCode, resultCode, data);
 
         callbackManager.onActivityResult(requestCode, resultCode, data);
@@ -119,7 +122,7 @@ public class LoginActivity extends AppCompatActivity
 
     @OnClick(R.id.btn_login)
     public void signIn() {
-        Log.i(TAG, "signIn()");
+        Log.i(TAG, "signIn");
         String email = String.valueOf(emailInput.getText());
         String password = String.valueOf(passwordInput.getText());
         firebaseAuthWithEmail(email, password);
@@ -127,19 +130,20 @@ public class LoginActivity extends AppCompatActivity
 
     @OnClick(R.id.btn_google)
     public void signInGoogle() {
-        Log.i(TAG, "signInGoogle()");
+        Log.i(TAG, "signInGoogle");
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, GOOGLE_SIGN_IN_REQUEST_CODE);
     }
 
-    @OnClick(R.id.register_link)
-    public void register() {
+    @OnClick(R.id.sign_up_link)
+    public void singUp() {
+        Log.i(TAG, "singUp");
         Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
         startActivityForResult(intent, SIGN_UP_REQUEST_CODE);
     }
 
     private void initializeAuth() {
-        Log.i(TAG, "initializeAuth()");
+        Log.i(TAG, "initializeAuth");
         firebaseAuth = FirebaseAuth.getInstance();
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -158,25 +162,25 @@ public class LoginActivity extends AppCompatActivity
         facebookButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                Log.d(TAG, "facebook:onSuccess:" + loginResult);
+                Log.d(TAG, "facebook.onSuccess: " + loginResult);
                 firebaseAuthWithFacebook(loginResult.getAccessToken());
             }
 
             @Override
             public void onCancel() {
-                Log.d(TAG, "facebook:onCancel");
+                Log.d(TAG, "facebook.onCancel");
             }
 
             @Override
             public void onError(FacebookException error) {
-                Log.d(TAG, "facebook:onError", error);
+                Log.d(TAG, "facebook.onError: ", error);
                 DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.occur_error));
             }
         });
     }
 
     private void firebaseAuthWithEmail(String email, String password) {
-
+        Log.i(TAG, "firebaseAuthWithEmail: " + email);
         DialogHelper.showProgressDialog(LoginActivity.this, getString(R.string.progress_dialog_title_signup));
 
         firebaseAuth.signInWithEmailAndPassword(email, password)
@@ -184,11 +188,11 @@ public class LoginActivity extends AppCompatActivity
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (!task.isSuccessful()) {
-                            Log.e(TAG, "signInWithEmail", task.getException());
+                            Log.e(TAG, "Sign with email failed", task.getException());
                             FirebaseExceptionsChecker.checkFirebaseAuth(LoginActivity.this, task);
                         } else if (checkUserLogin()) {
                             String userId = task.getResult().getUser().getUid();
-                            Log.d(TAG, "loginUser: user with id " + userId + "was logged");
+                            Log.i(TAG, "User: " + userId + " has been logged in");
                             startMainActivity();
                         }
                        DialogHelper.hideProgressDialog();
@@ -206,11 +210,12 @@ public class LoginActivity extends AppCompatActivity
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
+                        Log.i(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
                         if (!task.isSuccessful()) {
-                            Log.d(TAG, "signInWithCredential", task.getException());
+                            Log.d(TAG, "Sign in with google credential failed", task.getException());
                             DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.unsuccessful_login));
                         } else {
+                            Log.i(TAG, "User " + task.getResult().getUser().getUid() + "has been logged in using google credential");
                             UserHelper.saveGoogleInfoAboutUser(LoginActivity.this, task.getResult().getUser(),
                                     acc.getPhotoUrl().toString());
                             if (checkUserLogin()) {
@@ -235,9 +240,10 @@ public class LoginActivity extends AppCompatActivity
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
                         if (!task.isSuccessful()) {
-                            Log.d(TAG, "signInWithCredential", task.getException());
+                            Log.d(TAG, "Sign in with facebook credential failed", task.getException());
                             DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.unsuccessful_login));
                         } else {
+                            Log.i(TAG, "User " + task.getResult().getUser().getUid() + " has been logged in using FB credential");
                             UserHelper.saveFacebookInfoAboutUser(LoginActivity.this, task.getResult().getUser());
                             if (checkUserLogin()) {
                                 startMainActivity();
@@ -254,6 +260,7 @@ public class LoginActivity extends AppCompatActivity
     }
 
     private void startMainActivity() {
+        Log.i(TAG, "startMainActivity");
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if (currentUser != null) {
             ApplicationClass.loggedUser = new User(currentUser.getUid(),

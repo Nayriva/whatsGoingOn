@@ -5,11 +5,13 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -25,6 +27,7 @@ import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.chat.Observable;
@@ -39,6 +42,8 @@ import ee.ut.madp.whatsgoingon.models.User;
 
 public class MyProfileActivity extends AppCompatActivity implements Observer {
 
+    private static final String TAG = MyProfileActivity.class.getSimpleName();
+
     private ApplicationClass application;
     private User user;
     private String photo;
@@ -48,22 +53,23 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
     private DatabaseReference userReference;
 
     @BindView(R.id.toolbar) Toolbar toolbar;
-    private ImageView profilePhoto;
-    private TextView username;
-    private TextView email;
-    private EditText nationality;
-    private EditText city;
-    private EditText phoneNumber;
-    private EditText school;
-    private EditText work;
-    private EditText birthday;
-    private FloatingActionButton editButton;
-    private FloatingActionButton finishButton;
-    private FloatingActionButton discardButton;
-    private LinearLayout editActiveLayout;
+    @BindView(R.id.iw_profile_photo) CircleImageView profilePhoto;
+    @BindView(R.id.tw_username) TextView username;
+    @BindView(R.id.tw_email) TextView email;
+    @BindView(R.id.et_nationality) EditText nationality;
+    @BindView(R.id.et_city) EditText city;
+    @BindView(R.id.et_phone_number) EditText phoneNumber;
+    @BindView(R.id.et_school) EditText school;
+    @BindView(R.id.et_work) EditText work;
+    @BindView(R.id.et_birthday) EditText birthday;
+    @BindView(R.id.fab_edit_profile) FloatingActionButton editButton;
+    @BindView(R.id.fab_finish_edit_profile) FloatingActionButton finishButton;
+    @BindView(R.id.fab_discard_edit_profile) FloatingActionButton discardButton;
+    @BindView(R.id.ll_edit_active_btns) LinearLayout editActiveLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_profile);
 
@@ -77,28 +83,50 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         ButterKnife.bind(this);
 
         setSupportActionBar(toolbar);
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowHomeEnabled(true);
+        }
 
         initializeGuiParts();
         fillInitialInfo();
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onResume() {
+        Log.i(TAG, "onResume");
+        super.onResume();
+        application.addObserver(this);
+    }
+
+    @Override
+    protected void onPause() {
+        Log.i(TAG, "onPause");
+        super.onPause();
         application.deleteObserver(this);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         Bitmap bitmap = ImagePicker.getImageFromResult(this, requestCode, resultCode, data);
         if (bitmap != null) {
             profilePhoto.setImageBitmap(bitmap);
             photo = ImageHelper.encodeBitmap(bitmap);
             photoChanged = true;
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Log.i(TAG, "onOptionsItemSelected");
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            onBackPressed();
+            return  true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -117,39 +145,27 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
     }
 
     private void initializeGuiParts() {
-        editActiveLayout = (LinearLayout) findViewById(R.id.lyt_edit_active_btns);
+        Log.i(TAG, "initializeGuiParts");
         editActiveLayout.setVisibility(View.INVISIBLE);
 
-        profilePhoto = (ImageView) findViewById(R.id.iw_profile_photo);
-        username = (TextView) findViewById(R.id.tw_username);
-        email = (TextView) findViewById(R.id.et_email);
-        nationality = (EditText) findViewById(R.id.et_nationality);
-        city = (EditText) findViewById(R.id.et_city);
-        phoneNumber = (EditText) findViewById(R.id.et_phone_number);
-        work = (EditText) findViewById(R.id.et_work);
-        school = (EditText) findViewById(R.id.et_school);
-        birthday = (EditText) findViewById(R.id.et_birthday);
-
         setETEditable(false);
-
-        editButton = (FloatingActionButton) findViewById(R.id.fab_edit_profile);
-        finishButton = (FloatingActionButton) findViewById(R.id.fab_finish_edit_profile);
-        discardButton = (FloatingActionButton) findViewById(R.id.fab_discard_edit_profile);
         setFABListeners();
     }
 
     private void fillInitialInfo() {
+        Log.i(TAG, "fillInitialInfo");
         DialogHelper.showProgressDialog(this, getString(R.string.downloading_data));
         userReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "fillInitialInfo.onDataChange");
                 user = dataSnapshot.getValue(User.class);
-                assert user != null;
-                //user is loggedIn so it shouldn't be null and always has name and email
-                username.setText(user.getName());
-                email.setText(user.getEmail());
-                backupValues();
-                setBackedUpValues();
+                if (user != null) {
+                    username.setText(user.getName());
+                    email.setText(user.getEmail());
+                    backUpValues();
+                    setBackedUpValues();
+                }
                 DialogHelper.hideProgressDialog();
             }
 
@@ -161,6 +177,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
     }
 
     private void setBackedUpValues() {
+        Log.i(TAG, "setBackedUpValues");
         photo = backupValues.get("photo");
         if (photo != null) {
             profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
@@ -179,7 +196,8 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
                 ? "" : backupValues.get("birthday"));
     }
 
-    private void backupValues() {
+    private void backUpValues() {
+        Log.i(TAG, "backUpValues");
         backupValues = new HashMap<>();
         backupValues.put("nationality", user.getNationality());
         backupValues.put("phoneNumber", user.getPhoneNumber());
@@ -191,9 +209,11 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
     }
 
     private void setFABListeners() {
+        Log.i(TAG, "setFABListeners");
         editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.i(TAG, "editButton.onClick");
                 setETEditable(true);
                 editButton.setVisibility(View.INVISIBLE);
                 editActiveLayout.setVisibility(View.VISIBLE);
@@ -202,6 +222,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         finishButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.i(TAG, "finishButton.onClick");
                 setETEditable(false);
                 editActiveLayout.setVisibility(View.INVISIBLE);
                 editButton.setVisibility(View.VISIBLE);
@@ -211,6 +232,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         discardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.i(TAG, "discardButton.onClick");
                 setETEditable(false);
                 setBackedUpValues();
                 editActiveLayout.setVisibility(View.INVISIBLE);
@@ -220,6 +242,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
     }
 
     private void storeData() {
+        Log.i(TAG, "storeData");
         if (photoChanged) {
             user.setPhoto(ImageHelper.encodeBitmap(((BitmapDrawable)profilePhoto.getDrawable()).getBitmap()));
             photoChanged = false;
@@ -230,12 +253,13 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         user.setSchool(String.valueOf(school.getText()));
         user.setBirthday(String.valueOf(birthday.getText()));
 
-        backupValues();
+        backUpValues();
 
         userReference.setValue(user);
     }
 
     public void setETEditable(boolean editable) {
+        Log.i(TAG, "setETEditable: " + editable);
         nationality.setEnabled(editable);
         phoneNumber.setEnabled(editable);
         work.setEnabled(editable);
@@ -255,6 +279,7 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
     }
 
     private void pickUserProfilePhoto() {
+        Log.i(TAG, "pickUserProfilePhoto");
         ImagePicker.pickImage(this, getString(R.string.choose_photo));
     }
 }
