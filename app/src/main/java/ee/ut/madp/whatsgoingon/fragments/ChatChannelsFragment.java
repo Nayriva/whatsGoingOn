@@ -82,6 +82,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
 
         downloadGroups();
+        setRetainInstance(true);
     }
 
     @Override

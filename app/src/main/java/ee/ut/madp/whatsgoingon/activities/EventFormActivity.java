@@ -261,7 +261,7 @@ public class EventFormActivity extends AppCompatActivity
                 event.setJoined(false);
                 event.getAttendantIds().remove(UserHelper.getCurrentUserId());
             }
-            storeEvent(event, oldJoined ? getString(R.string.join_event) : getString(R.string.message_leave_event));
+            storeEvent(event, oldJoined ? getString(R.string.message_leave_event) : getString(R.string.message_join_event) );
 
             Intent resultIntent = new Intent();
             resultIntent.putExtra(GeneralConstants.EXTRA_JOINED_EVENT, event);

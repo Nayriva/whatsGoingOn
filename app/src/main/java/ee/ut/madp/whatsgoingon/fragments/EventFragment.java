@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -122,6 +123,7 @@ public class EventFragment extends Fragment implements Observer {
         };
 
         eventsRef.addListenerForSingleValueEvent(valueEventListener);
+        setRetainInstance(true);
     }
 
     @Override
@@ -213,7 +215,7 @@ public class EventFragment extends Fragment implements Observer {
             for (Date eventDay : daysWithEvents) {
                 if (DateHelper.removeTimeFromDate(dayView.getDate()).equals(eventDay)) {
                     dayView.setTextColor(Color.WHITE);
-                    dayView.setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
+                    dayView.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.colorAccent, null));
                 }
 
                 if (DateHelper.isToday(dayView.getDate().getTime())) {

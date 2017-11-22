@@ -38,17 +38,21 @@ import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENTS_REQUEST_CODE;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.MY_PROFILE_REQUEST_CODE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SETTINGS_REQUEST_CODE;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String LAST_ACTIVE_FRAGMENT = "LAST_ACTIVE_FRAGMENT";
+
 
     @BindView(R.id.nav_view) NavigationView navigationView;
     @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @BindView(R.id.toolbar) Toolbar toolbar;
 
+    private String activeFragment = "Chat";
     private ApplicationClass application;
     private DatabaseReference userRef;
     private ValueEventListener valueEventListener;
@@ -69,28 +73,12 @@ public class MainActivity extends AppCompatActivity
         setUpNavigationView();
         setUpDrawer();
         setupDataForDrawer();
-        setUpFragment("Chat");
-    }
-
-    private void setUpDbListener() {
-        Log.i(TAG, "setUpDbListener");
-        valueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.i(TAG, "setUpDbListener.onDataChange");
-                User user = dataSnapshot.getValue(User.class);
-                if (user != null) {
-                    ApplicationClass.loggedUser.setPhoto(user.getPhoto());
-                    setupDataForDrawer();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-        userRef.addListenerForSingleValueEvent(valueEventListener);
+        if (savedInstanceState == null) {
+            setUpFragment("Chat");
+        } else {
+            activeFragment = savedInstanceState.getString(LAST_ACTIVE_FRAGMENT);
+            setTitle(activeFragment);
+        }
     }
 
     @Override
@@ -105,6 +93,14 @@ public class MainActivity extends AppCompatActivity
         Log.i(TAG, "onResume");
         super.onResume();
         userRef.addValueEventListener(valueEventListener);
+
+        if (activeFragment != null) {
+            if (activeFragment.equals("Chat")) {
+                navigationView.setCheckedItem(R.id.nav_chat);
+            } else if (activeFragment.equals("Events")) {
+                navigationView.setCheckedItem(R.id.nav_events);
+            }
+        }
     }
 
     @Override
@@ -119,6 +115,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(LAST_ACTIVE_FRAGMENT, activeFragment);
+    }
+
+    @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         Log.i(TAG, "onNavigationItemSelected");
         selectDrawerItem(item);
@@ -129,11 +131,6 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == SETTINGS_REQUEST_CODE) {
-            setUpFragment("Chat");
-        } else if (requestCode == EVENTS_REQUEST_CODE) {
-            setUpFragment("Events");
-        }
     }
 
     private void setUpFragment(String type) {
@@ -159,7 +156,7 @@ public class MainActivity extends AppCompatActivity
 
     private void setUpNavigationView() {
         Log.i(TAG, "setUpNavigationView");
-        final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.nav_chat);
     }
@@ -187,15 +184,17 @@ public class MainActivity extends AppCompatActivity
         switch (menuItem.getItemId()) {
             case R.id.nav_chat:
                 fragmentClass = ChatChannelsFragment.class;
+                activeFragment = "Chat";
                 break;
             case R.id.nav_events:
                 fragmentClass = EventFragment.class;
+                activeFragment = "Events";
                 break;
             case R.id.nav_profile:
                 startActivity(new Intent(MainActivity.this, MyProfileActivity.class));
                 break;
             case R.id.nav_settings:
-                startActivityForResult(new Intent(MainActivity.this, SettingsActivity.class), SETTINGS_REQUEST_CODE);
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
                 break;
             case R.id.nav_help:
                 //TODO implement help screen
@@ -248,5 +247,26 @@ public class MainActivity extends AppCompatActivity
             TextView emailView = (TextView) header.findViewById(R.id.header_email);
             emailView.setText(user.getEmail());
         }
+    }
+
+    private void setUpDbListener() {
+        Log.i(TAG, "setUpDbListener");
+        valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "setUpDbListener.onDataChange");
+                User user = dataSnapshot.getValue(User.class);
+                if (user != null) {
+                    ApplicationClass.loggedUser.setPhoto(user.getPhoto());
+                    setupDataForDrawer();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        userRef.addListenerForSingleValueEvent(valueEventListener);
     }
 }

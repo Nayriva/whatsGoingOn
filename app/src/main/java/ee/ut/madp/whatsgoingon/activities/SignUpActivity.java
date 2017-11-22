@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -19,6 +20,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.mobsandgeeks.saripaar.ValidationError;
 import com.mobsandgeeks.saripaar.Validator;
 import com.mobsandgeeks.saripaar.adapter.ViewDataAdapter;
@@ -36,6 +38,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import de.hdodenhof.circleimageview.CircleImageView;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.FirebaseExceptionsChecker;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
@@ -49,6 +52,8 @@ import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 public class SignUpActivity extends AppCompatActivity implements Validator.ValidationListener {
 
     private static final String TAG = SignUpActivity.class.getSimpleName();
+    public static final String USER_HAS_REGISTERED_EXTRA = "USER_HAS_REGISTERED_EXTRA";
+    private static final String SELECTED_PHOTO_EXTRA = "PHOTO_PHOTO_EXTRA";
 
     @NotEmpty @Email @BindView(R.id.input_layout_email) TextInputLayout email;
     @NotEmpty @BindView(R.id.input_layout_username) TextInputLayout name;
@@ -61,6 +66,7 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
     @BindView(R.id.input_username) TextInputEditText usernameInput;
     @BindView(R.id.input_email) TextInputEditText emailInput;
     @BindView(R.id.input_password) TextInputEditText passwordInput;
+    @BindView(R.id.tw_login_link) TextView loginLink;
 
     private String profilePhoto = "";
     private List<TextInputLayout> inputLayoutList;
@@ -73,30 +79,38 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
         setContentView(R.layout.activity_signup);
         ButterKnife.bind(this);
 
-        Validator validator = new Validator(this);
-        validator.setValidationListener(this);
+        if (savedInstanceState != null) {
+            profilePhoto = savedInstanceState.getString(SELECTED_PHOTO_EXTRA);
+            photo.setImageBitmap(ImageHelper.decodeBitmap(profilePhoto));
+        }
 
-        validator.registerAdapter(TextInputLayout.class,
-                new ViewDataAdapter<TextInputLayout, String>() {
-                    @Override
-                    public String getData(TextInputLayout flet) throws ConversionException {
-                        if (flet.getEditText() != null) {
-                            return flet.getEditText().getText().toString();
-                        } else {
-                            return null;
-                        }
-                    }
-                }
-        );
-
-        inputLayoutList = Arrays.asList(name, email, password, passwordAgain);
-
-        MyTextWatcherHelper.setTextWatcherListeners(inputLayoutList, validator);
+        setUpValidation();
 
         signUpButton.setEnabled(false);
 
         ImagePicker.setMinQuality(600, 600);
         firebaseAuth = FirebaseAuth.getInstance();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.i(TAG, "onSaveInstanceState");
+        super.onSaveInstanceState(outState);
+        outState.putString(SELECTED_PHOTO_EXTRA, profilePhoto);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
+        Bitmap bitmap = ImagePicker.getImageFromResult(this, requestCode, resultCode, data);
+        if (bitmap != null) {
+            photo.setImageBitmap(bitmap);
+            profilePhoto = ImageHelper.encodeBitmap(bitmap);
+        } else {
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.user);
+            photo.setImageBitmap(bitmap);
+            profilePhoto = ImageHelper.encodeBitmap(bitmap);
+        }
     }
 
     @Override
@@ -129,23 +143,9 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
         ImagePicker.pickImage(this, getString(R.string.choose_photo));
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
-        Bitmap bitmap = ImagePicker.getImageFromResult(this, requestCode, resultCode, data);
-        if (bitmap != null) {
-            photo.setImageBitmap(bitmap);
-            profilePhoto = ImageHelper.encodeBitmap(bitmap);
-        } else {
-            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.user);
-            photo.setImageBitmap(bitmap);
-            profilePhoto = ImageHelper.encodeBitmap(bitmap);
-        }
-    }
-
     @OnClick(R.id.btn_register)
     public void signUp() {
-        Log.i(TAG, "singUp");
+        Log.i(TAG, "signUp");
         String username = String.valueOf(usernameInput.getText());
         String email = String.valueOf(emailInput.getText());
         String password = String.valueOf(passwordInput.getText());
@@ -154,6 +154,15 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
                     BitmapFactory.decodeResource(getResources(), R.drawable.user));
         }
         createNewUser(email, password, username, profilePhoto);
+    }
+
+    @OnClick(R.id.tw_login_link)
+    public void toLogin() {
+        Log.i(TAG, "toLogin");
+        Intent intent = new Intent();
+        intent.putExtra(USER_HAS_REGISTERED_EXTRA, false);
+        setResult(RESULT_OK, intent);
+        finish();
     }
 
     private void createNewUser(String email, String password, final String name, final String photo) {
@@ -175,14 +184,41 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
                 });
     }
 
-    private void onAuthSuccess(String displayName, FirebaseUser firebaseUser, String photo) {
+    private void onAuthSuccess(final String displayName, FirebaseUser firebaseUser, String photo) {
         Log.i(TAG, "onAuthSuccess: " + displayName + ", " + firebaseUser);
+        UserProfileChangeRequest request = new UserProfileChangeRequest.Builder().setDisplayName(displayName).build();
+        firebaseUser.updateProfile(request);
         if (photo == null || photo.isEmpty()) {
             photo = ImageHelper.encodeBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.user));
         }
         UserHelper.saveNewUserToDB(displayName, firebaseUser, photo, false);
-        setResult(Activity.RESULT_OK);
         DialogHelper.hideProgressDialog();
+        Intent intent = new Intent();
+        intent.putExtra(USER_HAS_REGISTERED_EXTRA, true);
+        setResult(RESULT_OK, intent);
         finish();
+    }
+
+    private void setUpValidation() {
+        Log.i(TAG, "setUpValidation");
+        Validator validator = new Validator(this);
+        validator.setValidationListener(this);
+
+        validator.registerAdapter(TextInputLayout.class,
+                new ViewDataAdapter<TextInputLayout, String>() {
+                    @Override
+                    public String getData(TextInputLayout flet) throws ConversionException {
+                        if (flet.getEditText() != null) {
+                            return flet.getEditText().getText().toString();
+                        } else {
+                            return null;
+                        }
+                    }
+                }
+        );
+
+        inputLayoutList = Arrays.asList(name, email, password, passwordAgain);
+
+        MyTextWatcherHelper.setTextWatcherListeners(inputLayoutList, validator);
     }
 }

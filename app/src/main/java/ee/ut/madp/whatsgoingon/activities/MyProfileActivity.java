@@ -43,15 +43,24 @@ import ee.ut.madp.whatsgoingon.models.User;
 public class MyProfileActivity extends AppCompatActivity implements Observer {
 
     private static final String TAG = MyProfileActivity.class.getSimpleName();
+    private static final String EDIT_LAYOUT_ACTIVE_EXTRA = "EDIT_LAYOUT_ACTIVE_EXTRA";
+    private static final String NATIONALITY_EXTRA = "NATIONALITY_EXTRA";
+    private static final String CITY_EXTRA = "CITY_EXTRA";
+    private static final String PHONE_NUMBER_EXTRA = "PHONE_NUMBER_EXTRA";
+    private static final String SCHOOL_EXTRA = "SCHOOL_EXTRA";
+    private static final String WORK_EXTRA = "WORK_EXTRA";
+    private static final String BIRTHDAY_EXTRA = "BIRTHDAY_EXTRA";
+    private static final String PHOTO_EXTRA = "PHOTO_EXTRA";
+    private static final String PHOTO_CHANGED_EXTRA = "PHOTO_CHANGED_EXTRA";
 
     private ApplicationClass application;
     private User user;
     private String photo;
-    private boolean photoChanged;
+    private boolean photoChanged = false;
+    private boolean editActive = false;
     private Map<String, String> backupValues;
 
     private DatabaseReference userReference;
-
     @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.iw_profile_photo) CircleImageView profilePhoto;
     @BindView(R.id.tw_username) TextView username;
@@ -74,23 +83,37 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         setContentView(R.layout.activity_my_profile);
 
         application = (ApplicationClass) getApplication();
-        application.addObserver(this);
         userReference = FirebaseDatabase.getInstance().getReference()
                 .child(FirebaseConstants.FIREBASE_CHILD_USERS)
                 .child(application.getLoggedUser().getId());
-        photoChanged = false;
+        fillInitialInfo();
+        initializeGuiParts();
 
-        ButterKnife.bind(this);
-
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
+        if (savedInstanceState != null) {
+            editActive = savedInstanceState.getBoolean(EDIT_LAYOUT_ACTIVE_EXTRA);
+            nationality.setText(savedInstanceState.getString(NATIONALITY_EXTRA));
+            city.setText(savedInstanceState.getString(CITY_EXTRA));
+            phoneNumber.setText(savedInstanceState.getString(PHONE_NUMBER_EXTRA));
+            school.setText(savedInstanceState.getString(SCHOOL_EXTRA));
+            work.setText(savedInstanceState.getString(WORK_EXTRA));
+            birthday.setText(savedInstanceState.getString(BIRTHDAY_EXTRA));
+            photoChanged = savedInstanceState.getBoolean(PHOTO_CHANGED_EXTRA);
+            if (photoChanged) {
+                photo = savedInstanceState.getString(PHOTO_EXTRA);
+            }
         }
 
-        initializeGuiParts();
-        fillInitialInfo();
+        if (editActive) {
+            editActiveLayout.setVisibility(View.VISIBLE);
+            editButton.setVisibility(View.INVISIBLE);
+        } else {
+            editActiveLayout.setVisibility(View.INVISIBLE);
+            editButton.setVisibility(View.VISIBLE);
+        }
+
+        if (photoChanged) {
+            profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(photo));
+        }
     }
 
     @Override
@@ -130,6 +153,22 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(EDIT_LAYOUT_ACTIVE_EXTRA, editActive);
+        if (editActive) {
+            outState.putString(NATIONALITY_EXTRA, String.valueOf(nationality.getText()));
+            outState.putString(CITY_EXTRA, String.valueOf(city.getText()));
+            outState.putString(PHONE_NUMBER_EXTRA, String.valueOf(phoneNumber.getText()));
+            outState.putString(SCHOOL_EXTRA, String.valueOf(school.getText()));
+            outState.putString(WORK_EXTRA, String.valueOf(work.getText()));
+            outState.putString(BIRTHDAY_EXTRA, String.valueOf(birthday.getText()));
+            outState.putBoolean(PHOTO_CHANGED_EXTRA, photoChanged);
+            outState.putString(PHOTO_EXTRA, photo);
+        }
+    }
+
+    @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
             case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
@@ -146,9 +185,16 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
 
     private void initializeGuiParts() {
         Log.i(TAG, "initializeGuiParts");
-        editActiveLayout.setVisibility(View.INVISIBLE);
+        ButterKnife.bind(this);
 
-        setETEditable(false);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowHomeEnabled(true);
+        }
+
+        setETEditable();
         setFABListeners();
     }
 
@@ -164,7 +210,9 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
                     username.setText(user.getName());
                     email.setText(user.getEmail());
                     backUpValues();
-                    setBackedUpValues();
+                    if (! editActive) {
+                        setBackedUpValues();
+                    }
                 }
                 DialogHelper.hideProgressDialog();
             }
@@ -214,7 +262,8 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "editButton.onClick");
-                setETEditable(true);
+                editActive = true;
+                setETEditable();
                 editButton.setVisibility(View.INVISIBLE);
                 editActiveLayout.setVisibility(View.VISIBLE);
             }
@@ -223,7 +272,8 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "finishButton.onClick");
-                setETEditable(false);
+                editActive = false;
+                setETEditable();
                 editActiveLayout.setVisibility(View.INVISIBLE);
                 editButton.setVisibility(View.VISIBLE);
                 storeData();
@@ -233,7 +283,8 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "discardButton.onClick");
-                setETEditable(false);
+                editActive = false;
+                setETEditable();
                 setBackedUpValues();
                 editActiveLayout.setVisibility(View.INVISIBLE);
                 editButton.setVisibility(View.VISIBLE);
@@ -258,24 +309,22 @@ public class MyProfileActivity extends AppCompatActivity implements Observer {
         userReference.setValue(user);
     }
 
-    public void setETEditable(boolean editable) {
-        Log.i(TAG, "setETEditable: " + editable);
-        nationality.setEnabled(editable);
-        phoneNumber.setEnabled(editable);
-        work.setEnabled(editable);
-        school.setEnabled(editable);
-        birthday.setEnabled(editable);
+    public void setETEditable() {
+        Log.i(TAG, "setETEditable: " + editActive);
+        nationality.setEnabled(editActive);
+        phoneNumber.setEnabled(editActive);
+        work.setEnabled(editActive);
+        school.setEnabled(editActive);
+        birthday.setEnabled(editActive);
 
-        if (editable) {
-            profilePhoto.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
+        profilePhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (editActive) {
                     pickUserProfilePhoto();
                 }
-            });
-        } else {
-            profilePhoto.setOnClickListener(null);
-        }
+            }
+        });
     }
 
     private void pickUserProfilePhoto() {

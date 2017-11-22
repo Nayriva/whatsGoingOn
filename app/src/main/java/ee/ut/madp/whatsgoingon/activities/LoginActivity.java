@@ -110,7 +110,10 @@ public class LoginActivity extends AppCompatActivity
 
         if (requestCode == SIGN_UP_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.success_signup));
+                boolean newUserRegistered = data.getBooleanExtra(SignUpActivity.USER_HAS_REGISTERED_EXTRA, false);
+                if (newUserRegistered) {
+                    DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.success_signup));
+                }
             }
         }
     }
@@ -136,8 +139,8 @@ public class LoginActivity extends AppCompatActivity
     }
 
     @OnClick(R.id.sign_up_link)
-    public void singUp() {
-        Log.i(TAG, "singUp");
+    public void signUp() {
+        Log.i(TAG, "signUp");
         Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
         startActivityForResult(intent, SIGN_UP_REQUEST_CODE);
     }
@@ -192,6 +195,7 @@ public class LoginActivity extends AppCompatActivity
                             FirebaseExceptionsChecker.checkFirebaseAuth(LoginActivity.this, task);
                         } else if (checkUserLogin()) {
                             String userId = task.getResult().getUser().getUid();
+                            String userName = task.getResult().getUser().getDisplayName();
                             Log.i(TAG, "User: " + userId + " has been logged in");
                             startMainActivity();
                         }
