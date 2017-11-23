@@ -1,7 +1,6 @@
 package ee.ut.madp.whatsgoingon.activities;
 
 import android.Manifest;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -26,15 +25,14 @@ import com.mobsandgeeks.saripaar.exception.ConversionException;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.ModelFactory;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
@@ -53,6 +51,7 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_EVENT;
 public class EventFormActivity extends AppCompatActivity
         implements Validator.ValidationListener, Observer {
 
+    private static final int MY_PERMISSIONS_REQUEST_WRITE_CALENDAR = 5;
     @NotEmpty @BindView(R.id.input_layout_eventname) TextInputLayout eventName;
     @NotEmpty @BindView(R.id.input_layout_eventplace) TextInputLayout eventPlace;
     @NotEmpty @BindView(R.id.input_layout_date) TextInputLayout date;
@@ -72,6 +71,7 @@ public class EventFormActivity extends AppCompatActivity
     private List<TextInputLayout> inputLayoutList;
     private DatabaseReference eventsRef;
     boolean canEdit = false;
+    boolean isEdit = false;
     private Event event;
     private List<String> attendants;
 
@@ -83,18 +83,22 @@ public class EventFormActivity extends AppCompatActivity
         setContentView(R.layout.activity_form_event);
         ButterKnife.bind(this);
 
+
         eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
+        setValidation();
         if (getIntent().hasExtra(PARCEL_EVENT)) {
+            // is Edit
             event = getIntent().getParcelableExtra(PARCEL_EVENT);
             attendants = getIntent().getStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS);
             event.setAttendantIds(attendants);
             canEdit = UserHelper.getCurrentUserId().equals(event.getOwner());
+            isEdit = true;
             setupContent();
         }
 
         application = (ApplicationClass) getApplication();
         application.addObserver(this);
-        setValidation();
+
     }
 
     private void setupContent() {
@@ -121,7 +125,8 @@ public class EventFormActivity extends AppCompatActivity
             }
         }
 
-        synchronizeEventButton.setVisibility(View.VISIBLE);
+        synchronizeEventButton.setEnabled(true);
+        synchronizeEventButton.setAlpha(1);
         setTitle(event.getName());
     }
 
@@ -143,6 +148,8 @@ public class EventFormActivity extends AppCompatActivity
     public void onValidationSucceeded() {
         addEventButton.setEnabled(true);
         addEventButton.setAlpha(1);
+        synchronizeEventButton.setAlpha(1);
+        synchronizeEventButton.setEnabled(true);
         MyTextWatcherHelper.clearAllInputs(inputLayoutList);
     }
 
@@ -185,15 +192,7 @@ public class EventFormActivity extends AppCompatActivity
 
     @OnClick(R.id.btn_add_event)
     public void createEvent() {
-        String eventName = String.valueOf(eventNameInput.getText());
-        String description = String.valueOf(descriptionInput.getText());
-        String place = String.valueOf(eventPlaceInput.getText());
-        DateTime date = DateHelper.parseDateFromString(String.valueOf(dateInput.getText()));
-        DateTime time = DateHelper.parseTimeFromString(String.valueOf(timeInput.getText()));
-        DateTime dateTime = date.withTime(time.getHourOfDay(), time.getMinuteOfHour(), time.getSecondOfMinute(), time.getMillisOfSecond());
-        String ownerId = UserHelper.getCurrentUserId();
-        Event createdEvent = ModelFactory.createNewEvent(null, eventName, place, description,
-                DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
+        Event createdEvent = collectEventData(false);
         storeEvent(createdEvent, getString(R.string.message_saved_event));
 
         Intent resultIntent = new Intent();
@@ -206,20 +205,12 @@ public class EventFormActivity extends AppCompatActivity
 
     @OnClick(R.id.btn_edit_event)
     public void editEvent() {
-        event.setName(String.valueOf(eventNameInput.getText()));
-        event.setPlace(String.valueOf(eventPlaceInput.getText()));
-        event.setDescription(String.valueOf(descriptionInput.getText()));
-        DateTime date = DateHelper.parseDateFromString(String.valueOf(dateInput.getText()));
-        DateTime time = DateHelper.parseTimeFromString(String.valueOf(timeInput.getText()));
-        DateTime dateTime = date.withTime(time.getHourOfDay(), time.getMinuteOfHour(),
-                time.getSecondOfMinute(), time.getMillisOfSecond());
-        event.setDate(DateHelper.removeTimeFromDate(date.toDate()).getTime());
-        event.setDateTime(dateTime.getMillis());
-        storeEvent(event, getString(R.string.success_message_edit_event));
+        Event editedEvent = collectEventData(true);
+        storeEvent(editedEvent, getString(R.string.success_message_edit_event));
 
         Intent resultIntent = new Intent();
-        resultIntent.putExtra(GeneralConstants.EXTRA_EDITED_EVENT, event);
-        resultIntent.putStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS, (ArrayList<String>) event.getAttendantIds());
+        resultIntent.putExtra(GeneralConstants.EXTRA_EDITED_EVENT, editedEvent);
+        resultIntent.putStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS, (ArrayList<String>) editedEvent.getAttendantIds());
         setResult(RESULT_OK, resultIntent);
         finish();
     }
@@ -273,28 +264,68 @@ public class EventFormActivity extends AppCompatActivity
 
     @OnClick(R.id.btn_synchronize)
     public void synchronizeEvents() {
-        //TODO is working?
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_CALENDAR},
+                    MY_PERMISSIONS_REQUEST_WRITE_CALENDAR);
+
             return;
         }
 
-        long calID = 0;
-        long startMillis;
-        long endMillis;
-        Calendar beginTime = Calendar.getInstance();
-        beginTime.set(2017, 10, 30, 17, 30);
-        startMillis = beginTime.getTimeInMillis();
-        Calendar endTime = Calendar.getInstance();
-        endTime.set(2017, 11, 2, 8, 45);
-        endMillis = endTime.getTimeInMillis();
+        Event event = collectEventData(isEdit);
+        Intent calIntent = new Intent(Intent.ACTION_INSERT)
+                .setData(CalendarContract.Events.CONTENT_URI)
+                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, event.getDateTime())
+                .putExtra(CalendarContract.Events.TITLE, event.getName())
+                .putExtra(CalendarContract.Events.DESCRIPTION, event.getDescription())
+                .putExtra(CalendarContract.Events.EVENT_LOCATION, event.getPlace())
+                .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
+        startActivity(calIntent);
 
-        ContentValues values = new ContentValues();
-        values.put(CalendarContract.Events.DTSTART, startMillis);
-        values.put(CalendarContract.Events.DTEND, endMillis);
-        values.put(CalendarContract.Events.TITLE, "Jazzercise");
-        values.put(CalendarContract.Events.DESCRIPTION, "Group workout");
-        values.put(CalendarContract.Events.CALENDAR_ID, calID);
-        values.put(CalendarContract.Events.EVENT_TIMEZONE, "America/Los_Angeles");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_WRITE_CALENDAR: {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    synchronizeEvents();
+
+                    Toast.makeText(EventFormActivity.this, "Granted", Toast.LENGTH_LONG).show();
+                    // permission was granted, yay! do the
+                    // calendar task you need to do.
+
+                } else {
+
+                    Toast.makeText(EventFormActivity.this, "Neni granted", Toast.LENGTH_LONG).show();
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'switch' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+    private Event collectEventData(boolean isEdit) {
+        String eventName = String.valueOf(eventNameInput.getText());
+        String description = String.valueOf(descriptionInput.getText());
+        String place = String.valueOf(eventPlaceInput.getText());
+        DateTime date = DateHelper.parseDateFromString(String.valueOf(dateInput.getText()));
+        DateTime time = DateHelper.parseTimeFromString(String.valueOf(timeInput.getText()));
+        DateTime dateTime = date.withTime(time.getHourOfDay(), time.getMinuteOfHour(),
+                time.getSecondOfMinute(), time.getMillisOfSecond());
+        String ownerId = UserHelper.getCurrentUserId();
+        Event createdEvent;
+        if (isEdit)
+            createdEvent = ModelFactory.createNewEvent(event.getId(), eventName, place, description,
+                    DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
+        else createdEvent = ModelFactory.createNewEvent(null, eventName, place, description,
+                DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
+        return createdEvent;
     }
 
     private void setValidation() {
@@ -325,6 +356,9 @@ public class EventFormActivity extends AppCompatActivity
 
         addEventButton.setEnabled(false);
         addEventButton.setAlpha(0.7f);
+        // possible to synchronize if the data has been filled in
+        synchronizeEventButton.setEnabled(false);
+        synchronizeEventButton.setAlpha(0.7f);
     }
 
     private void storeEvent(Event event, String message) {

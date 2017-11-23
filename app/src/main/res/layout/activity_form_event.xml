@@ -134,7 +134,6 @@
             style="@style/ButtonStyle"
             android:layout_marginTop="@dimen/spacing_large"
             android:background="@color/colorAccent"
-            android:visibility="gone"
             android:text="@string/synchronize_events" />
 
 
