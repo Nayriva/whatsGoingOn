@@ -9,10 +9,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.Filter;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -28,12 +30,14 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
     private Context context;
     private int layoutResourceId;
     private List<GroupParticipant> data = null;
+    private List<GroupParticipant> origData = null;
 
     public GroupParticipantsAdapter(Context context, int resource, List<GroupParticipant> objects) {
         super(context, resource, objects);
         this.layoutResourceId = resource;
         this.context = context;
         this.data = objects;
+        this.origData = new ArrayList<>(this.data);
     }
 
     @NonNull
@@ -65,10 +69,12 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
 
         GroupParticipant item = data.get(position);
         String photo = item.getPhoto();
-        if (photo.contains("http")) {
-            Picasso.with(getContext()).load(photo).into(holder.photo);
-        } else {
-            holder.photo.setImageBitmap(ImageHelper.decodeBitmap(photo));
+        if (photo != null) {
+            if (photo.contains("http")) {
+                Picasso.with(getContext()).load(photo).into(holder.photo);
+            } else {
+                holder.photo.setImageBitmap(ImageHelper.decodeBitmap(photo));
+            }
         }
         holder.channelName.setText(item.getName());
         holder.isSelected.setChecked(item.isSelected());
@@ -89,5 +95,46 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
 
     public List<GroupParticipant> getItems() {
         return data;
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                constraint = constraint.toString().toLowerCase();
+                FilterResults result = new FilterResults();
+
+                if (constraint != null) {
+                    List<GroupParticipant> found = new ArrayList<>();
+                    for (GroupParticipant item : origData) {
+                        if (item.getName().toLowerCase().contains(constraint)) {
+                            found.add(item);
+                        }
+                    }
+
+                    result.values = found;
+                    result.count = found.size();
+                } else {
+                    result.values = origData;
+                    result.count = origData.size();
+                }
+                return result;
+
+
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                clear();
+                for (GroupParticipant item : (List<GroupParticipant>) results.values) {
+                    add(item);
+                }
+                notifyDataSetChanged();
+
+            }
+
+        };
     }
 }
