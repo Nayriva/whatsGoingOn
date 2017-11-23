@@ -274,9 +274,17 @@ public class ChatChannelsFragment extends Fragment implements Observer {
             ChatMessage lastMessage = application.getLastMessage(chatChannel.getId());
             if (lastMessage != null) {
                 if (chatChannel.isGroup()) {
-                    chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
+                    if (ChatHelper.isImageText(lastMessage.getMessageText())) {
+                        chatChannel.setLastMessage(lastMessage.getDisplayName() + " sent a picture");
+                    } else {
+                        chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
+                    }
                 } else {
-                    chatChannel.setLastMessage(lastMessage.getMessageText());
+                    if (ChatHelper.isImageText(lastMessage.getMessageText())) {
+                        chatChannel.setLastMessage(lastMessage.getDisplayName() + " sent a picture");
+                    } else {
+                        chatChannel.setLastMessage(lastMessage.getMessageText());
+                    }
                 }
                 chatChannel.setLastMessageTime(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
                 chatChannelAdapter.notifyDataSetChanged();

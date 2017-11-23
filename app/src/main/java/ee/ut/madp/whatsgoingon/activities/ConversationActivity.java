@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.BounceInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -132,24 +133,17 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
             Context context = this;
             try {
                 InputStream inputStream = context.getContentResolver().openInputStream(data.getData());
-                Bitmap bmp = BitmapFactory.decodeStream(inputStream);
-                String base64 = ImageHelper.encodeBitmap(bmp);
-                String text = ChatHelper.imageText(base64);
-                sendMessage(text);
+                new SendPhotoAsyncTask(application.getLoggedUser().getId(), application.getLoggedUser().getName(),
+                        chatChannel.isGroup(), application.getGroupReceivers(chatChannel.getId()),
+                        chatChannel.getId()).execute(inputStream);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
         } else if (requestCode == TAKE_PHOTO_REQUEST_CODE && resultCode == RESULT_OK) {
             Uri selectedImage = imageUri;
-            getContentResolver().notifyChange(selectedImage, null);
-            try {
-                Bitmap reducedSizeBitmap = getBitmap(selectedImage.getPath());
-                if(reducedSizeBitmap != null) {
-                    sendMessage(ChatHelper.imageText(ImageHelper.encodeBitmap(reducedSizeBitmap)));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            new SendPickedPhotoAsyncTask(application.getLoggedUser().getId(), application.getLoggedUser().getName(),
+                    chatChannel.isGroup(), application.getGroupReceivers(chatChannel.getId()),
+                    chatChannel.getId()).execute(selectedImage);
         }
     }
 
@@ -487,5 +481,104 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         profileIntent.putExtra(UserProfileActivity.EXTRA_STRING_USER_ID, id);
         profileIntent.putExtra(UserProfileActivity.EXTRA_STRING_USER_NAME, name);
         startActivity(profileIntent);
+    }
+
+    private class SendPhotoAsyncTask extends AsyncTask<InputStream, Void, Void> {
+
+        private String sender;
+        private String displayName;
+        private boolean isGroup;
+        private String[] receivers;
+        private String channelId;
+
+        public SendPhotoAsyncTask(String sender, String displayName,
+                                  boolean isGroup, String[] receivers, String channelId) {
+            this.sender = sender;
+            this.displayName = displayName;
+            this.isGroup = isGroup;
+            this.receivers = receivers;
+            this.channelId = channelId;
+        }
+
+        @Override
+        protected Void doInBackground(InputStream... inputStreams) {
+            if (inputStreams != null) {
+                InputStream is = inputStreams[0];
+                Bitmap bmp = BitmapFactory.decodeStream(is);
+                String base64 = ImageHelper.encodeBitmap(bmp);
+                String text = ChatHelper.imageText(base64);
+                sendMessage(text);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            updateHistory();
+        }
+
+        private void sendMessage(String text) {
+            Log.i(TAG, "SendPhotoAsyncTask.sendMessage");
+            String message;
+            if (isGroup) {
+                message = ChatHelper.groupMessage(sender, displayName, channelId, receivers, text);
+            } else {
+                message = ChatHelper.oneToOneMessage(sender, displayName, channelId, text);
+            }
+            application.sendChatMessage(message);
+        }
+    }
+
+    private class SendPickedPhotoAsyncTask extends AsyncTask<Uri, Void, Void> {
+
+        private String sender;
+        private String displayName;
+        private boolean isGroup;
+        private String[] receivers;
+        private String channelId;
+
+        public SendPickedPhotoAsyncTask(String sender, String displayName,
+                                  boolean isGroup, String[] receivers, String channelId) {
+            this.sender = sender;
+            this.displayName = displayName;
+            this.isGroup = isGroup;
+            this.receivers = receivers;
+            this.channelId = channelId;
+        }
+
+        @Override
+        protected Void doInBackground(Uri... uris) {
+            if (uris != null) {
+                Uri uri = uris[0];
+                getContentResolver().notifyChange(uri, null);
+                try {
+                    Bitmap reducedSizeBitmap = getBitmap(uri.getPath());
+                    if(reducedSizeBitmap != null) {
+                        sendMessage(ChatHelper.imageText(ImageHelper.encodeBitmap(reducedSizeBitmap)));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        private void sendMessage(String text) {
+            Log.i(TAG, "SendPhotoAsyncTask.sendMessage");
+            String message;
+            if (isGroup) {
+                message = ChatHelper.groupMessage(sender, displayName, channelId, receivers, text);
+            } else {
+                message = ChatHelper.oneToOneMessage(sender, displayName, channelId, text);
+            }
+            application.sendChatMessage(message);
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            updateHistory();
+        }
     }
 }
