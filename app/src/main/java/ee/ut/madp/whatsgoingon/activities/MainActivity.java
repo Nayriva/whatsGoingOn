@@ -196,9 +196,6 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_settings:
                 startActivity(new Intent(MainActivity.this, SettingsActivity.class));
                 break;
-            case R.id.nav_help:
-                //TODO implement help screen
-                break;
             case R.id.nav_logout:
                 signOutUser(this);
                 break;
