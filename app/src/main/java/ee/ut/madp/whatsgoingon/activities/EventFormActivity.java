@@ -40,6 +40,7 @@ import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
+import ee.ut.madp.whatsgoingon.helpers.EventHelper;
 import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
 import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
@@ -229,6 +230,7 @@ public class EventFormActivity extends AppCompatActivity
     public void editEvent() {
         Event editedEvent = collectEventData(true);
         storeEvent(editedEvent, getString(R.string.success_message_edit_event));
+        EventHelper.updateEvent(EventFormActivity.this, editedEvent);
 
         Intent resultIntent = new Intent();
         resultIntent.putExtra(GeneralConstants.EXTRA_EDITED_EVENT, editedEvent);
@@ -260,6 +262,7 @@ public class EventFormActivity extends AppCompatActivity
     public void showDateDialog() {
         date.setError(null);
         date.setErrorEnabled(false);
+        // TODO for edit set chosen date
         DialogHelper.showDatePickerDialog(this, date);
     }
 
@@ -306,6 +309,11 @@ public class EventFormActivity extends AppCompatActivity
 //                .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
 //        startActivityForResult(calIntent, SYNC_CAL_REQUEST_CODE);
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
     private void showAllCalendars() {
@@ -384,11 +392,15 @@ public class EventFormActivity extends AppCompatActivity
                 time.getSecondOfMinute(), time.getMillisOfSecond());
         String ownerId = UserHelper.getCurrentUserId();
         Event createdEvent;
-        if (isEdit)
+        if (isEdit) {
             createdEvent = ModelFactory.createNewEvent(event.getId(), eventName, place, description,
                     DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
+            if (event.getEventId() != 0) createdEvent.setEventId(event.getEventId());
+        }
+
         else createdEvent = ModelFactory.createNewEvent(null, eventName, place, description,
                 DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
+
         return createdEvent;
     }
 

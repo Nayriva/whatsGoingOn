@@ -185,8 +185,8 @@ public class DialogHelper {
                 }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        if (EventFormActivity.getEvent() != null)
                             EventHelper.insertEvent(context, EventFormActivity.getEvent(), "");
+
                     }
                 }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
