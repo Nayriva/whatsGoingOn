@@ -190,5 +190,6 @@
     <string name="group_deleted">Group has been deleted due to too few members…</string>
     <string name="downloading_data">Downloading data…</string>
     <string name="show_profile">Show profile</string>
+    <string name="calendar_type">Select calendar</string>
 
 </resources>

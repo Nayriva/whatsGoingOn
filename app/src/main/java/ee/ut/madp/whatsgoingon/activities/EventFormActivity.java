@@ -3,7 +3,6 @@ package ee.ut.madp.whatsgoingon.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.support.design.widget.TextInputEditText;
@@ -94,7 +93,7 @@ public class EventFormActivity extends AppCompatActivity
     private DatabaseReference eventsRef;
     boolean canEdit = false;
     boolean isEdit = false;
-    private Event event;
+    private static Event event;
     private List<String> attendants;
 
     private ApplicationClass application;
@@ -322,20 +321,21 @@ public class EventFormActivity extends AppCompatActivity
                     MY_PERMISSIONS_REQUEST_READ_CALENDAR);
             return;
         }
-        Cursor calCursor =
-                getContentResolver().
-                        query(CalendarContract.Calendars.CONTENT_URI,
-                                projection,
-                                CalendarContract.Calendars.VISIBLE + " = 1",
-                                null,
-                                CalendarContract.Calendars._ID + " ASC");
-        if (calCursor.moveToFirst()) {
-            do {
-                long id = calCursor.getLong(0);
-                String displayName = calCursor.getString(1);
-                // ...
-            } while (calCursor.moveToNext());
-        }
+        DialogHelper.showCalendarSyncDialog(this);
+//        Cursor calCursor =
+//                getContentResolver().
+//                        query(CalendarContract.Calendars.CONTENT_URI,
+//                                projection,
+//                                CalendarContract.Calendars.VISIBLE + " = 1 AND " + CalendarContract.Calendars._ID + " = 1 ",
+//                                null,
+//                                CalendarContract.Calendars._ID + " ASC");
+//        if (calCursor.moveToFirst()) {
+//            do {
+//                long id = calCursor.getLong(0);
+//                String displayName = calCursor.getString(1);
+//                // ...
+//            } while (calCursor.moveToNext());
+//        }
     }
 
     @Override
@@ -446,5 +446,9 @@ public class EventFormActivity extends AppCompatActivity
             return  true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public static Event getEvent() {
+        return event;
     }
 }

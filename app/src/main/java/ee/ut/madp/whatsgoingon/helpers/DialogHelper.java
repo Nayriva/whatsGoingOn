@@ -6,6 +6,7 @@ import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.design.widget.Snackbar;
@@ -19,9 +20,11 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.DATE_FORMAT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.FULL_DATE_FORMAT;
@@ -160,6 +163,38 @@ public class DialogHelper {
         };
 
         new DatePickerDialog(context, dateSetListener, year, month, day).show();
+    }
+
+    public static void showCalendarSyncDialog(final Context context) {
+        final CharSequence[] items = context.getResources().getStringArray(R.array.calendar_types);
+        final ArrayList seletedItems = new ArrayList();
+
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setTitle(context.getString(R.string.calendar_type))
+                .setMultiChoiceItems(items, null, new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int indexSelected, boolean isChecked) {
+                        if (isChecked) {
+                            // If the user checked the item, add it to the selected items
+                            seletedItems.add(indexSelected);
+                        } else if (seletedItems.contains(indexSelected)) {
+                            // Else, if the item is already in the array, remove it
+                            seletedItems.remove(Integer.valueOf(indexSelected));
+                        }
+                    }
+                }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        if (EventFormActivity.getEvent() != null)
+                            EventHelper.insertEvent(context, EventFormActivity.getEvent(), "");
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        //  Your code when user clicked on Cancel
+                    }
+                }).create();
+        dialog.show();
     }
 
 }
