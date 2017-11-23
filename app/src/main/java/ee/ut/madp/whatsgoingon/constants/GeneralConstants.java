@@ -9,6 +9,7 @@ public class GeneralConstants {
     public static final int EVENTS_REQUEST_CODE = 2 ;
     public static final int EVENT_DAY_REQUEST_CODE = 3 ;
     public static final int MY_PROFILE_REQUEST_CODE = 4;
+    public static final int SYNC_CAL_REQUEST_CODE = 5;
 
     public static final String CHANNEL_ID = "channelId";
     public static final String PARCEL_EVENT = "event";

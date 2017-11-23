@@ -3,12 +3,14 @@ package ee.ut.madp.whatsgoingon.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -47,26 +49,46 @@ import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.Event;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_EVENT;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SYNC_CAL_REQUEST_CODE;
 
 public class EventFormActivity extends AppCompatActivity
         implements Validator.ValidationListener, Observer {
 
     private static final int MY_PERMISSIONS_REQUEST_WRITE_CALENDAR = 5;
-    @NotEmpty @BindView(R.id.input_layout_eventname) TextInputLayout eventName;
-    @NotEmpty @BindView(R.id.input_layout_eventplace) TextInputLayout eventPlace;
-    @NotEmpty @BindView(R.id.input_layout_date) TextInputLayout date;
-    @NotEmpty @BindView(R.id.input_layout_time) TextInputLayout time;
+    private static final int MY_PERMISSIONS_REQUEST_READ_CALENDAR = 6;
+    @NotEmpty
+    @BindView(R.id.input_layout_eventname)
+    TextInputLayout eventName;
+    @NotEmpty
+    @BindView(R.id.input_layout_eventplace)
+    TextInputLayout eventPlace;
+    @NotEmpty
+    @BindView(R.id.input_layout_date)
+    TextInputLayout date;
+    @NotEmpty
+    @BindView(R.id.input_layout_time)
+    TextInputLayout time;
 
-    @BindView(R.id.input_eventname) TextInputEditText eventNameInput;
-    @BindView(R.id.input_eventplace) TextInputEditText eventPlaceInput;
-    @BindView(R.id.input_date) TextInputEditText dateInput;
-    @BindView(R.id.input_time) TextInputEditText timeInput;
-    @BindView(R.id.input_description) TextInputEditText descriptionInput;
-    @BindView(R.id.btn_add_event) Button addEventButton;
-    @BindView(R.id.btn_edit_event) Button editEventButton;
-    @BindView(R.id.btn_delete_event) Button deleteEventButton;
-    @BindView(R.id.btn_synchronize) Button synchronizeEventButton;
-    @BindView(R.id.btn_join_event) Button joinEventButton;
+    @BindView(R.id.input_eventname)
+    TextInputEditText eventNameInput;
+    @BindView(R.id.input_eventplace)
+    TextInputEditText eventPlaceInput;
+    @BindView(R.id.input_date)
+    TextInputEditText dateInput;
+    @BindView(R.id.input_time)
+    TextInputEditText timeInput;
+    @BindView(R.id.input_description)
+    TextInputEditText descriptionInput;
+    @BindView(R.id.btn_add_event)
+    Button addEventButton;
+    @BindView(R.id.btn_edit_event)
+    Button editEventButton;
+    @BindView(R.id.btn_delete_event)
+    Button deleteEventButton;
+    @BindView(R.id.btn_synchronize)
+    Button synchronizeEventButton;
+    @BindView(R.id.btn_join_event)
+    Button joinEventButton;
 
     private List<TextInputLayout> inputLayoutList;
     private DatabaseReference eventsRef;
@@ -186,7 +208,8 @@ public class EventFormActivity extends AppCompatActivity
                     MessageNotificationHelper.showNotification(this, chatChannel.getName(),
                             chatChannel.getLastMessage(), chatChannel.getId());
                 }
-            } break;
+            }
+            break;
         }
     }
 
@@ -252,7 +275,7 @@ public class EventFormActivity extends AppCompatActivity
                 event.setJoined(false);
                 event.getAttendantIds().remove(UserHelper.getCurrentUserId());
             }
-            storeEvent(event, oldJoined ? getString(R.string.message_leave_event) : getString(R.string.message_join_event) );
+            storeEvent(event, oldJoined ? getString(R.string.message_leave_event) : getString(R.string.message_join_event));
 
             Intent resultIntent = new Intent();
             resultIntent.putExtra(GeneralConstants.EXTRA_JOINED_EVENT, event);
@@ -272,16 +295,57 @@ public class EventFormActivity extends AppCompatActivity
             return;
         }
 
-        Event event = collectEventData(isEdit);
-        Intent calIntent = new Intent(Intent.ACTION_INSERT)
-                .setData(CalendarContract.Events.CONTENT_URI)
-                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, event.getDateTime())
-                .putExtra(CalendarContract.Events.TITLE, event.getName())
-                .putExtra(CalendarContract.Events.DESCRIPTION, event.getDescription())
-                .putExtra(CalendarContract.Events.EVENT_LOCATION, event.getPlace())
-                .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
-        startActivity(calIntent);
+        showAllCalendars();
 
+//        Event event = collectEventData(isEdit);
+//        Intent calIntent = new Intent(Intent.ACTION_INSERT)
+//                .setData(CalendarContract.Events.CONTENT_URI)
+//                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, event.getDateTime())
+//                .putExtra(CalendarContract.Events.TITLE, event.getName())
+//                .putExtra(CalendarContract.Events.DESCRIPTION, event.getDescription())
+//                .putExtra(CalendarContract.Events.EVENT_LOCATION, event.getPlace())
+//                .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
+//        startActivityForResult(calIntent, SYNC_CAL_REQUEST_CODE);
+
+    }
+
+    private void showAllCalendars() {
+        String[] projection =
+                new String[]{
+                        CalendarContract.Calendars._ID,
+                        CalendarContract.Calendars.NAME,
+                        CalendarContract.Calendars.ACCOUNT_NAME,
+                        CalendarContract.Calendars.ACCOUNT_TYPE};
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_CALENDAR},
+                    MY_PERMISSIONS_REQUEST_READ_CALENDAR);
+            return;
+        }
+        Cursor calCursor =
+                getContentResolver().
+                        query(CalendarContract.Calendars.CONTENT_URI,
+                                projection,
+                                CalendarContract.Calendars.VISIBLE + " = 1",
+                                null,
+                                CalendarContract.Calendars._ID + " ASC");
+        if (calCursor.moveToFirst()) {
+            do {
+                long id = calCursor.getLong(0);
+                String displayName = calCursor.getString(1);
+                // ...
+            } while (calCursor.moveToNext());
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == SYNC_CAL_REQUEST_CODE) {
+                Log.i("Events", "Povedlo se");
+            }
+        }
     }
 
     @Override
