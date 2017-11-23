@@ -40,7 +40,7 @@ import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
-import ee.ut.madp.whatsgoingon.helpers.EventHelper;
+import ee.ut.madp.whatsgoingon.helpers.EventCalendarHelper;
 import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
 import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
@@ -230,7 +230,7 @@ public class EventFormActivity extends AppCompatActivity
     public void editEvent() {
         Event editedEvent = collectEventData(true);
         storeEvent(editedEvent, getString(R.string.success_message_edit_event));
-        EventHelper.updateEvent(EventFormActivity.this, editedEvent);
+        EventCalendarHelper.updateEvent(EventFormActivity.this, editedEvent);
 
         Intent resultIntent = new Intent();
         resultIntent.putExtra(GeneralConstants.EXTRA_EDITED_EVENT, editedEvent);
@@ -243,6 +243,8 @@ public class EventFormActivity extends AppCompatActivity
     public void deleteEvent() {
         if (event != null && canEdit) {
             eventsRef.child(event.getId()).removeValue();
+            if (event.getEventId() != 0) EventCalendarHelper.deleteEvent(this, event.getEventId());
+
             Toast.makeText(this, getString(R.string.success_message_deleted_event), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent();
             intent.putExtra(GeneralConstants.EXTRA_DELETED_EVENT, event.getId());

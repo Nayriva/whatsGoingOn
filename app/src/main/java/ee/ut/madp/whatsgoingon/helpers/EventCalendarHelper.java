@@ -26,7 +26,7 @@ import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD
  * Created by admin on 23.11.2017.
  */
 
-public class EventHelper {
+public class EventCalendarHelper {
     private static final int MY_PERMISSIONS_REQUEST_WRITE_CALENDAR = 5;
 
     public static void insertEvent(Context context, Event event, String calendarType) {
@@ -55,9 +55,12 @@ public class EventHelper {
         ContentResolver cr = context.getContentResolver();
         Uri eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.getEventId());
         cr.update(eventUri, createEventValues(context, event), null, null);
+
     }
 
-    public static void deleteEvent(long id) {
+    public static void deleteEvent(Context context, long id) {
+        Uri eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, id);
+        context.getContentResolver().delete(eventUri, null, null);
 
     }
 
