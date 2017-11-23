@@ -13,7 +13,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -29,17 +28,14 @@ import com.google.firebase.database.ValueEventListener;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
-import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.ApplicationClass;
+import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.fragments.ChatChannelsFragment;
 import ee.ut.madp.whatsgoingon.fragments.EventFragment;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENTS_REQUEST_CODE;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.MY_PROFILE_REQUEST_CODE;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SETTINGS_REQUEST_CODE;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -130,6 +126,11 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     private void setUpFragment(String type) {

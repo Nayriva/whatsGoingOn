@@ -48,6 +48,7 @@
         <activity
             android:name=".activities.MainActivity"
             android:label="@string/title_activity_main"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.Activity"/>
         <activity
             android:name=".activities.SettingsActivity"
