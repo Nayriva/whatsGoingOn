@@ -191,5 +191,6 @@
     <string name="downloading_data">Downloading data…</string>
     <string name="show_profile">Show profile</string>
     <string name="calendar_type">Select calendar</string>
+    <string name="share">Share</string>
 
 </resources>

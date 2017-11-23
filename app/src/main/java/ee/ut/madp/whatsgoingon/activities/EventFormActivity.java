@@ -4,12 +4,13 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.CalendarContract;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -198,6 +199,27 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.event_share_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.share_button:
+                if (event != null)
+                    shareEvent(event);
+                else shareEvent(collectEventData(false));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
             case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
@@ -299,53 +321,7 @@ public class EventFormActivity extends AppCompatActivity
             return;
         }
 
-        showAllCalendars();
-
-//        Event event = collectEventData(isEdit);
-//        Intent calIntent = new Intent(Intent.ACTION_INSERT)
-//                .setData(CalendarContract.Events.CONTENT_URI)
-//                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, event.getDateTime())
-//                .putExtra(CalendarContract.Events.TITLE, event.getName())
-//                .putExtra(CalendarContract.Events.DESCRIPTION, event.getDescription())
-//                .putExtra(CalendarContract.Events.EVENT_LOCATION, event.getPlace())
-//                .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
-//        startActivityForResult(calIntent, SYNC_CAL_REQUEST_CODE);
-
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-    }
-
-    private void showAllCalendars() {
-        String[] projection =
-                new String[]{
-                        CalendarContract.Calendars._ID,
-                        CalendarContract.Calendars.NAME,
-                        CalendarContract.Calendars.ACCOUNT_NAME,
-                        CalendarContract.Calendars.ACCOUNT_TYPE};
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_CALENDAR},
-                    MY_PERMISSIONS_REQUEST_READ_CALENDAR);
-            return;
-        }
         DialogHelper.showCalendarSyncDialog(this);
-//        Cursor calCursor =
-//                getContentResolver().
-//                        query(CalendarContract.Calendars.CONTENT_URI,
-//                                projection,
-//                                CalendarContract.Calendars.VISIBLE + " = 1 AND " + CalendarContract.Calendars._ID + " = 1 ",
-//                                null,
-//                                CalendarContract.Calendars._ID + " ASC");
-//        if (calCursor.moveToFirst()) {
-//            do {
-//                long id = calCursor.getLong(0);
-//                String displayName = calCursor.getString(1);
-//                // ...
-//            } while (calCursor.moveToNext());
-//        }
     }
 
     @Override
@@ -365,14 +341,11 @@ public class EventFormActivity extends AppCompatActivity
             case MY_PERMISSIONS_REQUEST_WRITE_CALENDAR: {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     synchronizeEvents();
-
-                    Toast.makeText(EventFormActivity.this, "Granted", Toast.LENGTH_LONG).show();
-                    // permission was granted, yay! do the
-                    // calendar task you need to do.
+                    Toast.makeText(EventFormActivity.this, "Permission was granted", Toast.LENGTH_LONG).show();
 
                 } else {
-
-                    Toast.makeText(EventFormActivity.this, "Neni granted", Toast.LENGTH_LONG).show();
+                    Toast.makeText(EventFormActivity.this, "Permission was granted", Toast.LENGTH_LONG).show();
+                    synchronizeEventButton.setVisibility(View.GONE);
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                 }
@@ -452,15 +425,17 @@ public class EventFormActivity extends AppCompatActivity
         Toast.makeText(EventFormActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == android.R.id.home) {
-            onBackPressed();
-            return  true;
-        }
-        return super.onOptionsItemSelected(item);
+    private void shareEvent(Event event) {
+        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+        String subject = "Event " + event.getName() + " on " + DateHelper.parseDateFromLong(event.getDateTime());
+        sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subject);
+
+        if (!event.getDescription().isEmpty())
+            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, event.getDescription());
+        startActivity(Intent.createChooser(sharingIntent, "Sharing option"));
     }
+
 
     public static Event getEvent() {
         return event;

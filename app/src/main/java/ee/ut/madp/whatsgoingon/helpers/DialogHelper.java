@@ -176,7 +176,7 @@ public class DialogHelper {
                     public void onClick(DialogInterface dialog, int indexSelected, boolean isChecked) {
                         if (isChecked) {
                             // If the user checked the item, add it to the selected items
-                            seletedItems.add(indexSelected);
+                            seletedItems.add(items[indexSelected]);
                         } else if (seletedItems.contains(indexSelected)) {
                             // Else, if the item is already in the array, remove it
                             seletedItems.remove(Integer.valueOf(indexSelected));
@@ -185,7 +185,8 @@ public class DialogHelper {
                 }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                            EventCalendarHelper.insertEvent(context, EventFormActivity.getEvent(), "");
+                        if (!seletedItems.isEmpty())
+                            EventCalendarHelper.insertEvent(context, EventFormActivity.getEvent(), seletedItems);
 
                     }
                 }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
