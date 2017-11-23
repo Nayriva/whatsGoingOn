@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -47,10 +46,10 @@ import java.util.Set;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.adapters.MessageAdapter;
 import ee.ut.madp.whatsgoingon.ApplicationClass;
+import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.adapters.GroupParticipantsAdapter;
+import ee.ut.madp.whatsgoingon.adapters.MessageAdapter;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
@@ -123,6 +122,11 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         Log.i(TAG, "onPause");
         super.onPause();
         application.deleteObserver(this);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
     @Override

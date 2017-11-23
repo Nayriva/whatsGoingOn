@@ -64,7 +64,11 @@
         <activity
             android:name=".activities.EventFormActivity"
             android:label="@string/new_event_label"
-            android:windowSoftInputMode="stateHidden" />
+            android:windowSoftInputMode="stateHidden">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
+        </activity>
         <activity
             android:name=".activities.ConversationActivity"
             android:windowSoftInputMode="stateHidden">
@@ -72,7 +76,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ee.ut.madp.whatsgoingon.activities.MainActivity"/>
         </activity>
-        <activity android:name=".activities.EventsOnDayActivity" />
+
+        <activity android:name=".activities.EventsOnDayActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
+        </activity>
         <activity
             android:name=".activities.UserProfileActivity"
             android:theme="@style/AppTheme.NoActionBar">

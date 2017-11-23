@@ -3,7 +3,6 @@ package ee.ut.madp.whatsgoingon.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.support.design.widget.TextInputEditText;
@@ -41,6 +40,7 @@ import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
+import ee.ut.madp.whatsgoingon.helpers.EventCalendarHelper;
 import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
 import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
@@ -94,7 +94,7 @@ public class EventFormActivity extends AppCompatActivity
     private DatabaseReference eventsRef;
     boolean canEdit = false;
     boolean isEdit = false;
-    private Event event;
+    private static Event event;
     private List<String> attendants;
 
     private ApplicationClass application;
@@ -230,6 +230,7 @@ public class EventFormActivity extends AppCompatActivity
     public void editEvent() {
         Event editedEvent = collectEventData(true);
         storeEvent(editedEvent, getString(R.string.success_message_edit_event));
+        EventCalendarHelper.updateEvent(EventFormActivity.this, editedEvent);
 
         Intent resultIntent = new Intent();
         resultIntent.putExtra(GeneralConstants.EXTRA_EDITED_EVENT, editedEvent);
@@ -242,6 +243,8 @@ public class EventFormActivity extends AppCompatActivity
     public void deleteEvent() {
         if (event != null && canEdit) {
             eventsRef.child(event.getId()).removeValue();
+            if (event.getEventId() != 0) EventCalendarHelper.deleteEvent(this, event.getEventId());
+
             Toast.makeText(this, getString(R.string.success_message_deleted_event), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent();
             intent.putExtra(GeneralConstants.EXTRA_DELETED_EVENT, event.getId());
@@ -261,6 +264,7 @@ public class EventFormActivity extends AppCompatActivity
     public void showDateDialog() {
         date.setError(null);
         date.setErrorEnabled(false);
+        // TODO for edit set chosen date
         DialogHelper.showDatePickerDialog(this, date);
     }
 
@@ -309,6 +313,11 @@ public class EventFormActivity extends AppCompatActivity
 
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
     private void showAllCalendars() {
         String[] projection =
                 new String[]{
@@ -322,20 +331,21 @@ public class EventFormActivity extends AppCompatActivity
                     MY_PERMISSIONS_REQUEST_READ_CALENDAR);
             return;
         }
-        Cursor calCursor =
-                getContentResolver().
-                        query(CalendarContract.Calendars.CONTENT_URI,
-                                projection,
-                                CalendarContract.Calendars.VISIBLE + " = 1",
-                                null,
-                                CalendarContract.Calendars._ID + " ASC");
-        if (calCursor.moveToFirst()) {
-            do {
-                long id = calCursor.getLong(0);
-                String displayName = calCursor.getString(1);
-                // ...
-            } while (calCursor.moveToNext());
-        }
+        DialogHelper.showCalendarSyncDialog(this);
+//        Cursor calCursor =
+//                getContentResolver().
+//                        query(CalendarContract.Calendars.CONTENT_URI,
+//                                projection,
+//                                CalendarContract.Calendars.VISIBLE + " = 1 AND " + CalendarContract.Calendars._ID + " = 1 ",
+//                                null,
+//                                CalendarContract.Calendars._ID + " ASC");
+//        if (calCursor.moveToFirst()) {
+//            do {
+//                long id = calCursor.getLong(0);
+//                String displayName = calCursor.getString(1);
+//                // ...
+//            } while (calCursor.moveToNext());
+//        }
     }
 
     @Override
@@ -384,11 +394,15 @@ public class EventFormActivity extends AppCompatActivity
                 time.getSecondOfMinute(), time.getMillisOfSecond());
         String ownerId = UserHelper.getCurrentUserId();
         Event createdEvent;
-        if (isEdit)
+        if (isEdit) {
             createdEvent = ModelFactory.createNewEvent(event.getId(), eventName, place, description,
                     DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
+            if (event.getEventId() != 0) createdEvent.setEventId(event.getEventId());
+        }
+
         else createdEvent = ModelFactory.createNewEvent(null, eventName, place, description,
                 DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
+
         return createdEvent;
     }
 
@@ -446,5 +460,9 @@ public class EventFormActivity extends AppCompatActivity
             return  true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public static Event getEvent() {
+        return event;
     }
 }

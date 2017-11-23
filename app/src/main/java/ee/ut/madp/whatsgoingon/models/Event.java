@@ -7,7 +7,6 @@ import com.google.firebase.database.Exclude;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by admin on 28.10.2017.
@@ -16,6 +15,8 @@ import java.util.Map;
 public class Event implements Parcelable {
     //date for filtering
     private String id, name, description, owner, place;
+    // id in calendar
+    private long eventId;
     private long dateTime, date;
     private List<String> attendantIds;
 
@@ -40,6 +41,7 @@ public class Event implements Parcelable {
 
     protected Event(Parcel in) {
         id = in.readString();
+        eventId = in.readLong();
         name = in.readString();
         place = in.readString();
         description = in.readString();
@@ -48,6 +50,7 @@ public class Event implements Parcelable {
         date = in.readLong();
         isJoined = in.readByte() != 0;
     }
+
 
     public static final Creator<Event> CREATOR = new Creator<Event>() {
         @Override
@@ -133,6 +136,14 @@ public class Event implements Parcelable {
         isJoined = joined;
     }
 
+    public long getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(long eventId) {
+        this.eventId = eventId;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -141,6 +152,7 @@ public class Event implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(id);
+        dest.writeLong(eventId);
         dest.writeString(name);
         dest.writeString(place);
         dest.writeString(description);
