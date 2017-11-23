@@ -128,13 +128,16 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
                 clear();
+                // TODO wait until its set
                 for (GroupParticipant item : (List<GroupParticipant>) results.values) {
                     add(item);
                 }
+
                 notifyDataSetChanged();
 
             }
 
         };
     }
+
 }

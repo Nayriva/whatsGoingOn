@@ -194,5 +194,6 @@
     <string name="share">Share</string>
     <string name="choose_participants">Share event to</string>
     <string name="search">Search</string>
+    <string name="no_results">No results</string>
 
 </resources>

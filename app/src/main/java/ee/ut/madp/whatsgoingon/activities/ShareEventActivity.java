@@ -8,7 +8,9 @@ import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +29,8 @@ public class ShareEventActivity extends AppCompatActivity {
 
     @BindView(R.id.list_participants)
     ListView participantsList;
+    @BindView(R.id.tv_no_users)
+    TextView noUsersTv;
 
     GroupParticipantsAdapter participantsAdapter;
 
@@ -68,11 +72,14 @@ public class ShareEventActivity extends AppCompatActivity {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
                     participantsAdapter.getFilter().filter(query);
+                    if (participantsAdapter.getCount() == 0) noUsersTv.setVisibility(View.VISIBLE);
+                    else noUsersTv.setVisibility(View.GONE);
                     return false;
                 }
                 @Override
                 public boolean onQueryTextChange(String s) {
                     participantsAdapter.getFilter().filter(s);
+
                     return false;
                 }
             });
@@ -80,4 +87,5 @@ public class ShareEventActivity extends AppCompatActivity {
 
         return super.onCreateOptionsMenu(menu);
     }
+    
 }

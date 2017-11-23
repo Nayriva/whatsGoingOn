@@ -15,4 +15,12 @@
         android:divider="@null"
         android:dividerHeight="0dp"/>
 
+    <TextView
+        android:id="@+id/tv_no_users"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:text="@string/no_results"
+        android:layout_centerInParent="true"/>
+
 </RelativeLayout>
