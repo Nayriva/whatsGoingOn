@@ -5,24 +5,28 @@ import android.os.Parcelable;
 
 import com.google.firebase.database.Exclude;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Created by admin on 28.10.2017.
  */
 
-public class Event implements Parcelable{
+public class Event implements Parcelable {
     //date for filtering
     private String id, name, description, owner, place;
     private long dateTime, date;
-    private Map<String, Boolean> attendantIds;
-    @Exclude
-    private boolean isJoining;
+    private List<String> attendantIds;
 
-    public Event() {
+    @Exclude
+    private boolean isJoined;
+
+    public Event() { // required constructor
     }
 
-    public Event(String id, String name, String place, String description, long date, String owner, long dateTime) {
+    public Event(String id, String name, String place, String description,
+                 long date, String owner, long dateTime) {
         this.id = id;
         this.name = name;
         this.date = date;
@@ -30,6 +34,8 @@ public class Event implements Parcelable{
         this.description = description;
         this.dateTime = dateTime;
         this.owner = owner;
+        attendantIds = new ArrayList<>();
+        attendantIds.add(owner);
     }
 
     protected Event(Parcel in) {
@@ -40,7 +46,7 @@ public class Event implements Parcelable{
         owner = in.readString();
         dateTime = in.readLong();
         date = in.readLong();
-        isJoining = in.readByte() != 0;
+        isJoined = in.readByte() != 0;
     }
 
     public static final Creator<Event> CREATOR = new Creator<Event>() {
@@ -111,20 +117,20 @@ public class Event implements Parcelable{
         this.place = place;
     }
 
-    public Map<String, Boolean> getAttendantIds() {
+    public List<String> getAttendantIds() {
         return attendantIds;
     }
 
-    public void setAttendantIds(Map<String, Boolean> attendantIds) {
+    public void setAttendantIds(List<String> attendantIds) {
         this.attendantIds = attendantIds;
     }
 
-    public boolean isJoining() {
-        return isJoining;
+    public boolean isJoined() {
+        return isJoined;
     }
 
-    public void setJoining(boolean joining) {
-        isJoining = joining;
+    public void setJoined(boolean joined) {
+        isJoined = joined;
     }
 
     @Override
@@ -141,6 +147,6 @@ public class Event implements Parcelable{
         dest.writeString(owner);
         dest.writeLong(dateTime);
         dest.writeLong(date);
-        dest.writeByte((byte) (isJoining ? 1 : 0));
+        dest.writeByte((byte) (isJoined ? 1 : 0));
     }
 }

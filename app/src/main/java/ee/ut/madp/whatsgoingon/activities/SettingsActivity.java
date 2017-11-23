@@ -1,6 +1,5 @@
 package ee.ut.madp.whatsgoingon.activities;
 
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -13,67 +12,65 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
 import com.mvc.imagepicker.ImagePicker;
 
+import butterknife.BindView;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
+import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
+import ee.ut.madp.whatsgoingon.models.ChatChannel;
+import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
 public class SettingsActivity extends AppCompatPreferenceActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener, Observer {
 
-    public static final String PREFERENCE_EMAIL = "email";
+    private static final String TAG = SettingsActivity.class.getSimpleName();
+
     public static final String PREFERENCE_PASSWORD = "password";
-    private static final String PREFERENCE_PHOTO = "profile_photo";
-    private static final String PREFERENCE_MESSAGE_NOTIFICATION = "notifications_message";
-    private static final String PREFERENCE_NOTIFICATION_VIBRATE = "notification_vibrate";
-    private static final String PREFERENCE_NOTIFICATION_RINGTONE = "notification_ringtone";
+    public static final String PREFERENCE_MESSAGE_NOTIFICATION = "notifications_message";
+    public static final String PREFERENCE_NOTIFICATION_VIBRATE = "notification_vibrate";
+    public static final String PREFERENCE_NOTIFICATION_RINGTONE = "notification_ringtone";
 
     private static FirebaseAuth firebaseAuth;
-    private static DatabaseReference databaseReference;
-    private static CoordinatorLayout coordinatorLayout;
     private Intent intent;
-    private ChatApplication application;
+    private ApplicationClass application;
 
+    @BindView(R.id.coordinator_layout) CoordinatorLayout coordinatorLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        application = (ChatApplication) getApplication();
-        application.addObserver(this);
+        application = (ApplicationClass) getApplication();
 
-        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
+        MyPreferenceFragment prefFragment = new MyPreferenceFragment();
+        prefFragment.setCoordinatorLayout(coordinatorLayout);
+        getFragmentManager().beginTransaction().replace(android.R.id.content, prefFragment).commit();
 
         firebaseAuth = FirebaseAuth.getInstance();
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        application.deleteObserver(this);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.i(TAG, "onOptionsItemSelected");
         int id = item.getItemId();
         if (id == android.R.id.home) {
             if (intent == null) {
@@ -88,80 +85,75 @@ public class SettingsActivity extends AppCompatPreferenceActivity
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon",
-                Context.MODE_WORLD_READABLE);
+        Log.i(TAG, "onSharedPreferenceChanged: " + sharedPreferences + ", " + key);
+        SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         if (key.equals(PREFERENCE_MESSAGE_NOTIFICATION)) {
             boolean isAllowed = sharedPreferences.getBoolean(key, true);
             editor.putBoolean(PREFERENCE_MESSAGE_NOTIFICATION, isAllowed);
             editor.apply();
+            ApplicationClass.notificationsOn = isAllowed;
         }
 
         if (key.equals(PREFERENCE_NOTIFICATION_VIBRATE)) {
             boolean isAllowed = sharedPreferences.getBoolean(key, true);
             editor.putBoolean(PREFERENCE_NOTIFICATION_VIBRATE, isAllowed);
             editor.commit();
+            ApplicationClass.vibrateOn = isAllowed;
         }
 
         if (key.equals(PREFERENCE_NOTIFICATION_RINGTONE)) {
-            String ringtonePreference = sharedPreferences.getString("notification_ringtone", "DEFAULT_SOUND");
+            String ringtonePreference = sharedPreferences.getString(PREFERENCE_NOTIFICATION_RINGTONE, "DEFAULT_SOUND");
             editor.putString(PREFERENCE_NOTIFICATION_RINGTONE, ringtonePreference);
             editor.commit();
+            ApplicationClass.setRingtone(ringtonePreference);
         }
 
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Bitmap bitmap = ImagePicker.getImageFromResult(this, requestCode, resultCode, data);
-        if (bitmap != null) {
-            // TODO save photo to the external storage
-            String userId = firebaseAuth.getCurrentUser().getUid();
-           // storeUserProfilePhotoToStorage(userId, );
-
-//            intent = getIntent();
-//            intent.putExtra(UPDATED_PHOTO, UPDATED_PHOTO);
-            DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.profile_photo_updated));
-        }
     }
 
     @Override
     protected void onResume() {
+        Log.i(TAG, "onResume");
         super.onResume();
+        application.addObserver(this);
         getPreferences(MODE_PRIVATE).registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     protected void onPause() {
+        Log.i(TAG, "onPause");
         super.onPause();
+        application.deleteObserver(this);
         getPreferences(MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
-            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
-            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
-                //TODO show notification
+            case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
+                ChatChannel chatChannel = application.getChannel(data);
+                ChatMessage lastMessage = application.getLastMessage(data);
+                if (chatChannel != null && lastMessage != null) {
+                    MessageNotificationHelper.showNotification(this, chatChannel.getName(),
+                            chatChannel.getLastMessage(), chatChannel.getId());
+                }
             } break;
         }
     }
 
     public static class MyPreferenceFragment extends PreferenceFragment {
 
+        private CoordinatorLayout coordinatorLayout;
+
+        public void setCoordinatorLayout(CoordinatorLayout coordinatorLayout) {
+            this.coordinatorLayout = coordinatorLayout;
+        }
+
         @Override
         public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.settings);
-
-            Preference profilePreference = findPreference(PREFERENCE_PHOTO);
-            profilePreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    ImagePicker.pickImage(getActivity(), getString(R.string.choose_photo));
-                    return true;
-                }
-            });
 
             Preference passwordPreference = findPreference(PREFERENCE_PASSWORD);
             passwordPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -173,25 +165,14 @@ public class SettingsActivity extends AppCompatPreferenceActivity
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
                                         DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.reset_password_instructions_sent));
-                                        //DialogHelper.hideProgressDialog();
                                     } else {
                                         DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.reset_password_instructions_not_sent));
                                     }
-
                                 }
                             });
                     return true;
                 }
             });
-
-            //TODO udpate email
-
         }
-
-
-    }
-
-    private void storeUserProfilePhotoToStorage(String userId, byte[] newImage) {
-        //TODO implement
     }
 }

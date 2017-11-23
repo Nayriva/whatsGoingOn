@@ -85,7 +85,7 @@
             android:text="@string/sign_up" />
 
         <TextView
-            android:id="@+id/login_link"
+            android:id="@+id/tw_login_link"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"

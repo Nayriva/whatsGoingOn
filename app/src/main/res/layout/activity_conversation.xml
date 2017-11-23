@@ -5,6 +5,12 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+    <ImageView
+        android:id="@+id/iv_full_screen_img"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
+
     <RelativeLayout
         android:id="@+id/rl_bottom"
         android:layout_width="match_parent"
@@ -39,20 +45,29 @@
             android:layout_centerVertical="true">
 
             <ImageButton
-                android:id="@+id/bt_attachment"
+                android:id="@+id/btn_send_pick_photo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_attachment"
-                android:padding="@dimen/spacing_medium"
-                android:layout_alignParentRight="true"
                 android:background="@android:color/transparent"
-                android:layout_centerVertical="true"/>
+                android:padding="@dimen/spacing_medium"
+                app:srcCompat="@drawable/ic_image"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/btn_send_taken_photo"/>
+
+            <ImageButton
+                android:id="@+id/btn_send_taken_photo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:background="@android:color/transparent"
+                android:padding="@dimen/spacing_medium"
+                app:srcCompat="@drawable/ic_camera"/>
 
             <EditText
                 android:id="@+id/et_message"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_toLeftOf="@id/bt_attachment"
                 android:padding="@dimen/spacing_large"
                 android:hint="@string/hint_enter_message"
                 android:maxLines="3"
@@ -60,7 +75,8 @@
                 android:textColor="@color/colorTextBlack"
                 android:textColorHint="@color/colorTextHint"
                 android:background="@android:color/transparent"
-                android:inputType="textCapSentences"/>
+                android:inputType="textCapSentences"
+                android:layout_toStartOf="@+id/btn_send_pick_photo"/>
 
         </RelativeLayout>
 

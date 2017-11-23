@@ -32,7 +32,7 @@
             android:background="@drawable/bg_white_rounded"
             android:layout_centerVertical="true">
             <ImageButton
-                android:id="@+id/bt_attachment"
+                android:id="@+id/bt_pick_image_to_send"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="@dimen/spacing_large"
@@ -44,7 +44,7 @@
                 android:id="@+id/et_message"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_toLeftOf="@id/bt_attachment"
+                android:layout_toLeftOf="@id/bt_pick_image_to_send"
                 android:padding="@dimen/spacing_large"
                 android:hint="@string/message_hint"
                 android:maxLines="3"

@@ -53,14 +53,13 @@
     <string name="help">Help</string>
     <string name="header_email">Your email</string>
     <string name="header_name">Your name</string>
-
     <string name="facebook_app_id">753013854886290</string>
     <string name="unsuccessful_login">Login wasn\'t successful.</string>
     <string name="settings_change_user_info">User profile info</string>
     <string name="settings_notifications">Notifications</string>
     <string name="prompt_password">Password</string>
     <string name="prompt_photo">Profile photo</string>
-    <string name="settings_allow_notifications">Turn on message notifications</string>
+    <string name="settings_allow_sound_notifications">Turn on sound notifications</string>
     <string name="settings_event_reminder">Turn on event reminder</string>
     <string name="settings_notification_vibrate">Turn on vibrate</string>
     <string name="settings_notification_ringtone">Choose sounds</string>
@@ -128,39 +127,39 @@
         <item>3</item>
     </string-array>
 
-    <string-array name="multi_select_list_preference_default_value" />
+    <string-array name="multi_select_list_preference_default_value"/>
+    <string name="web_client_id">350683107593-o0f11033mp22vlbjqh5oepdu9014hq5d.apps.googleusercontent.com</string>
 
     <string name="pref_title_system_sync_settings">System sync settings</string>
-
-    <!-- Example settings for Notifications -->
     <string name="pref_header_notifications">Notifications</string>
-
     <string name="pref_title_new_message_notifications">New message notifications</string>
-
     <string name="pref_title_ringtone">Ringtone</string>
     <string name="pref_ringtone_silent">Silent</string>
-
     <string name="pref_title_vibrate">Vibrate</string>
-    <string name="reset_password_instructions_sent">The email for reseting the old password has been sent</string>
-    <string name="reset_password_instructions_not_sent">The email for reseting the old password hasn\'t been sent</string>
-    <string name="profile_photo_updated">The profile photo has been updated</string>
-    <string name="success_signup">Sign up has been successful</string>
+    <string name="user_profile_preferences">user_profile_preferences</string>
+
     <string name="hint_user_info">Info about you</string>
     <string name="hint_nationality">Nationality</string>
     <string name="hint_phone">Phone number</string>
     <string name="hint_university">School</string>
     <string name="hint_work">Work</string>
     <string name="hint_birthday">Birthday</string>
+    <string name="message_hint">Enter your message</string>
+    <string name="hint_eventname">Name</string>
+    <string name="hint_date">Date</string>
+    <string name="hint_time">Time</string>
+    <string name="hint_description">Description</string>
+    <string name="hint_event_place">Place</string>
+    <string name="hint_enter_message">Enter your message</string>
+    <string name="hint_city">City</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="reset_password_instructions_sent">The email for resetting the old password has been sent</string>
+    <string name="reset_password_instructions_not_sent">The email for resetting the old password has not been sent</string>
+    <string name="profile_photo_updated">The profile photo has been updated</string>
+    <string name="success_signup">Sign up has been successful</string>
     <string name="gender">Gender</string>
     <string name="title_activity_my_profile">My profile</string>
-    <string name="host_channel">Host channel</string>
-    <string name="stop_hosting">Stop hosting</string>
-    <string name="no_channels_found">No channels found... Swipe to refresh</string>
-    <string name="join_channel">Pick one of these:</string>
-    <string name="web_client_id">350683107593-o0f11033mp22vlbjqh5oepdu9014hq5d.apps.googleusercontent.com</string>
+    <string name="no_channels_found">No channels found… Swipe to refresh</string>
     <string name="select_participants">Select participants</string>
     <string name="create_group">Create group</string>
     <string name="cancel">Cancel</string>
@@ -173,28 +172,23 @@
     <string name="leave_group_question">Do you really want to leave this group?</string>
     <string name="no_new_group_member_selected">No new member selected</string>
     <string name="send_message">Send</string>
-    <string name="message_hint">Enter your message</string>
     <string name="btn_add_event">Add event</string>
     <string name="new_event_label">New event</string>
     <string name="yesterday_sent">Yesterday at</string>
-    <string name="hint_eventname">Name</string>
-    <string name="hint_date">Date</string>
-    <string name="hint_time">Time</string>
-    <string name="hint_description">Description</string>
     <string name="error_date_past">Date has to be in the future</string>
     <string name="error_time_past">Time has to be in the future</string>
-    <string name="message_saved_event">New event was created</string>
-    <string name="edit_event">Edit event</string>
+    <string name="message_saved_event">New event has been created</string>
+    <string name="edit_event">Save changes</string>
     <string name="delete_event">Delete event</string>
-    <string name="success_message_deleted_event">Event was deleted</string>
-    <string name="success_message_edit_event">Event was edited</string>
-    <string name="sychronize_events">Synchronize with my calendars</string>
+    <string name="success_message_deleted_event">Event has been deleted</string>
+    <string name="success_message_edit_event">Changes have been saved</string>
+    <string name="synchronize_events">Synchronize with my calendars</string>
     <string name="join_event">Join event</string>
-    <string name="hint_eventplace">Place</string>
-    <string name="hint_enter_message">Enter your message</string>
-    <string name="hint_city">City</string>
     <string name="leave_event">Leave event</string>
     <string name="message_join_event">You have joined the event</string>
-    <string name="message_leave_event">You left the event.</string>
+    <string name="message_leave_event">You have left the event</string>
+    <string name="group_deleted">Group has been deleted due to too few members…</string>
+    <string name="downloading_data">Downloading data…</string>
+    <string name="show_profile">Show profile</string>
 
 </resources>

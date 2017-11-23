@@ -6,12 +6,14 @@ package ee.ut.madp.whatsgoingon.adapters;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ee.ut.madp.whatsgoingon.R;
@@ -21,6 +23,7 @@ import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.Event;
 
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_ATTENDANTS;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_EVENT;
 
 /**
@@ -34,6 +37,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.MyViewHolder
     public EventAdapter(Activity context, List<Event> eventList) {
         this.eventList = eventList;
         this.context = context;
+    }
+
+    public List<Event> getData() {
+        return eventList;
     }
 
     @Override
@@ -50,8 +57,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.MyViewHolder
         holder.eventName.setText(event.getName());
         if (UserHelper.getCurrentUserId().equals(event.getOwner())) {
             holder.eventType.setBackgroundColor(context.getResources().getColor(R.color.colorPrimary));
-        } else if (event.isJoining()) {
+        } else if (event.isJoined()) {
             holder.eventType.setBackgroundColor(context.getResources().getColor(R.color.colorAccent));
+        } else {
+            holder.eventType.setBackgroundColor(Color.TRANSPARENT);
         }
 
         holder.eventTime.setText(String.valueOf(DateHelper.parseTimeFromLong(event.getDateTime())));
@@ -79,8 +88,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.MyViewHolder
         @Override
         public void onClick(View v) {
             Event event = eventList.get(getAdapterPosition());
-           // e.setNewMessage(false);
             Intent intent = new Intent(v.getContext(), EventFormActivity.class);
+            intent.putStringArrayListExtra(EVENT_ATTENDANTS, (ArrayList<String>) event.getAttendantIds());
             intent.putExtra(PARCEL_EVENT, event);
             context.startActivityForResult(intent, GeneralConstants.EVENT_DAY_REQUEST_CODE);
         }

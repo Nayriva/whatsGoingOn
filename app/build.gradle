@@ -34,6 +34,13 @@ dependencies {
     })
     compile files('src/main/jniLibs/alljoyn.jar')
     compile 'com.android.support:design:25.3.1'
+    compile 'com.google.android.gms:play-services-auth:11.0.4'
+    compile('com.google.api-client:google-api-client-android:1.23.0') {
+        exclude group: 'org.apache.httpcomponents'
+    }
+    compile('com.google.apis:google-api-services-calendar:v3-rev263-1.23.0') {
+        exclude group: 'org.apache.httpcomponents'
+    }
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
@@ -52,14 +59,7 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'joda-time:joda-time:2.9.4'
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
-    compile 'com.google.android.gms:play-services-auth:11.0.4'
     compile 'pub.devrel:easypermissions:0.3.0'
-    compile('com.google.api-client:google-api-client-android:1.23.0') {
-        exclude group: 'org.apache.httpcomponents'
-    }
-    compile('com.google.apis:google-api-services-calendar:v3-rev263-1.23.0') {
-        exclude group: 'org.apache.httpcomponents'
-    }
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 }

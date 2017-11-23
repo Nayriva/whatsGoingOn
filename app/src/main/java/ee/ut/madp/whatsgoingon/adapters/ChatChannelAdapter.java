@@ -1,24 +1,24 @@
 package ee.ut.madp.whatsgoingon.adapters;
 
-import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.ConversationActivity;
+import ee.ut.madp.whatsgoingon.activities.UserProfileActivity;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_CHAT_CHANNEL;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.CHANNEL_ID;
 
 /**
  * Created by admin on 27.10.2017.
@@ -27,11 +27,9 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_CHAT_CHA
 public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.ChatChannelViewHolder> {
 
     private List<ChatChannel> channelList;
-    private Context context;
 
-    public ChatChannelAdapter(Context context, List<ChatChannel> channelList) {
+    public ChatChannelAdapter(List<ChatChannel> channelList) {
         this.channelList = channelList;
-        this.context = context;
     }
 
     @Override
@@ -46,16 +44,18 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
     public void onBindViewHolder(ChatChannelViewHolder holder, int position) {
         ChatChannel chatChannel = channelList.get(position);
         String photo = chatChannel.getPhoto();
-        if (photo != null) {
-            if (photo.contains("http")) {
-                Picasso.with(context).load(photo).into(holder.photo);
-            } else {
-                holder.photo.setImageBitmap(ImageHelper.decodeBitmap(photo));
-            }
-        }
+
+        holder.photo.setImageBitmap(ImageHelper.decodeBitmap(photo));
         holder.channelName.setText(chatChannel.getName());
+        if (chatChannel.isNewMessage()) {
+            holder.lastMessage.setTypeface(holder.lastMessage.getTypeface(), Typeface.BOLD);
+            holder.messageTime.setTypeface(holder.messageTime.getTypeface(), Typeface.BOLD);
+        } else {
+            holder.lastMessage.setTypeface(holder.lastMessage.getTypeface(), Typeface.NORMAL);
+            holder.messageTime.setTypeface(holder.messageTime.getTypeface(), Typeface.NORMAL);
+        }
         holder.lastMessage.setText(chatChannel.getLastMessage());
-        holder.messageTime.setText(chatChannel.getTimeMessage());
+        holder.messageTime.setText(chatChannel.getLastMessageTime());
     }
 
     @Override
@@ -88,20 +88,33 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
         channelList.clear();
     }
 
-    public class ChatChannelViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class ChatChannelViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
         CircleImageView photo;
         TextView channelName;
         TextView lastMessage;
         TextView messageTime;
-       // View onlineIndicator;
 
         public ChatChannelViewHolder(View view) {
             super(view);
             photo = (CircleImageView) view.findViewById(R.id.iv_user_photo);
+            photo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ChatChannel chatChannel = channelList.get(getAdapterPosition());
+                    if (! chatChannel.isGroup()) {
+                        String id = chatChannel.getId();
+                        String name = chatChannel.getName();
+                        Intent profileIntent = new Intent(view.getContext(), UserProfileActivity.class);
+                        profileIntent.putExtra(UserProfileActivity.EXTRA_STRING_USER_ID, id);
+                        profileIntent.putExtra(UserProfileActivity.EXTRA_STRING_USER_NAME, name);
+                        view.getContext().startActivity(profileIntent);
+                    }
+                }
+            });
             channelName = (TextView) view.findViewById(R.id.tv_user_name);
             lastMessage = (TextView) view.findViewById(R.id.tv_last_chat);
-            messageTime = (TextView) view.findViewById(R.id.tv_time);
-           // onlineIndicator =  view.findViewById(R.id.online_indicator);
+            messageTime = (TextView) view.findViewById(R.id.tv_message_time);
             view.setOnClickListener(this);
         }
 
@@ -110,7 +123,7 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
             ChatChannel chatChannel = channelList.get(getAdapterPosition());
             chatChannel.setNewMessage(false);
             Intent intent = new Intent(v.getContext(), ConversationActivity.class);
-            intent.putExtra(PARCEL_CHAT_CHANNEL, chatChannel);
+            intent.putExtra(CHANNEL_ID, chatChannel.getId());
             v.getContext().startActivity(intent);
         }
     }

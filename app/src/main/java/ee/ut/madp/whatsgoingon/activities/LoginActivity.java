@@ -1,6 +1,7 @@
 package ee.ut.madp.whatsgoingon.activities;
 
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
@@ -15,7 +16,6 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
-import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
@@ -30,6 +30,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import butterknife.BindView;
@@ -37,27 +38,30 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.FirebaseExceptionsChecker;
 import ee.ut.madp.whatsgoingon.R;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.FontHelper;
+import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
+import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.GOOGLE_SIGN_IN_REQUEST_CODE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SIGN_UP_REQUEST_CODE;
 
+/**
+ * Activity providing options for user to log in.
+ */
 public class LoginActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
-    private ChatApplication application;
+    private ApplicationClass application;
 
     @BindView(R.id.coordinator_layout) CoordinatorLayout coordinatorLayout;
-
     @BindView(R.id.input_email) TextInputEditText emailInput;
     @BindView(R.id.input_password) TextInputEditText passwordInput;
     @BindView(R.id.login_title) TextView loginTitle;
-
     @BindView(R.id.btn_facebook) LoginButton facebookButton;
 
     private GoogleApiClient mGoogleApiClient;
@@ -66,11 +70,9 @@ public class LoginActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG, "onCreate()");
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
-        //TODO check if works without initialization
         FacebookSdk.sdkInitialize(getApplicationContext());
-
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
@@ -78,7 +80,7 @@ public class LoginActivity extends AppCompatActivity
 
         callbackManager = CallbackManager.Factory.create();
 
-        application = (ChatApplication) getApplication();
+        application = (ApplicationClass) getApplication();
         initializeAuth();
     }
 
@@ -93,7 +95,7 @@ public class LoginActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i(TAG, "onActivityResult");
+        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         super.onActivityResult(requestCode, resultCode, data);
 
         callbackManager.onActivityResult(requestCode, resultCode, data);
@@ -108,14 +110,22 @@ public class LoginActivity extends AppCompatActivity
 
         if (requestCode == SIGN_UP_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.success_signup));
+                boolean newUserRegistered = data.getBooleanExtra(SignUpActivity.USER_HAS_REGISTERED_EXTRA, false);
+                if (newUserRegistered) {
+                    DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.success_signup));
+                }
             }
         }
     }
 
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        //left blank intentionally
+    }
+
     @OnClick(R.id.btn_login)
     public void signIn() {
-        Log.i(TAG, "signIn()");
+        Log.i(TAG, "signIn");
         String email = String.valueOf(emailInput.getText());
         String password = String.valueOf(passwordInput.getText());
         firebaseAuthWithEmail(email, password);
@@ -123,19 +133,20 @@ public class LoginActivity extends AppCompatActivity
 
     @OnClick(R.id.btn_google)
     public void signInGoogle() {
-        Log.i(TAG, "signInGoogle()");
+        Log.i(TAG, "signInGoogle");
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, GOOGLE_SIGN_IN_REQUEST_CODE);
     }
 
-    @OnClick(R.id.register_link)
-    public void register() {
+    @OnClick(R.id.sign_up_link)
+    public void signUp() {
+        Log.i(TAG, "signUp");
         Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
         startActivityForResult(intent, SIGN_UP_REQUEST_CODE);
     }
 
     private void initializeAuth() {
-        Log.i(TAG, "initializeAuth()");
+        Log.i(TAG, "initializeAuth");
         firebaseAuth = FirebaseAuth.getInstance();
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -154,25 +165,25 @@ public class LoginActivity extends AppCompatActivity
         facebookButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                Log.d(TAG, "facebook:onSuccess:" + loginResult);
+                Log.d(TAG, "facebook.onSuccess: " + loginResult);
                 firebaseAuthWithFacebook(loginResult.getAccessToken());
             }
 
             @Override
             public void onCancel() {
-                Log.d(TAG, "facebook:onCancel");
+                Log.d(TAG, "facebook.onCancel");
             }
 
             @Override
             public void onError(FacebookException error) {
-                Log.d(TAG, "facebook:onError", error);
+                Log.d(TAG, "facebook.onError: ", error);
                 DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.occur_error));
             }
         });
     }
 
     private void firebaseAuthWithEmail(String email, String password) {
-
+        Log.i(TAG, "firebaseAuthWithEmail: " + email);
         DialogHelper.showProgressDialog(LoginActivity.this, getString(R.string.progress_dialog_title_signup));
 
         firebaseAuth.signInWithEmailAndPassword(email, password)
@@ -180,11 +191,12 @@ public class LoginActivity extends AppCompatActivity
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (!task.isSuccessful()) {
-                            Log.e(TAG, "signInWithEmail", task.getException());
+                            Log.e(TAG, "Sign with email failed", task.getException());
                             FirebaseExceptionsChecker.checkFirebaseAuth(LoginActivity.this, task);
                         } else if (checkUserLogin()) {
                             String userId = task.getResult().getUser().getUid();
-                            Log.d(TAG, "loginUser: user with id " + userId + "was logged");
+                            String userName = task.getResult().getUser().getDisplayName();
+                            Log.i(TAG, "User: " + userId + " has been logged in");
                             startMainActivity();
                         }
                        DialogHelper.hideProgressDialog();
@@ -202,11 +214,12 @@ public class LoginActivity extends AppCompatActivity
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
+                        Log.i(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
                         if (!task.isSuccessful()) {
-                            Log.d(TAG, "signInWithCredential", task.getException());
+                            Log.d(TAG, "Sign in with google credential failed", task.getException());
                             DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.unsuccessful_login));
                         } else {
+                            Log.i(TAG, "User " + task.getResult().getUser().getUid() + "has been logged in using google credential");
                             UserHelper.saveGoogleInfoAboutUser(LoginActivity.this, task.getResult().getUser(),
                                     acc.getPhotoUrl().toString());
                             if (checkUserLogin()) {
@@ -231,9 +244,10 @@ public class LoginActivity extends AppCompatActivity
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
                         if (!task.isSuccessful()) {
-                            Log.d(TAG, "signInWithCredential", task.getException());
+                            Log.d(TAG, "Sign in with facebook credential failed", task.getException());
                             DialogHelper.showAlertDialog(LoginActivity.this, getString(R.string.unsuccessful_login));
                         } else {
+                            Log.i(TAG, "User " + task.getResult().getUser().getUid() + " has been logged in using FB credential");
                             UserHelper.saveFacebookInfoAboutUser(LoginActivity.this, task.getResult().getUser());
                             if (checkUserLogin()) {
                                 startMainActivity();
@@ -250,14 +264,17 @@ public class LoginActivity extends AppCompatActivity
     }
 
     private void startMainActivity() {
-        application.startAdvertise();
+        Log.i(TAG, "startMainActivity");
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser != null) {
+            ApplicationClass.loggedUser = new User(currentUser.getUid(),
+                    ImageHelper.encodeBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.user)),
+                    currentUser.getEmail(), currentUser.getDisplayName());
+        }
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
+        application.checkIn();
+        application.startAdvertise();
         finish();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        //left blank intentionally
     }
 }

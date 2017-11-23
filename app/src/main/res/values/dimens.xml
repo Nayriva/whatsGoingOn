@@ -24,5 +24,6 @@
     <dimen name="h3">16sp</dimen>
     <dimen name="h4">14sp</dimen>
     <dimen name="h5">12sp</dimen>
+    <dimen name="h6">10sp</dimen>
     <dimen name="event_type_height">45dp</dimen>
 </resources>

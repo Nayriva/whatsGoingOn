@@ -2,16 +2,19 @@
 package ee.ut.madp.whatsgoingon.fragments;
 
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,17 +40,19 @@ import java.util.UUID;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import ee.ut.madp.whatsgoingon.ChatChannelComparator;
+import ee.ut.madp.whatsgoingon.comparators.ChatChannelComparator;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.adapters.ChatChannelAdapter;
-import ee.ut.madp.whatsgoingon.chat.ChatApplication;
-import ee.ut.madp.whatsgoingon.chat.GroupParticipantsAdapter;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
+import ee.ut.madp.whatsgoingon.adapters.GroupParticipantsAdapter;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
+import ee.ut.madp.whatsgoingon.comparators.GroupParticipantComparator;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
+import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
@@ -58,51 +63,47 @@ import static android.widget.AdapterView.OnClickListener;
 
 public class ChatChannelsFragment extends Fragment implements Observer {
 
-    private static final String TAG = "chat.ChannelsActivity";
+    private static final String TAG = ChatChannelsFragment.class.getSimpleName();
 
     @BindView(R.id.swiperefresh) SwipeRefreshLayout swipeRefreshLayout;
     @BindView(R.id.rv_channels_list) RecyclerView recyclerView;
     @BindView(R.id.tv_channels_status) TextView channelsStatus;
 
-    private ChatApplication application;
+    private ApplicationClass application;
     private DatabaseReference groupsRef;
     private ChatChannelAdapter chatChannelAdapter;
     private String groupPhotoResult;
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        application = (ChatApplication) context.getApplicationContext();
-        application.addObserver(this);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
+        super.onCreate(savedInstanceState);
+        application = (ApplicationClass) getActivity().getApplicationContext();
         groupsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
 
         downloadGroups();
-    }
-
-    private void setUpLastMessages() {
-        for (ChatChannel chatChannel: chatChannelAdapter.getChannels()) {
-            ChatMessage lastMessage = application.getLastMessage(chatChannel.getId());
-            if (lastMessage != null) {
-                if (chatChannel.isGroup()) {
-                    chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
-                } else {
-                    chatChannel.setLastMessage(lastMessage.getMessageText());
-                }
-                chatChannel.setTimeMessage(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
-                chatChannelAdapter.notifyDataSetChanged();
-            }
-        }
+        setRetainInstance(true);
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
+    public void onResume() {
+        Log.i(TAG, "onResume");
+        super.onResume();
+        application.addObserver(this);
+        getChannels();
+    }
+
+    @Override
+    public void onPause() {
+        Log.i(TAG, "onPause");
+        super.onPause();
         application.deleteObserver(this);
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.i(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_chat_channels, container, false);
         ButterKnife.bind(this, view);
         return view;
@@ -110,13 +111,15 @@ public class ChatChannelsFragment extends Fragment implements Observer {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        Log.i(TAG, "onViewCreated");
         super.onViewCreated(view, savedInstanceState);
-        getActivity().setTitle(R.string.chat_item);
-        initialize();
+        setupRecyclerView();
+        setSwipeRefreshLayoutListener();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         super.onActivityResult(requestCode, resultCode, data);
         Bitmap bitmap = ImagePicker.getImageFromResult(getActivity(), requestCode, resultCode, data);
         if (bitmap != null) {
@@ -124,15 +127,9 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         }
     }
 
-    private void initialize() {
-        setupRecyclerView();
-        getChannels();
-        setSwipeRefreshLayoutListener();
-        setUpLastMessages();
-    }
-
     private void setupRecyclerView() {
-        chatChannelAdapter = new ChatChannelAdapter(getContext(), new ArrayList<ChatChannel>());
+        Log.i(TAG, "setupRecyclerView");
+        chatChannelAdapter = new ChatChannelAdapter(new ArrayList<ChatChannel>());
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -140,15 +137,12 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void getChannels() {
+        Log.i(TAG, "getChannels");
         chatChannelAdapter.clearChannels();
         Set<ChatChannel> channels = application.getChannels();
         for (ChatChannel chatChannel : channels) {
             chatChannelAdapter.addChannel(chatChannel);
         }
-
-        List<ChatChannel> list = new ArrayList<>(channels);
-        Collections.sort(list, new ChatChannelComparator());
-
         if (channels.isEmpty()) {
             channelsStatus.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
@@ -156,13 +150,17 @@ public class ChatChannelsFragment extends Fragment implements Observer {
             channelsStatus.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
         }
+        setUpLastMessages();
+        Collections.sort(chatChannelAdapter.getChannels(), new ChatChannelComparator());
         chatChannelAdapter.notifyDataSetChanged();
     }
 
     private void downloadGroups() {
+        Log.i(TAG, "downloadGroups");
         groupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "downloadGroups.onDataChange");
                 for (DataSnapshot groupSnapshot: dataSnapshot.getChildren()) {
                         Group group = groupSnapshot.getValue(Group.class);
                     if (group != null) {
@@ -182,6 +180,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
 
     @OnClick(R.id.fab_add_channel)
     public void addGroup() {
+        Log.i(TAG, "addGroup");
         final Dialog dialog = new Dialog(getContext());
         dialog.setContentView(R.layout.dialog_add_group);
         dialog.setTitle(getString(R.string.select_participants));
@@ -198,6 +197,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                 participants.add(new GroupParticipant(tmp.getId(), tmp.getName(), tmp.getPhoto(), false));
             }
         }
+        Collections.sort(participants, new GroupParticipantComparator());
 
         final GroupParticipantsAdapter dialogAdapter = new GroupParticipantsAdapter(getContext(),
                 R.layout.dialog_group_list_item, participants);
@@ -231,6 +231,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private boolean createGroup(String groupName, List<GroupParticipant> participants) {
+        Log.i(TAG, "createGroup: " + groupName + ", " + participants);
         if (groupName == null || groupName.isEmpty()) {
             Toast.makeText(getContext(), R.string.no_group_name, Toast.LENGTH_SHORT).show();
             return false;
@@ -241,9 +242,14 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                 selected.add(item.getId());
             }
         }
+        selected.add(ApplicationClass.loggedUser.getId());
         if (selected.size() <= 2) {
             Toast.makeText(getContext(), R.string.group_too_small, Toast.LENGTH_SHORT).show();
             return false;
+        }
+        if (groupPhotoResult == null) {
+            groupPhotoResult = ImageHelper.encodeBitmap(
+                    BitmapFactory.decodeResource(getResources(), R.drawable.user));
         }
         String gid =  UUID.randomUUID().toString().replaceAll("-", "");
         Group group = new Group(gid, groupName, groupPhotoResult, selected);
@@ -262,20 +268,41 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         });
     }
 
+    private void setUpLastMessages() {
+        Log.i(TAG, "setUpLastMessages");
+        for (ChatChannel chatChannel: chatChannelAdapter.getChannels()) {
+            ChatMessage lastMessage = application.getLastMessage(chatChannel.getId());
+            if (lastMessage != null) {
+                if (chatChannel.isGroup()) {
+                    chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
+                } else {
+                    chatChannel.setLastMessage(lastMessage.getMessageText());
+                }
+                chatChannel.setLastMessageTime(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
+                chatChannelAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
     @Override
     public void update(Observable o, int qualifier, String data) {
         switch (qualifier) {
             //ADDING CHANNELS
-            case ChatApplication.USER_CHANNEL_DISCOVERED: //NEW CHANNEL HAS BEEN DISCOVERED
-            case ChatApplication.GROUP_CHANNEL_DISCOVERED: {
+            case ApplicationClass.USER_CHANNEL_DISCOVERED: //NEW CHANNEL HAS BEEN DISCOVERED
+            case ApplicationClass.GROUP_CHANNEL_DISCOVERED: {
                 //data contains id of channel
                 ChatChannel foundChannel = application.getChannel(data);
+                if (recyclerView.getVisibility() == View.GONE) {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    channelsStatus.setVisibility(View.GONE);
+                }
                 chatChannelAdapter.addChannel(foundChannel);
+                updateLastMessage(foundChannel,application.getLastMessage(foundChannel.getId()));
                 chatChannelAdapter.notifyDataSetChanged();
             } break;
             //DELETING CHANNELS
-            case ChatApplication.USER_CHANNEL_LEAVING:
-            case ChatApplication.GROUP_DELETED: {
+            case ApplicationClass.USER_CHANNEL_LEAVING:
+            case ApplicationClass.GROUP_DELETED: {
                 //data contains id of channel
                 for (ChatChannel channel : chatChannelAdapter.getChannels()) {
                     if (channel.getId().equals(data)) {
@@ -285,33 +312,39 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                 }
                 chatChannelAdapter.notifyDataSetChanged();
             } break;
-            case ChatApplication.ONE_TO_ONE_MESSAGE_RECEIVED:
-            case ChatApplication.GROUP_MESSAGE_RECEIVED: {
-                //data contains received message
-                updateLastMessage(data);
-                //TODO add update of last message to list item
-            }
+            case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
+            case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
+                ChatChannel chatChannel = chatChannelAdapter.getChannelById(data);
+                ChatMessage lastMessage = application.getLastMessage(data);
+                if (chatChannel != null && lastMessage != null) {
+                    updateLastMessage(chatChannel, lastMessage);
+                    MessageNotificationHelper.showNotification(getContext(), chatChannel.getName(),
+                            chatChannel.getLastMessage(), chatChannel.getId());
+                }
+            } break;
         }
     }
 
-    private void updateLastMessage(String data) {
-        String type = ChatHelper.getMessageType(data);
-        String channelId = null;
-        if (type.equals(ChatHelper.ONE_TO_ONE_MESSAGE)) {
-            channelId = ChatHelper.oneToOneMessageSender(data);
-        } else if (type.equals(ChatHelper.GROUP_MESSAGE)) {
-            channelId = ChatHelper.groupMessageGID(data);
+    private void updateLastMessage(ChatChannel chatChannel, ChatMessage lastMessage) {
+        Log.i(TAG, "updateLastMessage: " + chatChannel);
+        if (lastMessage == null) {
+            return;
         }
-        ChatChannel chatChannel = chatChannelAdapter.getChannelById(channelId);
-        ChatMessage lastMessage = application.getLastMessage(channelId);
-        if (chatChannel != null && lastMessage != null) {
-            if (chatChannel.isGroup()) {
+        if (chatChannel.isGroup()) {
+            if (ChatHelper.isImageText(lastMessage.getMessageText())) {
+                chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + "Sent a picture");
+            } else {
                 chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
+            }
+        } else {
+            if (ChatHelper.isImageText(lastMessage.getMessageText())) {
+                chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + "Sent a picture");
             } else {
                 chatChannel.setLastMessage(lastMessage.getMessageText());
             }
-            chatChannel.setTimeMessage(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
-            chatChannelAdapter.notifyDataSetChanged();
         }
+        chatChannel.setLastMessageTime(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
+        Collections.sort(chatChannelAdapter.getChannels(), new ChatChannelComparator());
+        chatChannelAdapter.notifyDataSetChanged();
     }
 }

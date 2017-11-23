@@ -1,23 +1,18 @@
 
 package ee.ut.madp.whatsgoingon.models;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 /**
  * Created by dominikf on 21. 10. 2017.
  */
-public class ChatChannel implements Parcelable {
+public class ChatChannel {
 
     private String id;
     private String name;
     private String photo;
     private boolean newMessage = false;
-    private String lastMessage;
-    private String timeMessage;
-    private boolean isOnline;
+    private String lastMessageText;
+    private String lastMessageTime;
     private boolean isGroup;
-    private String[] receivers;
 
     public ChatChannel(String id, String name, String photo, boolean isGroup) {
         this.id = id;
@@ -25,28 +20,6 @@ public class ChatChannel implements Parcelable {
         this.photo = photo;
         this.isGroup = isGroup;
     }
-
-    protected ChatChannel(Parcel in) {
-        id = in.readString();
-        name = in.readString();
-        if (photo != null) photo = in.readString();
-        if (receivers != null) receivers = in.createStringArray();
-        newMessage = in.readByte() != 0;
-        isOnline = in.readByte() != 0;
-        isGroup = in.readByte() != 0;
-    }
-
-    public static final Creator<ChatChannel> CREATOR = new Creator<ChatChannel>() {
-        @Override
-        public ChatChannel createFromParcel(Parcel in) {
-            return new ChatChannel(in);
-        }
-
-        @Override
-        public ChatChannel[] newArray(int size) {
-            return new ChatChannel[size];
-        }
-    };
 
     public String getId() {
         return id;
@@ -81,27 +54,19 @@ public class ChatChannel implements Parcelable {
     }
 
     public String getLastMessage() {
-        return lastMessage;
+        return lastMessageText;
     }
 
     public void setLastMessage(String lastMessage) {
-        this.lastMessage = lastMessage;
+        this.lastMessageText = lastMessage;
     }
 
-    public String getTimeMessage() {
-        return timeMessage;
+    public String getLastMessageTime() {
+        return lastMessageTime;
     }
 
-    public void setTimeMessage(String timeMessage) {
-        this.timeMessage = timeMessage;
-    }
-
-    public boolean isOnline() {
-        return isOnline;
-    }
-
-    public void setOnline(boolean online) {
-        isOnline = online;
+    public void setLastMessageTime(String lastMessageTime) {
+        this.lastMessageTime = lastMessageTime;
     }
 
     public boolean isGroup() {
@@ -110,29 +75,5 @@ public class ChatChannel implements Parcelable {
 
     public void setGroup(boolean group) {
         isGroup = group;
-    }
-
-    public String[] getReceivers() {
-        return receivers;
-    }
-
-    public void setReceivers(String[] receivers) {
-        this.receivers = receivers;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(id);
-        dest.writeString(name);
-        if (photo != null) dest.writeString(photo);
-        if (receivers != null) dest.writeArray(receivers);
-        dest.writeByte((byte) (newMessage ? 1 : 0));
-        dest.writeByte((byte) (isOnline ? 1 : 0));
-        dest.writeByte((byte) (isGroup ? 1 : 0));
     }
 }

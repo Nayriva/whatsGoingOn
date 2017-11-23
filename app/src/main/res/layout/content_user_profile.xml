@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="@dimen/activity_horizontal_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".activities.MyProfileActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- email -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:padding="@dimen/activity_horizontal_margin">
+
+            <ImageView
+                android:id="@+id/iw_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                app:srcCompat="@drawable/ic_mail" />
+
+            <TextView
+                android:id="@+id/tw_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_toEndOf="@id/iw_email"
+                android:hint="@string/hint_email"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="#212121"/>
+
+        </RelativeLayout>
+
+        <!-- nationality -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:padding="@dimen/activity_horizontal_margin">
+
+            <ImageView
+                android:id="@+id/iw_nationality"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                app:srcCompat="@drawable/ic_nationality"
+                tools:ignore="ContentDescription"/>
+
+            <TextView
+                android:id="@+id/tw_nationality"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_toEndOf="@id/iw_nationality"
+                android:background="@android:color/transparent"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="#212121"/>
+
+
+        </RelativeLayout>
+
+
+        <!-- city -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:padding="@dimen/activity_horizontal_margin">
+
+            <ImageView
+                android:id="@+id/iv_city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                app:srcCompat="@drawable/ic_place"
+                tools:ignore="ContentDescription"/>
+
+            <TextView
+                android:id="@+id/tw_city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_toEndOf="@id/iv_city"
+                android:background="@android:color/transparent"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="#212121"/>
+
+
+        </RelativeLayout>
+
+        <!-- phone number -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:padding="@dimen/activity_horizontal_margin">
+
+            <ImageView
+                android:id="@+id/iw_phone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                app:srcCompat="@drawable/ic_phone" />
+
+            <TextView
+                android:id="@+id/tw_phone_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_toEndOf="@id/iw_phone"
+                android:background="@android:color/transparent"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="#212121"/>
+
+        </RelativeLayout>
+
+        <!-- school -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:padding="@dimen/activity_horizontal_margin">
+
+            <ImageView
+                android:id="@+id/iw_school"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                app:srcCompat="@drawable/ic_school" />
+
+            <TextView
+                android:id="@+id/tw_school"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_toEndOf="@id/iw_school"
+                android:ellipsize="end"
+                android:background="@android:color/transparent"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="#212121"/>
+
+        </RelativeLayout>
+
+        <!-- work -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:padding="@dimen/activity_horizontal_margin">
+
+            <ImageView
+                android:id="@+id/iw_work"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                app:srcCompat="@drawable/ic_work" />
+
+            <TextView
+                android:id="@+id/tw_work"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_toEndOf="@id/iw_work"
+                android:ellipsize="end"
+                android:background="@android:color/transparent"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="#212121"/>
+
+        </RelativeLayout>
+
+        <!-- birthday -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:padding="@dimen/activity_horizontal_margin">
+
+            <ImageView
+                android:id="@+id/iw_birthday"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                app:srcCompat="@drawable/ic_birthday" />
+
+            <TextView
+                android:id="@+id/tw_birthday"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_toEndOf="@id/iw_birthday"
+                android:ellipsize="end"
+                android:background="@android:color/transparent"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="#212121"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</android.support.v4.widget.NestedScrollView>
