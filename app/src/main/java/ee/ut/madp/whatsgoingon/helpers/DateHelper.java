@@ -27,7 +27,7 @@ public class DateHelper {
     public static DateTime parseDateFromString(String stringDate) {
         DateTime parseDate = null;
         if (!stringDate.isEmpty()) {
-            String pattern = stringDate.matches("[a-zA-Z]{3} \\s \\d{1,2} \\s \\d{4}") ? FULL_DATE_FORMAT : DATE_FORMAT;
+            String pattern = stringDate.matches("[a-zA-Z]{3}\\s\\d{1,2}\\s\\d{4}") ? FULL_DATE_FORMAT : DATE_FORMAT;
             DateTimeFormatter formatter = DateTimeFormat.forPattern(pattern);
             parseDate = formatter.parseDateTime(stringDate);
             if (!pattern.contains("yyyy")) {

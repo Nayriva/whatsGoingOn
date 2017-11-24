@@ -20,7 +20,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.BounceInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -125,10 +124,6 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         application.deleteObserver(this);
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
