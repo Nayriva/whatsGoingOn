@@ -271,23 +271,15 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         for (ChatChannel chatChannel: chatChannelAdapter.getChannels()) {
             ChatMessage lastMessage = application.getLastMessage(chatChannel.getId());
             if (lastMessage != null) {
-                if (chatChannel.isGroup()) {
-                    if (ChatHelper.isImageText(lastMessage.getMessageText())) {
-                        chatChannel.setLastMessage(lastMessage.getDisplayName() + " sent a picture");
-                    } else {
-                        chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
-                    }
-                } else {
-                    if (ChatHelper.isImageText(lastMessage.getMessageText())) {
-                        chatChannel.setLastMessage(lastMessage.getDisplayName() + " sent a picture");
-                    } else {
-                        chatChannel.setLastMessage(lastMessage.getMessageText());
-                    }
-                }
+                setLastMessage(chatChannel, lastMessage);
                 chatChannel.setLastMessageTime(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
                 chatChannelAdapter.notifyDataSetChanged();
             }
         }
+    }
+
+    private String getPartOfSender(boolean isMe, String displayName) {
+        return isMe ? "You" : displayName;
     }
 
     @Override
@@ -336,25 +328,36 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         if (lastMessage == null) {
             return;
         }
-        if (chatChannel.isGroup()) {
-            if (ChatHelper.isImageText(lastMessage.getMessageText())) {
-                chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + "Sent a picture");
-            } else if (ChatHelper.isEventText(lastMessage.getMessageText())) {
-                chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + "Sent an event");
-            } else {
-                chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
-            }
-        } else {
-            if (ChatHelper.isImageText(lastMessage.getMessageText())) {
-                chatChannel.setLastMessage("Sent a picture");
-            } else if (ChatHelper.isEventText(lastMessage.getMessageText())) {
-                chatChannel.setLastMessage("Sent an event");
-            } else {
-                chatChannel.setLastMessage(lastMessage.getMessageText());
-            }
-        }
+
+        setLastMessage(chatChannel, lastMessage);
+
         chatChannel.setLastMessageTime(DateHelper.parseTimeFromLong(lastMessage.getMessageTime()));
         Collections.sort(chatChannelAdapter.getChannels(), new ChatChannelComparator());
         chatChannelAdapter.notifyDataSetChanged();
+    }
+
+    private void setLastMessage(ChatChannel chatChannel, ChatMessage lastMessage) {
+        if (chatChannel.isGroup()) {
+            if (ChatHelper.isImageText(lastMessage.getMessageText())) {
+                chatChannel.setLastMessage(getPartOfSender(lastMessage.isMe(), lastMessage.getDisplayName()) + " sent a picture");
+            } else if (ChatHelper.isEventText(lastMessage.getMessageText())) {
+                chatChannel.setLastMessage(getPartOfSender(lastMessage.isMe(), lastMessage.getDisplayName()) + " sent an event");
+            } else {
+                chatChannel.setLastMessage(getPartOfSender(lastMessage.isMe(), lastMessage.getDisplayName()) + ": " + lastMessage.getMessageText());
+            }
+        } else {
+            if (ChatHelper.isImageText(lastMessage.getMessageText())) {
+                chatChannel.setLastMessage(getPartOfSender(lastMessage.isMe(), lastMessage.getDisplayName()) + " sent a picture");
+            } else if (ChatHelper.isEventText(lastMessage.getMessageText())) {
+                chatChannel.setLastMessage(getPartOfSender(lastMessage.isMe(), lastMessage.getDisplayName()) + " sent an event");
+            } else {
+                if (chatChannel.getId().equals(application.getLoggedUser().getId())) {
+                    chatChannel.setLastMessage("You: " + lastMessage.getMessageText());
+                } else {
+                    chatChannel.setLastMessage(lastMessage.getMessageText());
+                }
+
+            }
+        }
     }
 }
