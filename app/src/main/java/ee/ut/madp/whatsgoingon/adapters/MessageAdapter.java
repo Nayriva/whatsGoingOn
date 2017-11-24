@@ -78,8 +78,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
                     dialog.show();
                 }
             });
-        }
-        if (ChatHelper.isEventText(messageText)) {
+        } else if (ChatHelper.isEventText(messageText)) {
             holder.messageEvent.setVisibility(View.VISIBLE);
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) holder.messageEvent.getLayoutParams();
 
@@ -105,6 +104,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
             });
         } else {
             holder.messageEvent.setVisibility(View.GONE);
+            holder.messagePicture.setVisibility(View.GONE);
             holder.message.setVisibility(View.VISIBLE);
             holder.message.setText(chatMessage.getMessageText());
         }

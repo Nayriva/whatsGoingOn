@@ -1,10 +1,12 @@
 package ee.ut.madp.whatsgoingon.activities;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -12,6 +14,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -52,6 +56,7 @@ import ee.ut.madp.whatsgoingon.adapters.MessageAdapter;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.constants.PermissionConstants;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
@@ -140,7 +145,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
             }
         } else if (requestCode == TAKE_PHOTO_REQUEST_CODE && resultCode == RESULT_OK) {
             Uri selectedImage = imageUri;
-            new SendPickedPhotoAsyncTask(application.getLoggedUser().getId(), application.getLoggedUser().getName(),
+            new SendTakenPhotoAsyncTask(application.getLoggedUser().getId(), application.getLoggedUser().getName(),
                     chatChannel.isGroup(), application.getGroupReceivers(chatChannel.getId()),
                     chatChannel.getId()).execute(selectedImage);
         }
@@ -225,6 +230,15 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
     @OnClick(R.id.btn_send_pick_photo)
     public void sendPickedPicture() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},
+                    PermissionConstants.PERMISSION_REQUEST_CAMERA);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    PermissionConstants.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+            return;
+        }
         Log.i(TAG, "sendPickedPicture");
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -234,12 +248,42 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
     @OnClick(R.id.btn_send_taken_photo)
     public void sendTakenPicture() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},
+                    PermissionConstants.PERMISSION_REQUEST_CAMERA);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    PermissionConstants.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+            return;
+        }
+
+
         Log.i(TAG, "sendTakenPicture");
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         File photo = new File(Environment.getExternalStorageDirectory(),  "Pic.jpg");
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
         imageUri = Uri.fromFile(photo);
         startActivityForResult(intent, TAKE_PHOTO_REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case PermissionConstants.PERMISSION_REQUEST_CAMERA: {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(ConversationActivity.this, "Permission was granted", Toast.LENGTH_LONG).show();
+
+                }
+            }
+            case PermissionConstants.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE: {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(ConversationActivity.this, "Permission was granted", Toast.LENGTH_LONG).show();
+                }
+            }
+
+        }
     }
 
     private void setupRecyclerView() {
@@ -275,8 +319,6 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
             });
         }
     }
-
-
 
     private void updateHistory() {
         Log.i(TAG, "updateHistory");
@@ -479,7 +521,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         }
     }
 
-    private class SendPickedPhotoAsyncTask extends AsyncTask<Uri, Void, Void> {
+    private class SendTakenPhotoAsyncTask extends AsyncTask<Uri, Void, Void> {
 
         private String sender;
         private String displayName;
@@ -487,8 +529,8 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         private String[] receivers;
         private String channelId;
 
-        public SendPickedPhotoAsyncTask(String sender, String displayName,
-                                  boolean isGroup, String[] receivers, String channelId) {
+        public SendTakenPhotoAsyncTask(String sender, String displayName,
+                                       boolean isGroup, String[] receivers, String channelId) {
             this.sender = sender;
             this.displayName = displayName;
             this.isGroup = isGroup;
@@ -513,7 +555,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         }
 
         private void sendMessage(String text) {
-            Log.i(TAG, "SendPickedPhotoAsyncTask.sendMessage");
+            Log.i(TAG, "SendTakenPhotoAsyncTask.sendMessage");
             String message;
             if (isGroup) {
                 message = ChatHelper.groupMessage(sender, displayName, channelId, receivers, text);

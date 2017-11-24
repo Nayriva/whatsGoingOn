@@ -44,6 +44,7 @@ import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
+import ee.ut.madp.whatsgoingon.constants.PermissionConstants;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.EventCalendarHelper;
@@ -64,8 +65,6 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SYNC_CAL_REQUES
 public class EventFormActivity extends AppCompatActivity
         implements Validator.ValidationListener, Observer {
 
-    private static final int MY_PERMISSIONS_REQUEST_WRITE_CALENDAR = 5;
-    private static final int MY_PERMISSIONS_REQUEST_READ_CALENDAR = 6;
     @NotEmpty
     @BindView(R.id.input_layout_eventname) TextInputLayout eventName;
     @NotEmpty
@@ -349,7 +348,7 @@ public class EventFormActivity extends AppCompatActivity
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_CALENDAR},
-                    MY_PERMISSIONS_REQUEST_WRITE_CALENDAR);
+                    PermissionConstants.PERMISSION_REQUEST_WRITE_CALENDAR);
 
             return;
         }
@@ -370,7 +369,7 @@ public class EventFormActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_WRITE_CALENDAR: {
+            case PermissionConstants.PERMISSION_REQUEST_WRITE_CALENDAR: {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     synchronizeEvents();
                     Toast.makeText(EventFormActivity.this, "Permission was granted", Toast.LENGTH_LONG).show();

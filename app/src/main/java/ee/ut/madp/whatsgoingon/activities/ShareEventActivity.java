@@ -157,7 +157,7 @@ public class ShareEventActivity extends AppCompatActivity {
         }
 
         private void sendMessage(String text) {
-            Log.i(TAG, "SendPickedPhotoAsyncTask.sendMessage");
+            Log.i(TAG, "SendTakenPhotoAsyncTask.sendMessage");
             String message;
             if (isGroup) {
                 message = ChatHelper.groupMessage(sender, displayName, channelId, groupReceivers, text);

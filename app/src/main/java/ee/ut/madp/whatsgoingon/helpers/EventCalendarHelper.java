@@ -31,6 +31,7 @@ import java.util.HashMap;
 
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
+import ee.ut.madp.whatsgoingon.constants.PermissionConstants;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_EVENTS;
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_EVENTS_ID;
@@ -42,8 +43,6 @@ import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD
  */
 
 public class EventCalendarHelper {
-    private static final int MY_PERMISSIONS_REQUEST_WRITE_CALENDAR = 5;
-    private static final int MY_PERMISSIONS_REQUEST_GET_ACCOUNTS = 6;
 
     public static void insertEvent(Context context, ee.ut.madp.whatsgoingon.models.Event event, ArrayList calendarTypes) {
 
@@ -115,7 +114,7 @@ public class EventCalendarHelper {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions((Activity) context,
                     new String[]{Manifest.permission.GET_ACCOUNTS},
-                    MY_PERMISSIONS_REQUEST_GET_ACCOUNTS);
+                    PermissionConstants.PERMISSION_REQUEST_GET_ACCOUNTS);
             return;
         }
 
@@ -153,7 +152,7 @@ public class EventCalendarHelper {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions((Activity) context,
                     new String[]{Manifest.permission.WRITE_CALENDAR},
-                    MY_PERMISSIONS_REQUEST_WRITE_CALENDAR);
+                    PermissionConstants.PERMISSION_REQUEST_WRITE_CALENDAR);
             return;
         }
         Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, createEventValues(context, event));
