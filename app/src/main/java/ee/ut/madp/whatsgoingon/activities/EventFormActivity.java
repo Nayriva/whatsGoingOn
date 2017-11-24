@@ -102,16 +102,14 @@ public class EventFormActivity extends AppCompatActivity
         ButterKnife.bind(this);
 
         eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
-        setValidation();
         if (getIntent().hasExtra(PARCEL_EVENT) || getIntent().hasExtra(GeneralConstants.EVENT_ID)) {
             // is Edit
-            event = getIntent().getParcelableExtra(PARCEL_EVENT);
-            if (getIntent().hasExtra(GeneralConstants.EVENT_ID)) retrieveEventFromFirebase(getIntent().getStringExtra(GeneralConstants.EVENT_ID));
-            attendants = getIntent().getStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS);
-            event.setAttendantIds(attendants);
-            canEdit = UserHelper.getCurrentUserId().equals(event.getOwner());
-            isEdit = true;
-            setupContent();
+            if (getIntent().hasExtra(GeneralConstants.EVENT_ID))
+                retrieveEventFromFirebase(getIntent().getStringExtra(EVENT_ID));
+            else {
+                event = getIntent().getParcelableExtra(PARCEL_EVENT);
+                setupContent();
+            }
         } else {
             event = null;
         }
@@ -120,11 +118,19 @@ public class EventFormActivity extends AppCompatActivity
 
     }
 
+    private void setupInfoAboutEvent() {
+        attendants = getIntent().getStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS);
+        event.setAttendantIds(attendants);
+        canEdit = UserHelper.getCurrentUserId().equals(event.getOwner());
+        isEdit = true;
+    }
+
     private void retrieveEventFromFirebase(String eventId) {
         eventsRef.child(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 event = dataSnapshot.getValue(Event.class);
+                setupContent();
             }
 
             @Override
@@ -135,6 +141,7 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     private void setupContent() {
+        setupInfoAboutEvent();
         eventNameInput.setText(event.getName());
         eventPlaceInput.setText(event.getPlace());
         dateInput.setText(DateHelper.parseDateFromLong(event.getDate()));
@@ -161,6 +168,7 @@ public class EventFormActivity extends AppCompatActivity
         synchronizeEventButton.setEnabled(true);
         synchronizeEventButton.setAlpha(1);
         setTitle(event.getName());
+        setValidation();
     }
 
     private void lockEdits() {
@@ -455,7 +463,6 @@ public class EventFormActivity extends AppCompatActivity
         sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, text);
         startActivity(Intent.createChooser(sharingIntent, "Sharing option"));
     }
-
 
     public static Event getEvent() {
         return event;
