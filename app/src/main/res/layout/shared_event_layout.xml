@@ -3,7 +3,7 @@
     android:id="@+id/message_event"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:padding="@dimen/spacing_medium"
+    android:padding="@dimen/spacing_large"
     android:background="@drawable/shared_event_background"
     android:clickable="true"
     android:visibility="gone">
