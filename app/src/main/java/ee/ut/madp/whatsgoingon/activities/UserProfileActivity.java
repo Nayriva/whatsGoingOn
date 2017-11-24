@@ -1,13 +1,12 @@
 package ee.ut.madp.whatsgoingon.activities;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -15,6 +14,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import org.apache.commons.lang3.StringUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -73,15 +74,7 @@ public class UserProfileActivity extends AppCompatActivity implements Observer {
                 User user = dataSnapshot.getValue(User.class);
                 if (user != null) {
                     Log.i(TAG, "onDataChange - user found");
-                    profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(user.getPhoto()));
-                    username.setText(user.getName());
-                    email.setText(user.getEmail());
-                    nationality.setText(user.getNationality());
-                    city.setText(user.getCity());
-                    phoneNumber.setText(user.getPhoneNumber());
-                    work.setText(user.getWork());
-                    school.setText(user.getSchool());
-                    birthday.setText(user.getBirthday());
+                    setContent(user);
                 }
                 DialogHelper.hideProgressDialog();
             }
@@ -140,5 +133,19 @@ public class UserProfileActivity extends AppCompatActivity implements Observer {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowHomeEnabled(true);
         }
+    }
+
+    private void setContent(User user) {
+        profilePhoto.setImageBitmap(ImageHelper.decodeBitmap(user.getPhoto()));
+        if (StringUtils.isNotBlank(user.getName())) username.setText(user.getName());
+        if (StringUtils.isNotBlank(user.getEmail())) email.setText(user.getEmail());
+        if (StringUtils.isNotBlank(user.getNationality()))
+            nationality.setText(user.getNationality());
+        if (StringUtils.isNotBlank(user.getCity())) city.setText(user.getCity());
+        if (StringUtils.isNotBlank(user.getPhoneNumber()))
+            phoneNumber.setText(user.getPhoneNumber());
+        if (StringUtils.isNotBlank(user.getWork())) work.setText(user.getWork());
+        if (StringUtils.isNotBlank(user.getSchool())) school.setText(user.getSchool());
+        if (StringUtils.isNotBlank(user.getBirthday())) birthday.setText(user.getBirthday());
     }
 }
