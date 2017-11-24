@@ -5,9 +5,9 @@ package ee.ut.madp.whatsgoingon.constants;
  */
 
 public class PermissionConstants {
-    public static final int PERMISSION_REQUEST_CAMERA = 1;
-    public static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2;
-    public static final int PERMISSION_REQUEST_WRITE_CALENDAR = 3;
-    public static final int PERMISSION_REQUEST_GET_ACCOUNTS = 4;
+    // camera, external storage
+    public static final int PERMISSIONS_GROUP_ONE = 1;
+    public static final int PERMISSION_REQUEST_WRITE_CALENDAR = 2;
+    public static final int PERMISSION_REQUEST_GET_ACCOUNTS = 3;
 
 }

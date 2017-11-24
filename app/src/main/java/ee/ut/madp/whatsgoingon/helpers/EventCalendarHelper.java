@@ -108,7 +108,6 @@ public class EventCalendarHelper {
                 .setTimeZone("America/Los_Angeles");
         newEvent.setEnd(end);
 
-
         String calendarId = "primary";
 
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {

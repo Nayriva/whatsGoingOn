@@ -56,7 +56,6 @@ import ee.ut.madp.whatsgoingon.adapters.MessageAdapter;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
-import ee.ut.madp.whatsgoingon.constants.PermissionConstants;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
@@ -68,6 +67,7 @@ import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.R.string.add_members;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.CHANNEL_ID;
+import static ee.ut.madp.whatsgoingon.constants.PermissionConstants.PERMISSIONS_GROUP_ONE;
 
 public class ConversationActivity extends AppCompatActivity implements Observer {
     public static final String TAG = ConversationActivity.class.getSimpleName();
@@ -86,6 +86,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     private ChatChannel chatChannel;
     private Map<String, String> photosMap;
     private Uri imageUri;
+    String[] PERMISSIONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -231,12 +232,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     @OnClick(R.id.btn_send_pick_photo)
     public void sendPickedPicture() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA},
-                    PermissionConstants.PERMISSION_REQUEST_CAMERA);
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    PermissionConstants.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSIONS_GROUP_ONE);
             return;
         }
         Log.i(TAG, "sendPickedPicture");
@@ -249,15 +245,9 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     @OnClick(R.id.btn_send_taken_photo)
     public void sendTakenPicture() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA},
-                    PermissionConstants.PERMISSION_REQUEST_CAMERA);
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    PermissionConstants.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSIONS_GROUP_ONE);
             return;
         }
-
 
         Log.i(TAG, "sendTakenPicture");
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -271,17 +261,13 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
-            case PermissionConstants.PERMISSION_REQUEST_CAMERA: {
+            case PERMISSIONS_GROUP_ONE: {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(ConversationActivity.this, "Permission was granted", Toast.LENGTH_LONG).show();
 
                 }
             }
-            case PermissionConstants.PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE: {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(ConversationActivity.this, "Permission was granted", Toast.LENGTH_LONG).show();
-                }
-            }
+
 
         }
     }
