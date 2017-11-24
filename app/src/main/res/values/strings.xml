@@ -199,5 +199,7 @@
     <string name="reminder_hours_title">Hours before the event</string>
     <string name="choose_hours">Choose hours</string>
     <string name="hours_before_event_title">Hours before the event</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="snooze">Snooze</string>
 
 </resources>

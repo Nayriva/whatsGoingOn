@@ -27,6 +27,7 @@ import com.mobsandgeeks.saripaar.annotation.NotEmpty;
 import com.mobsandgeeks.saripaar.exception.ConversionException;
 
 import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,7 @@ import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.Event;
+import ee.ut.madp.whatsgoingon.reminder.ReminderManager;
 
 import static ee.ut.madp.whatsgoingon.activities.SettingsActivity.PREFERENCE_REMINDERS;
 import static ee.ut.madp.whatsgoingon.activities.SettingsActivity.PREFERENCE_REMINDER_HOURS_BEFORE;
@@ -234,7 +236,9 @@ public class EventFormActivity extends AppCompatActivity
         SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         if (prefs.getBoolean(PREFERENCE_REMINDERS, true) && prefs.getInt(PREFERENCE_REMINDER_HOURS_BEFORE, 1) > 0) {
-            // TODO reminders
+            // notify user hours (defined from settings) before
+            long subtractedTime = new LocalDateTime(createdEvent.getDateTime()).minusHours(prefs.getInt(PREFERENCE_REMINDER_HOURS_BEFORE, 1)).toDateTime().getMillis();
+            new ReminderManager(this).setReminder(createdEvent, subtractedTime);
         }
 
         Intent resultIntent = new Intent();
@@ -350,14 +354,10 @@ public class EventFormActivity extends AppCompatActivity
                 } else {
                     Toast.makeText(EventFormActivity.this, "Permission was granted", Toast.LENGTH_LONG).show();
                     synchronizeEventButton.setVisibility(View.GONE);
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
                 }
                 return;
             }
 
-            // other 'switch' lines to check for other
-            // permissions this app might request
         }
     }
 

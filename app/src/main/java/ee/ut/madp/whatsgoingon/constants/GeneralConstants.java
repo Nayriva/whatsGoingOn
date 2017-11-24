@@ -25,4 +25,5 @@ public class GeneralConstants {
     public static final String EXTRA_ADDED_EVENT = "createdEvent";
     public static final String EVENT_DAY_BECAME_EMPTY = "eventDayBecameEmpty" ;
     public static final String EVENT_ATTENDANTS = "eventAttendants";
+    public static final String NOTIFICATION_ID = "notificationId";
 }
