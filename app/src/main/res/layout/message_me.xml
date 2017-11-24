@@ -31,6 +31,7 @@
             android:drawableLeft="@drawable/ic_clock"
             android:textColor="@color/colorTextInfo"
             android:layout_marginEnd="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_small"
             android:textSize="@dimen/h6"/>
 
         <TextView
@@ -40,6 +41,8 @@
             android:visibility="gone" />
 
     </LinearLayout>
+
+    <include layout="@layout/shared_event_layout" />
 
     <ImageView
         android:id="@+id/iv_message_photo"

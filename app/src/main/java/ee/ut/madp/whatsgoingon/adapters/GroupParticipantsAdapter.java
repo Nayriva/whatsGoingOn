@@ -31,12 +31,13 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
     private int layoutResourceId;
     private List<GroupParticipant> data = null;
     private List<GroupParticipant> origData = null;
+    private List<GroupParticipant> pickedParticipants = new ArrayList<>();
 
-    public GroupParticipantsAdapter(Context context, int resource, List<GroupParticipant> objects) {
-        super(context, resource, objects);
+    public GroupParticipantsAdapter(Context context, int resource, List<GroupParticipant> participants) {
+        super(context, resource, participants);
         this.layoutResourceId = resource;
         this.context = context;
-        this.data = objects;
+        this.data = participants;
         this.origData = new ArrayList<>(this.data);
     }
 
@@ -59,6 +60,7 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     data.get(position).setSelected(b);
+                    pickedParticipants.add(data.get(position));
                 }
             });
 
@@ -140,4 +142,11 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
         };
     }
 
+    public List<GroupParticipant> getPickedParticipants() {
+        return pickedParticipants;
+    }
+
+    public void setPickedParticipants(List<GroupParticipant> pickedParticipants) {
+        this.pickedParticipants = pickedParticipants;
+    }
 }

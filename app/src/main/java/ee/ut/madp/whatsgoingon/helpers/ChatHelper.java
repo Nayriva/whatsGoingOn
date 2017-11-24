@@ -25,6 +25,8 @@ public class ChatHelper {
     public static final String GROUP_RECEIVERS_CHANGED_MESSAGE = "GR";
     public static final String GROUP_DELETED_MESSAGE = "GD";
     public static final String IMAGE_TEXT = "IMG_B64_*";
+    public static final String EVENT_TEXT = "SH_EVENT_*";
+    public static final String EVENT_DELIMITER = "~&~";
 
     //ONE TO ONE
 
@@ -280,4 +282,33 @@ public class ChatHelper {
         messageText = messageText.replace(IMAGE_TEXT, "");
         return messageText;
     }
+
+    public static String eventText(String eventText) {
+        return EVENT_TEXT + eventText;
+    }
+
+    public static boolean isEventText(String text) {
+        if (text.length() <= IMAGE_TEXT.length()) {
+            return false;
+        }
+        String subs = text.substring(0, EVENT_TEXT.length());
+        return EVENT_TEXT.equals(subs);
+    }
+
+    public static String getEventText(String messageText) {
+        messageText = messageText.replace(EVENT_TEXT, "");
+        return messageText;
+    }
+
+    public static String encodeEventMessage(String eventId, String eventName, String eventInfo) {
+        return eventId + EVENT_DELIMITER + eventName + EVENT_DELIMITER + eventInfo;
+    }
+
+    public static String[] decodeEventMessage(String eventMessage) {
+        //[0] - eventID
+        //[1] - eventName
+        //[3] - eventInfo
+        return eventMessage.split(EVENT_DELIMITER);
+    }
+
 }

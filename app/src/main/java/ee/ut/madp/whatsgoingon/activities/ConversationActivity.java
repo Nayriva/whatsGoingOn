@@ -33,7 +33,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -277,61 +276,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         }
     }
 
-    private Bitmap getBitmap(String path) {
-        Log.i(TAG, "getBitmap: " + path);
-        Uri uri = Uri.fromFile(new File(path));
-        InputStream in;
-        try {
-            final int IMAGE_MAX_SIZE = 1200000; // 1.2MP
-            in = getContentResolver().openInputStream(uri);
 
-            // Decode image size
-            BitmapFactory.Options o = new BitmapFactory.Options();
-            o.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(in, null, o);
-            assert in != null;
-            in.close();
-
-            int scale = 1;
-            while ((o.outWidth * o.outHeight) * (1 / Math.pow(scale, 2)) >
-                    IMAGE_MAX_SIZE) {
-                scale++;
-            }
-
-            Bitmap b;
-            in = getContentResolver().openInputStream(uri);
-            if (scale > 1) {
-                scale--;
-                // scale to max possible inSampleSize that still yields an image
-                // larger than target
-                o = new BitmapFactory.Options();
-                o.inSampleSize = scale;
-                b = BitmapFactory.decodeStream(in, null, o);
-
-                // resize to desired dimensions
-                int height = b.getHeight();
-                int width = b.getWidth();
-
-                double y = Math.sqrt(IMAGE_MAX_SIZE
-                        / (((double) width) / height));
-                double x = (y / height) * width;
-
-                Bitmap scaledBitmap = Bitmap.createScaledBitmap(b, (int) x,
-                        (int) y, true);
-                b.recycle();
-                b = scaledBitmap;
-
-                System.gc();
-            } else {
-                b = BitmapFactory.decodeStream(in);
-            }
-            assert in != null;
-            in.close();
-            return b;
-        } catch (IOException e) {
-            return null;
-        }
-    }
 
     private void updateHistory() {
         Log.i(TAG, "updateHistory");
@@ -556,7 +501,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
             if (uris != null) {
                 Uri uri = uris[0];
                 try {
-                    Bitmap reducedSizeBitmap = getBitmap(uri.getPath());
+                    Bitmap reducedSizeBitmap = ImageHelper.getScaledBitmap(ConversationActivity.this, uri.getPath());
                     if(reducedSizeBitmap != null) {
                         sendMessage(ChatHelper.imageText(ImageHelper.encodeBitmap(reducedSizeBitmap)));
                     }

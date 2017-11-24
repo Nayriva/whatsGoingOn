@@ -20,6 +20,13 @@
         android:layout_toEndOf="@+id/civ_message_user_photo"
         android:layout_alignTop="@id/civ_message_user_photo">
 
+        <LinearLayout
+            android:id="@+id/ll_auth_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:orientation="vertical">
+
         <TextView
             android:id="@+id/tv_message_author"
             android:layout_width="wrap_content"
@@ -38,7 +45,10 @@
             android:textColor="@color/colorTextInfo"
             android:textSize="@dimen/h6"
             android:layout_toEndOf="@+id/tv_message_author"
-            android:layout_marginBottom="@dimen/spacing_xsmall" />
+            android:layout_marginBottom="@dimen/spacing_small" />
+        </LinearLayout>
+
+        <include layout="@layout/shared_event_layout" />
 
         <ImageView
             android:id="@+id/iv_message_photo"

@@ -2,26 +2,27 @@ package ee.ut.madp.whatsgoingon.adapters;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
-import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
+
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_ID;
 
 /**
  * Created by admin on 27.10.2017.
@@ -76,6 +77,31 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
                     dialog.show();
                 }
             });
+        }
+        if (ChatHelper.isEventText(messageText)) {
+            holder.messageEvent.setVisibility(View.VISIBLE);
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) holder.messageEvent.getLayoutParams();
+
+            params.addRule(RelativeLayout.BELOW, R.id.ll_auth_time);
+            if (isMe(position)) {
+                params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            } else {
+                params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            }
+            holder.messageEvent.setLayoutParams(params);
+
+            holder.message.setVisibility(View.GONE);
+            final String[] decodedEventMessage = ChatHelper.decodeEventMessage(ChatHelper.getEventText(messageText));
+            holder.eventName.setText(decodedEventMessage[1]);
+            holder.eventInfo.setText(decodedEventMessage[2]);
+            holder.messageEvent.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(context, EventFormActivity.class);
+                    intent.putExtra(EVENT_ID, decodedEventMessage[0]);
+                    context.startActivity(intent);
+                }
+            });
         } else {
             holder.message.setText(chatMessage.getMessageText());
         }
@@ -91,10 +117,16 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
         return chatMessages.size();
     }
 
+    private boolean isMe(int position) {
+        return chatMessages.get(position).isMe();
+    }
+
     public class MyViewHolder extends RecyclerView.ViewHolder  {
         TextView messageTime, message, author;
         CircleImageView photo;
         ImageView messagePicture;
+        RelativeLayout messageEvent;
+        TextView eventName, eventInfo;
 
         public MyViewHolder(View view) {
             super(view);
@@ -103,6 +135,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
             author = (TextView) view.findViewById(R.id.tv_message_author);
             photo = (CircleImageView) view.findViewById(R.id.civ_message_user_photo);
             messagePicture = (ImageView) view.findViewById(R.id.iv_message_photo);
+
+            messageEvent = (RelativeLayout) view.findViewById(R.id.message_event);
+            eventName = (TextView) view.findViewById(R.id.event_name);
+            eventInfo = (TextView) view.findViewById(R.id.event_info);
+
         }
     }
 }

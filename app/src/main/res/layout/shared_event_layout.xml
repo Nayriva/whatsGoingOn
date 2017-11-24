@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/message_event"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/spacing_medium"
+    android:background="@drawable/shared_event_background"
+    android:clickable="true"
+    android:visibility="gone">
+
+    <TextView
+        android:id="@+id/event_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_medium"
+        android:drawableLeft="@drawable/ic_event_primary_color"
+        android:drawablePadding="@dimen/spacing_small"
+        android:textSize="@dimen/h1"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/event_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/event_name"
+        android:textSize="@dimen/h2" />
+
+
+</RelativeLayout>

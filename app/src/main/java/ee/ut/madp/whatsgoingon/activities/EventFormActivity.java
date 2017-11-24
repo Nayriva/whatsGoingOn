@@ -10,7 +10,6 @@ import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,8 +17,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.mobsandgeeks.saripaar.ValidationError;
 import com.mobsandgeeks.saripaar.Validator;
 import com.mobsandgeeks.saripaar.adapter.ViewDataAdapter;
@@ -55,6 +57,7 @@ import ee.ut.madp.whatsgoingon.reminder.ReminderManager;
 
 import static ee.ut.madp.whatsgoingon.activities.SettingsActivity.PREFERENCE_REMINDERS;
 import static ee.ut.madp.whatsgoingon.activities.SettingsActivity.PREFERENCE_REMINDER_HOURS_BEFORE;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_ID;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_EVENT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SYNC_CAL_REQUEST_CODE;
 
@@ -98,12 +101,12 @@ public class EventFormActivity extends AppCompatActivity
         setContentView(R.layout.activity_form_event);
         ButterKnife.bind(this);
 
-
         eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
         setValidation();
-        if (getIntent().hasExtra(PARCEL_EVENT)) {
+        if (getIntent().hasExtra(PARCEL_EVENT) || getIntent().hasExtra(GeneralConstants.EVENT_ID)) {
             // is Edit
             event = getIntent().getParcelableExtra(PARCEL_EVENT);
+            if (getIntent().hasExtra(GeneralConstants.EVENT_ID)) retrieveEventFromFirebase(getIntent().getStringExtra(GeneralConstants.EVENT_ID));
             attendants = getIntent().getStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS);
             event.setAttendantIds(attendants);
             canEdit = UserHelper.getCurrentUserId().equals(event.getOwner());
@@ -115,6 +118,20 @@ public class EventFormActivity extends AppCompatActivity
 
         application = (ApplicationClass) getApplication();
 
+    }
+
+    private void retrieveEventFromFirebase(String eventId) {
+        eventsRef.child(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                event = dataSnapshot.getValue(Event.class);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void setupContent() {
@@ -337,7 +354,6 @@ public class EventFormActivity extends AppCompatActivity
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             if (requestCode == SYNC_CAL_REQUEST_CODE) {
-                Log.i("Events", "Povedlo se");
             }
         }
     }
@@ -431,12 +447,12 @@ public class EventFormActivity extends AppCompatActivity
 
     private void shareEvent(Event event) {
         Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+        sharingIntent.putExtra(EVENT_ID, event.getId());
         sharingIntent.setType("text/plain");
-        String subject = "Event " + event.getName() + " on " + DateHelper.parseDateFromLong(event.getDateTime());
+        String subject = event.getName();
         sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subject);
-
-        if (!event.getDescription().isEmpty())
-            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, event.getDescription());
+        String text = DateHelper.parseDateFromLong(event.getDateTime()) + " at " + DateHelper.parseTimeFromLong(event.getDateTime()) + ", " + event.getPlace();
+        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, text);
         startActivity(Intent.createChooser(sharingIntent, "Sharing option"));
     }
 

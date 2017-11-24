@@ -13,6 +13,7 @@ public class GeneralConstants {
 
     public static final String CHANNEL_ID = "channelId";
     public static final String PARCEL_EVENT = "event";
+    public static final String EVENT_ID = "eventId";
     public static final String PARAM_EVENT_DAY = "eventDay";
     public static final String FULL_DATE_TIME_FORMAT = "MMM dd, yyyy HH:mm";
     public static final String TIME_FORMAT = "HH:mm";

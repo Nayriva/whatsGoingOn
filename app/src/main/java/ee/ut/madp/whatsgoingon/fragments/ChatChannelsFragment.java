@@ -5,10 +5,8 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -40,13 +38,13 @@ import java.util.UUID;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import ee.ut.madp.whatsgoingon.comparators.ChatChannelComparator;
+import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.adapters.ChatChannelAdapter;
-import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.adapters.GroupParticipantsAdapter;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
+import ee.ut.madp.whatsgoingon.comparators.ChatChannelComparator;
 import ee.ut.madp.whatsgoingon.comparators.GroupParticipantComparator;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
 import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
@@ -341,12 +339,16 @@ public class ChatChannelsFragment extends Fragment implements Observer {
         if (chatChannel.isGroup()) {
             if (ChatHelper.isImageText(lastMessage.getMessageText())) {
                 chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + "Sent a picture");
+            } else if (ChatHelper.isEventText(lastMessage.getMessageText())) {
+                chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + "Sent an event");
             } else {
                 chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + lastMessage.getMessageText());
             }
         } else {
             if (ChatHelper.isImageText(lastMessage.getMessageText())) {
-                chatChannel.setLastMessage(lastMessage.getDisplayName() + ": " + "Sent a picture");
+                chatChannel.setLastMessage("Sent a picture");
+            } else if (ChatHelper.isEventText(lastMessage.getMessageText())) {
+                chatChannel.setLastMessage("Sent an event");
             } else {
                 chatChannel.setLastMessage(lastMessage.getMessageText());
             }
