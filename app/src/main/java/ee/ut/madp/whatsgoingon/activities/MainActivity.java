@@ -99,6 +99,7 @@ public class MainActivity extends AppCompatActivity
             } else if (activeFragment.equals("Events")) {
                 navigationView.setCheckedItem(R.id.nav_events);
             }
+            setTitle(activeFragment);
         }
     }
 

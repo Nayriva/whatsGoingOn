@@ -32,8 +32,8 @@ public class ChatChannelComparator implements Comparator<ChatChannel> {
         } else if (t2 == null) {
             return -1;
         } else {
-            DateTime t1Date = DateHelper.parseDateFromString(t1);
-            DateTime t2Date = DateHelper.parseDateFromString(t2);
+            DateTime t1Date = DateHelper.parseTimeFromString(t1);
+            DateTime t2Date = DateHelper.parseTimeFromString(t2);
             return t1Date.compareTo(t2Date);
         }
     }

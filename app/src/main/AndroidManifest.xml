@@ -77,11 +77,7 @@
                 android:value="ee.ut.madp.whatsgoingon.activities.MainActivity"/>
         </activity>
 
-        <activity android:name=".activities.EventsOnDayActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
-        </activity>
+        <activity android:name=".activities.EventsOnDayActivity" />
         <activity
             android:name=".activities.UserProfileActivity"
             android:theme="@style/AppTheme.NoActionBar">

@@ -57,38 +57,24 @@ public class EventFormActivity extends AppCompatActivity
     private static final int MY_PERMISSIONS_REQUEST_WRITE_CALENDAR = 5;
     private static final int MY_PERMISSIONS_REQUEST_READ_CALENDAR = 6;
     @NotEmpty
-    @BindView(R.id.input_layout_eventname)
-    TextInputLayout eventName;
+    @BindView(R.id.input_layout_eventname) TextInputLayout eventName;
     @NotEmpty
-    @BindView(R.id.input_layout_eventplace)
-    TextInputLayout eventPlace;
+    @BindView(R.id.input_layout_eventplace) TextInputLayout eventPlace;
     @NotEmpty
-    @BindView(R.id.input_layout_date)
-    TextInputLayout date;
+    @BindView(R.id.input_layout_date) TextInputLayout date;
     @NotEmpty
-    @BindView(R.id.input_layout_time)
-    TextInputLayout time;
+    @BindView(R.id.input_layout_time) TextInputLayout time;
 
-    @BindView(R.id.input_eventname)
-    TextInputEditText eventNameInput;
-    @BindView(R.id.input_eventplace)
-    TextInputEditText eventPlaceInput;
-    @BindView(R.id.input_date)
-    TextInputEditText dateInput;
-    @BindView(R.id.input_time)
-    TextInputEditText timeInput;
-    @BindView(R.id.input_description)
-    TextInputEditText descriptionInput;
-    @BindView(R.id.btn_add_event)
-    Button addEventButton;
-    @BindView(R.id.btn_edit_event)
-    Button editEventButton;
-    @BindView(R.id.btn_delete_event)
-    Button deleteEventButton;
-    @BindView(R.id.btn_synchronize)
-    Button synchronizeEventButton;
-    @BindView(R.id.btn_join_event)
-    Button joinEventButton;
+    @BindView(R.id.input_eventname) TextInputEditText eventNameInput;
+    @BindView(R.id.input_eventplace) TextInputEditText eventPlaceInput;
+    @BindView(R.id.input_date) TextInputEditText dateInput;
+    @BindView(R.id.input_time) TextInputEditText timeInput;
+    @BindView(R.id.input_description) TextInputEditText descriptionInput;
+    @BindView(R.id.btn_add_event) Button addEventButton;
+    @BindView(R.id.btn_edit_event) Button editEventButton;
+    @BindView(R.id.btn_delete_event) Button deleteEventButton;
+    @BindView(R.id.btn_synchronize) Button synchronizeEventButton;
+    @BindView(R.id.btn_join_event) Button joinEventButton;
 
     private List<TextInputLayout> inputLayoutList;
     private DatabaseReference eventsRef;
@@ -116,10 +102,11 @@ public class EventFormActivity extends AppCompatActivity
             canEdit = UserHelper.getCurrentUserId().equals(event.getOwner());
             isEdit = true;
             setupContent();
+        } else {
+            event = null;
         }
 
         application = (ApplicationClass) getApplication();
-        application.addObserver(this);
 
     }
 
@@ -257,15 +244,22 @@ public class EventFormActivity extends AppCompatActivity
     public void showTimeDialog() {
         time.setError(null);
         time.setErrorEnabled(false);
-        DialogHelper.showTimePickerDialog(this, time, date);
+        if (event == null) {
+            DialogHelper.showTimePickerDialog(this, time, null, null);
+        } else {
+            DialogHelper.showTimePickerDialog(this, time, event.getDate(), event.getDateTime());
+        }
     }
 
     @OnClick(R.id.input_date)
     public void showDateDialog() {
         date.setError(null);
         date.setErrorEnabled(false);
-        // TODO for edit set chosen date
-        DialogHelper.showDatePickerDialog(this, date);
+        if (event == null) {
+            DialogHelper.showDatePickerDialog(this, date, null);
+        } else {
+            DialogHelper.showDatePickerDialog(this, date, event.getDate());
+        }
     }
 
     @OnClick(R.id.btn_join_event)
