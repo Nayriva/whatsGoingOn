@@ -60,6 +60,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
         holder.author.setText(chatMessage.getDisplayName());
         holder.messageTime.setText(DateHelper.createMessageTime(context, chatMessage.getMessageTime()));
         holder.photo.setImageBitmap(ImageHelper.decodeBitmap(photosMap.get(chatMessage.getSender())));
+
         final String messageText = chatMessage.getMessageText();
         if (ChatHelper.isImageText(messageText)) {
             holder.messagePicture.setVisibility(View.VISIBLE);
@@ -103,6 +104,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
                 }
             });
         } else {
+            holder.messageEvent.setVisibility(View.GONE);
+            holder.message.setVisibility(View.VISIBLE);
             holder.message.setText(chatMessage.getMessageText());
         }
     }
