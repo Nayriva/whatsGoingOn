@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.design.widget.Snackbar;
@@ -14,6 +15,7 @@ import android.support.design.widget.TextInputLayout;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.DatePicker;
+import android.widget.NumberPicker;
 import android.widget.TimePicker;
 
 import org.joda.time.DateTime;
@@ -26,6 +28,7 @@ import java.util.Calendar;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
 
+import static ee.ut.madp.whatsgoingon.activities.SettingsActivity.PREFERENCE_REMINDER_HOURS_BEFORE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.DATE_FORMAT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.FULL_DATE_FORMAT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.TIME_FORMAT;
@@ -196,6 +199,36 @@ public class DialogHelper {
                     }
                 }).create();
         dialog.show();
+    }
+
+    public static void showNumberPickerDialog(final Context context) {
+        final NumberPicker numberPicker = new NumberPicker(context);
+        numberPicker.setMaxValue(360);
+        numberPicker.setMinValue(0);
+        int chosenValue;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(context.getString(R.string.hours_before_event_title));
+        builder.setMessage(context.getString(R.string.choose_hours));
+        builder.setView(numberPicker);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                SharedPreferences prefs = context.getSharedPreferences("setting.whatsgoingon", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putInt(PREFERENCE_REMINDER_HOURS_BEFORE, numberPicker.getValue());
+                editor.commit();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        builder.show();
     }
 
 }

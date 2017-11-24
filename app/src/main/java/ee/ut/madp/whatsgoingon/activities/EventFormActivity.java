@@ -1,7 +1,9 @@
 package ee.ut.madp.whatsgoingon.activities;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
@@ -49,6 +51,8 @@ import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.Event;
 
+import static ee.ut.madp.whatsgoingon.activities.SettingsActivity.PREFERENCE_REMINDERS;
+import static ee.ut.madp.whatsgoingon.activities.SettingsActivity.PREFERENCE_REMINDER_HOURS_BEFORE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_EVENT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SYNC_CAL_REQUEST_CODE;
 
@@ -239,6 +243,12 @@ public class EventFormActivity extends AppCompatActivity
     public void createEvent() {
         Event createdEvent = collectEventData(false);
         storeEvent(createdEvent, getString(R.string.message_saved_event));
+
+        SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        if (prefs.getBoolean(PREFERENCE_REMINDERS, true) && prefs.getInt(PREFERENCE_REMINDER_HOURS_BEFORE, 1) > 0) {
+            // TODO reminders
+        }
 
         Intent resultIntent = new Intent();
         resultIntent.putExtra(GeneralConstants.EXTRA_ADDED_EVENT, createdEvent);

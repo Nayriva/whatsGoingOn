@@ -87,5 +87,5 @@ public class ShareEventActivity extends AppCompatActivity {
 
         return super.onCreateOptionsMenu(menu);
     }
-    
+
 }

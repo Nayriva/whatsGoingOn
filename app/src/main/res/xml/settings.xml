@@ -28,6 +28,11 @@
             android:key="notification_reminders"
             android:summary="@string/settings_reminder_summary"
             android:title="@string/settings_event_reminder" />
+        <Preference
+            android:key="reminder_hours_before"
+            android:summary="@string/reminder_hours_summary"
+            android:title="@string/reminder_hours_title"
+            android:dependency="notification_reminders"/>
         <RingtonePreference
             android:defaultValue="content://settings/system/notification_sound"
             android:key="notification_ringtone"

@@ -2,9 +2,9 @@ package ee.ut.madp.whatsgoingon.activities;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -18,11 +18,10 @@ import android.view.MenuItem;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.mvc.imagepicker.ImagePicker;
 
 import butterknife.BindView;
-import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.ApplicationClass;
+import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
@@ -39,6 +38,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity
     public static final String PREFERENCE_MESSAGE_NOTIFICATION = "notifications_message";
     public static final String PREFERENCE_NOTIFICATION_VIBRATE = "notification_vibrate";
     public static final String PREFERENCE_NOTIFICATION_RINGTONE = "notification_ringtone";
+    public static final String PREFERENCE_REMINDER_HOURS_BEFORE = "reminder_hours_before";
+    public static final String PREFERENCE_REMINDERS = "notification_reminders";
 
     private static FirebaseAuth firebaseAuth;
     private Intent intent;
@@ -66,6 +67,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
     }
 
     @Override
@@ -101,6 +103,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity
             editor.commit();
             ApplicationClass.vibrateOn = isAllowed;
         }
+        if (key.equals(PREFERENCE_REMINDERS)) {
+            boolean isAllowed = sharedPreferences.getBoolean(key, true);
+            editor.putBoolean(PREFERENCE_REMINDERS, isAllowed);
+            editor.commit();
+        }
+
+        if (key.equals(PREFERENCE_REMINDER_HOURS_BEFORE)) {
+            int hours = sharedPreferences.getInt(key, 1);
+            editor.putInt(PREFERENCE_REMINDER_HOURS_BEFORE, hours);
+            editor.commit();
+        }
 
         if (key.equals(PREFERENCE_NOTIFICATION_RINGTONE)) {
             String ringtonePreference = sharedPreferences.getString(PREFERENCE_NOTIFICATION_RINGTONE, "DEFAULT_SOUND");
@@ -108,6 +121,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
             editor.commit();
             ApplicationClass.setRingtone(ringtonePreference);
         }
+
 
     }
 
@@ -170,6 +184,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity
                                     }
                                 }
                             });
+                    return true;
+                }
+            });
+
+            Preference hoursBeforePreference = findPreference(PREFERENCE_REMINDER_HOURS_BEFORE);
+            hoursBeforePreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    DialogHelper.showNumberPickerDialog(getContext());
                     return true;
                 }
             });

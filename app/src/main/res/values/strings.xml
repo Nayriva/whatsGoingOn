@@ -63,7 +63,7 @@
     <string name="settings_event_reminder">Turn on event reminder</string>
     <string name="settings_notification_vibrate">Turn on vibrate</string>
     <string name="settings_notification_ringtone">Choose sounds</string>
-    <string name="settings_reminder_summary">Reminds you about an upcoming event</string>
+    <string name="settings_reminder_summary">Reminds you about upcoming events</string>
     <string name="settings_notifications_summary">When you get a new message, we will let you know </string>
     <string name="prompt_enter_photo">Please choose a new profile photo</string>
     <string name="prompt_enter_password">We will send you an email to change your old password</string>
@@ -195,5 +195,9 @@
     <string name="choose_participants">Share event to</string>
     <string name="search">Search</string>
     <string name="no_results">No results</string>
+    <string name="reminder_hours_summary">Choose how many hours before you should be reminded</string>
+    <string name="reminder_hours_title">Hours before the event</string>
+    <string name="choose_hours">Choose hours</string>
+    <string name="hours_before_event_title">Hours before the event</string>
 
 </resources>
