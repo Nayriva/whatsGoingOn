@@ -141,6 +141,7 @@ public class EventFormActivity extends AppCompatActivity
 
     private void setupContent() {
         setupInfoAboutEvent();
+        setValidation();
         eventNameInput.setText(event.getName());
         eventPlaceInput.setText(event.getPlace());
         dateInput.setText(DateHelper.parseDateFromLong(event.getDate()));
@@ -167,7 +168,7 @@ public class EventFormActivity extends AppCompatActivity
         synchronizeEventButton.setEnabled(true);
         synchronizeEventButton.setAlpha(1);
         setTitle(event.getName());
-        setValidation();
+
     }
 
     private void lockEdits() {
