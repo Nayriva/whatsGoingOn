@@ -86,19 +86,29 @@ public class DialogHelper {
         Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_LONG).show();
     }
 
-    public static void showTimePickerDialog( final Context context, final TextInputLayout timeInputLayout, final TextInputLayout dateInputLayout) {
+    public static void showTimePickerDialog( final Context context, final TextInputLayout timeInputLayout,
+                                             Long dateLong, Long timeLong) {
 
         final Calendar myCalendar = Calendar.getInstance();
+        int hours, minutes;
+        if (timeLong == null) {
+            hours = myCalendar.get(Calendar.HOUR_OF_DAY);
+            minutes = myCalendar.get(Calendar.MINUTE);
+        } else {
+            DateTime time = DateHelper.parseTimeFromString(DateHelper.parseTimeFromLong(timeLong));
+            hours = time.getHourOfDay();
+            minutes = time.getMinuteOfHour();
+        }
 
-        final int hours = myCalendar.get(Calendar.HOUR_OF_DAY);
-        final int minutes = myCalendar.get(Calendar.MINUTE);
 
-        final DateTime chosenDate = DateHelper.parseDateFromString(dateInputLayout.getEditText().getText().toString());
         final int year,month, day;
-        if (chosenDate != null) {
-            year = chosenDate.getYear();
-            month = chosenDate.getMonthOfYear();
-            day = chosenDate.getDayOfMonth();
+        final DateTime date  = (dateLong == null) ?
+                null :
+                DateHelper.parseDateFromString(DateHelper.parseDateFromLong(dateLong));
+        if (date != null) {
+            year = date.getYear();
+            month = date.getMonthOfYear();
+            day = date.getDayOfMonth();
         } else {
             year = myCalendar.get(Calendar.YEAR);
             month = myCalendar.get(Calendar.MONTH);
@@ -118,8 +128,8 @@ public class DialogHelper {
                 long calendarTime = myCalendar.getTime().getTime();
 
                 DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(TIME_FORMAT);
-                if (chosenDate != null) {
-                    if ((DateHelper.isToday(chosenDate.getMillis()) && !DateHelper.isFutureTime(calendarTime)) ||
+                if (date != null) {
+                    if ((DateHelper.isToday(date.getMillis()) && !DateHelper.isFutureTime(calendarTime)) ||
                             DateHelper.isPast(calendarTime)) {
                         timeInputLayout.setErrorEnabled(true);
                         timeInputLayout.setError(context.getString(R.string.error_time_past));
@@ -137,12 +147,21 @@ public class DialogHelper {
 
     }
 
-    public static void showDatePickerDialog(final Context context, final TextInputLayout textInputLayout) {
+    public static void showDatePickerDialog(final Context context, final TextInputLayout textInputLayout,
+                                            Long dateLong) {
         final Calendar myCalendar = Calendar.getInstance();
         final Calendar c = Calendar.getInstance();
-        int year = c.get(Calendar.YEAR);
-        int month = c.get(Calendar.MONTH);
-        int day = c.get(Calendar.DAY_OF_MONTH);
+        int year, month, day;
+        if (dateLong == null) {
+            year = c.get(Calendar.YEAR);
+            month = c.get(Calendar.MONTH);
+            day = c.get(Calendar.DAY_OF_MONTH);
+        } else {
+            DateTime date = DateHelper.parseDateFromString(DateHelper.parseDateFromLong(dateLong));
+            year = date.getYear();
+            month = date.getMonthOfYear() - 1;
+            day = date.getDayOfMonth();
+        }
 
         DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
             @Override
@@ -170,7 +189,7 @@ public class DialogHelper {
 
     public static void showCalendarSyncDialog(final Context context) {
         final CharSequence[] items = context.getResources().getStringArray(R.array.calendar_types);
-        final ArrayList seletedItems = new ArrayList();
+        final ArrayList selectedItems = new ArrayList();
 
         AlertDialog dialog = new AlertDialog.Builder(context)
                 .setTitle(context.getString(R.string.calendar_type))
@@ -179,10 +198,15 @@ public class DialogHelper {
                     public void onClick(DialogInterface dialog, int indexSelected, boolean isChecked) {
                         if (isChecked) {
                             // If the user checked the item, add it to the selected items
+<<<<<<< HEAD
+                            selectedItems.add(indexSelected);
+                        } else if (selectedItems.contains(indexSelected)) {
+=======
                             seletedItems.add(items[indexSelected]);
                         } else if (seletedItems.contains(indexSelected)) {
+>>>>>>> 771770e0fd1bdc4b4489c9021792980f05396bf5
                             // Else, if the item is already in the array, remove it
-                            seletedItems.remove(Integer.valueOf(indexSelected));
+                            selectedItems.remove(Integer.valueOf(indexSelected));
                         }
                     }
                 }).setPositiveButton("OK", new DialogInterface.OnClickListener() {

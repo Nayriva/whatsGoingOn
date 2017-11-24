@@ -254,6 +254,10 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
     private void downloadPhotos() {
         Log.i(TAG, "downloadPhotos");
+        String[] receivers = application.getGroupReceivers(chatChannel.getId());
+        if (receivers == null || receivers.length < 1) {
+            return;
+        }
         for (String receiver : application.getGroupReceivers(chatChannel.getId())) {
             usersRef.child(receiver).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -551,7 +555,6 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         protected Void doInBackground(Uri... uris) {
             if (uris != null) {
                 Uri uri = uris[0];
-                getContentResolver().notifyChange(uri, null);
                 try {
                     Bitmap reducedSizeBitmap = getBitmap(uri.getPath());
                     if(reducedSizeBitmap != null) {
@@ -565,7 +568,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         }
 
         private void sendMessage(String text) {
-            Log.i(TAG, "SendPhotoAsyncTask.sendMessage");
+            Log.i(TAG, "SendPickedPhotoAsyncTask.sendMessage");
             String message;
             if (isGroup) {
                 message = ChatHelper.groupMessage(sender, displayName, channelId, receivers, text);
