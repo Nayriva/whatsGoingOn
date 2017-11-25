@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @BindView(R.id.toolbar) Toolbar toolbar;
 
-    private String activeFragment = "chat";
+    private String activeFragment = "Chat";
     private ApplicationClass application;
     private DatabaseReference userRef;
     private ValueEventListener valueEventListener;
