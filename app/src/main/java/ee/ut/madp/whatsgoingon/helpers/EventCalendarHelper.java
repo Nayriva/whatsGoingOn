@@ -99,7 +99,7 @@ public class EventCalendarHelper {
         values.put(CalendarContract.Events.EVENT_LOCATION, event.getPlace());
         values.put(CalendarContract.Events.DTSTART, event.getDateTime());
         values.put(CalendarContract.Events.DTEND, event.getDateTime());
-        values.put(CalendarContract.Events.EVENT_TIMEZONE, tz.getDisplayName());
+        values.put(CalendarContract.Events.EVENT_TIMEZONE, tz.getID());
 
         return values;
     }
@@ -151,6 +151,8 @@ public class EventCalendarHelper {
     }
 
     public static Event createGoogleEvent(ee.ut.madp.whatsgoingon.models.Event event) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        java.util.TimeZone tz = cal.getTimeZone();
         Event newEvent = new Event()
                 .setSummary(event.getName())
                 .setLocation(event.getPlace())
@@ -159,7 +161,7 @@ public class EventCalendarHelper {
         DateTime startDateTime = new DateTime(event.getDateTime());
         EventDateTime start = new EventDateTime()
                 .setDateTime(startDateTime)
-                .setTimeZone("America/Los_Angeles");
+                .setTimeZone(tz.getID());
         newEvent.setStart(start);
 
         DateTime endDateTime = new DateTime(event.getDateTime());
