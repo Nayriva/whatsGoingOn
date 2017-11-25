@@ -24,27 +24,28 @@
             android:id="@+id/ll_auth_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentLeft="true"
             android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_message_author"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorTextInfo"
-            android:textSize="@dimen/h6"
-            android:layout_marginBottom="@dimen/spacing_xsmall"/>
+            <TextView
+                android:id="@+id/tv_message_author"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorTextInfo"
+                android:textSize="@dimen/h6"
+                android:layout_marginBottom="@dimen/spacing_xsmall"/>
 
-        <TextView
-            android:id="@+id/tv_message_time"
-            android:layout_marginLeft="@dimen/spacing_medium"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawablePadding="@dimen/spacing_small"
-            android:drawableLeft="@drawable/ic_clock"
-            android:textColor="@color/colorTextInfo"
-            android:textSize="@dimen/h6"
-            android:layout_marginBottom="@dimen/spacing_small" />
+            <TextView
+                android:id="@+id/tv_message_time"
+                android:layout_marginLeft="@dimen/spacing_medium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawablePadding="@dimen/spacing_small"
+                android:drawableLeft="@drawable/ic_clock"
+                android:textColor="@color/colorTextInfo"
+                android:textSize="@dimen/h6"
+                android:layout_marginBottom="@dimen/spacing_small" />
+
         </LinearLayout>
 
         <include layout="@layout/shared_event_layout" />
