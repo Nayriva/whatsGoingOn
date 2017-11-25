@@ -4,6 +4,8 @@ package ee.ut.madp.whatsgoingon.database;
 import android.provider.BaseColumns;
 
 /**
+ * Class specifying contracts for databases.
+ *
  * Created by dominikf on 18. 11. 2017.
  */
 

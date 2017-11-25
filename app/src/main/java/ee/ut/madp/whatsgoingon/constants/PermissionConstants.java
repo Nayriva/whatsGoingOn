@@ -1,6 +1,8 @@
 package ee.ut.madp.whatsgoingon.constants;
 
 /**
+ * Contacts for permissions.
+ *
  * Created by admin on 24.11.2017.
  */
 

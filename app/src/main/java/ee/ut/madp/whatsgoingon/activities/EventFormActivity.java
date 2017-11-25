@@ -53,12 +53,12 @@ import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.EventCalendarHelper;
 import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
-import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
+import ee.ut.madp.whatsgoingon.helpers.TextWatcherHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.Event;
-import ee.ut.madp.whatsgoingon.models.GoogleAccountHelper;
+import ee.ut.madp.whatsgoingon.helpers.GoogleAccountHelper;
 import ee.ut.madp.whatsgoingon.reminder.ReminderManager;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_REMINDERS;
@@ -69,7 +69,7 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_ACCOUNT_NA
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_ACCOUNT_PICKER;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_AUTHORIZATION;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_GOOGLE_PLAY_SERVICES;
-import static ee.ut.madp.whatsgoingon.models.GoogleAccountHelper.getGoogleAccountCredential;
+import static ee.ut.madp.whatsgoingon.helpers.GoogleAccountHelper.getGoogleAccountCredential;
 
 /**
  * Activity displays form for event. This form can be used for creating, editing or just viewing
@@ -209,7 +209,7 @@ public class EventFormActivity extends AppCompatActivity
         addEventButton.setAlpha(1);
         synchronizeEventButton.setAlpha(1);
         synchronizeEventButton.setEnabled(true);
-        MyTextWatcherHelper.clearAllInputs(inputLayoutList);
+        TextWatcherHelper.clearAllInputs(inputLayoutList);
     }
 
     @Override
@@ -218,7 +218,7 @@ public class EventFormActivity extends AppCompatActivity
         if (date.isErrorEnabled() || time.isErrorEnabled()) {
             inputLayoutList.remove(time);
             inputLayoutList.remove(date);
-            MyTextWatcherHelper.clearAllInputs(inputLayoutList);
+            TextWatcherHelper.clearAllInputs(inputLayoutList);
         }
 
         for (ValidationError error : errors) {
@@ -513,7 +513,7 @@ public class EventFormActivity extends AppCompatActivity
             add(time);
         }};
 
-        MyTextWatcherHelper.setTextWatcherListeners(inputLayoutList, validator);
+        TextWatcherHelper.setTextWatcherListeners(inputLayoutList, validator);
 
         addEventButton.setEnabled(false);
         addEventButton.setAlpha(0.7f);

@@ -5,6 +5,7 @@ import java.util.Comparator;
 import ee.ut.madp.whatsgoingon.models.Event;
 
 /**
+ * Comparator for sorting events. Events are sorted by time. First events are happening sooner on day.
  * Created by dominikf on 9. 11. 2017.
  */
 

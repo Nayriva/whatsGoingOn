@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Class represents event created and managed by user.
+ *
  * Created by admin on 28.10.2017.
  */
 

@@ -1,5 +1,7 @@
 package ee.ut.madp.whatsgoingon.helpers;
 
+import android.util.Log;
+
 /**
  * Helper for generating and parsing chat messages.
  *
@@ -15,6 +17,9 @@ package ee.ut.madp.whatsgoingon.helpers;
  */
 
 public class ChatHelper {
+
+    private static final String TAG = ChatHelper.class.getSimpleName();
+
     private static String delimiter = "~&&~";
     private static String groupReceiversDelimiter = "~&&&~";
     public static final String ADVERTISE_MESSAGE = "A";
@@ -30,14 +35,8 @@ public class ChatHelper {
 
     //ONE TO ONE
 
-    /**
-     * Constructs one-to-one chat message with defined format
-     * @param sender sender display name of message
-     * @param receiver receiver display name of message
-     * @param text content of message
-     * @return one-to-one message for chat in correct format
-     */
     public static String oneToOneMessage(String sender, String senderDisplayName, String receiver, String text) {
+        Log.i(TAG, "oneToOneMessage");
         return ONE_TO_ONE_MESSAGE +
                 delimiter +
                 sender +
@@ -49,69 +48,41 @@ public class ChatHelper {
                 text;
     }
 
-    /**
-     * Validator for one-to-one messages
-     * @param receivedMessage message to be validated
-     * @return true if message is in one-to-one format, false otherwise
-     */
     public static boolean isOneToOneMessage(String receivedMessage) {
+        Log.i(TAG, "isOneToOneMessage");
         String[] parts = receivedMessage.split(delimiter);
         return "S".equals(parts[0]);
     }
 
-    /**
-     * Extractor of sender from one-to-one message
-     * @param receivedMessage message from which the sender should be extracted
-     * @return sender of message if found, null otherwise
-     */
     public static String oneToOneMessageSender(String receivedMessage) {
+        Log.i(TAG, "oneToOneMessageSender");
         String[] parts = receivedMessage.split(delimiter);
         return parts[1];
     }
 
-    /**
-     * Extractor of sender's display name from one-to-one message
-     * @param receivedMessage message from which the display name should be extracted
-     * @return sender's display name if found, null otherwise
-     */
     public static String oneToOneMessageSenderDisplayName(String receivedMessage) {
+        Log.i(TAG, "oneToOneMessageSenderDisplayName");
         String[] parts = receivedMessage.split(delimiter);
         return parts[2];
     }
 
-    /**
-     * Extractor of receiver from one-to-one message
-     * @param receivedMessage message from which the receiver should be extracted
-     * @return receiver of message if found, null otherwise
-     */
     public static String oneToOneMessageReceiver(String receivedMessage) {
+        Log.i(TAG, "oneToOneMessageReceiver");
         String[] parts = receivedMessage.split(delimiter);
         return parts[3];
     }
 
-    /**
-     * Extractor of message text from one-to-one message
-     * @param receivedMessage message from which the text should be extracted
-     * @return text of message, null otherwise
-     */
     public static String oneToOneMessageText(String receivedMessage) {
+        Log.i(TAG, "oneToOneMessageText");
         String[] parts = receivedMessage.split(delimiter);
         return parts[4];
     }
 
     //GROUP
 
-    /**
-     * Constructs group chat message with defined format
-     * @param sender sender of message
-     * @param authorDisplayName display name of sender
-     * @param gid id of group
-     * @param receivers array of receivers
-     * @param text text of message
-     * @return constructed message in defined format
-     */
     public static String groupMessage(String sender, String authorDisplayName,
                                       String gid, String[] receivers, String text ) {
+        Log.i(TAG, "groupMessage");
         StringBuilder message = new StringBuilder();
         message.append(GROUP_MESSAGE);
         message.append(delimiter);
@@ -132,31 +103,37 @@ public class ChatHelper {
     }
 
     public static boolean isGroupMessage(String receivedMessage) {
+        Log.i(TAG, "isGroupMessage");
         String[] parts = receivedMessage.split(delimiter);
         return "G".equals(parts[0]);
     }
 
     public static String groupMessageSender(String receivedMessage) {
+        Log.i(TAG, "groupMessageSender");
         String[] parts = receivedMessage.split(delimiter);
         return parts[1];
     }
 
     public static String groupMessageSenderDisplayName(String receivedMessage) {
+        Log.i(TAG, "groupMessageSenderDisplayName");
         String[] parts = receivedMessage.split(delimiter);
         return parts[2];
     }
 
     public static String groupMessageGID(String receivedMessage) {
+        Log.i(TAG, "groupMessageGID");
         String[] parts = receivedMessage.split(delimiter);
         return parts[3];
     }
 
     public static String[] groupMessageReceivers(String receivedMessage) {
+        Log.i(TAG, "groupMessageReceivers");
         String[] parts = receivedMessage.split(delimiter);
         return parts[4].split(groupReceiversDelimiter);
     }
 
     public static String groupMessageText(String receivedMessage) {
+        Log.i(TAG, "grouPmessageText");
         String[] parts = receivedMessage.split(delimiter);
         return parts[5];
     }
@@ -164,17 +141,20 @@ public class ChatHelper {
     //ADVERTISE
 
     public static String advertiseMessage(String uid) {
+        Log.i(TAG, "advertiseMessage");
         return ADVERTISE_MESSAGE +
                 delimiter +
                 uid;
     }
 
     public static boolean isAdvertiseMessage(String receivedMessage) {
+        Log.i(TAG, "isAdvertiseMessage");
         String[] parts = receivedMessage.split(delimiter);
         return parts[0].equals("A");
     }
 
     public static String advertiseMessageDisplayName(String receivedMessage) {
+        Log.i(TAG, "advertiseMessageDisplayName");
         String[] parts = receivedMessage.split(delimiter);
         return parts[1];
     }
@@ -182,6 +162,7 @@ public class ChatHelper {
     //GROUP ADVERTISE
 
     public static String groupAdvertiseMessage(String id, String[] receivers) {
+        Log.i(TAG, "groupAdvertiseMessage");
         String msg = GROUP_ADVERTISE_MESSAGE +
                 delimiter +
                 id +
@@ -197,11 +178,13 @@ public class ChatHelper {
     }
 
     public static String groupAdvertiseMessageId(String receivedMsg) {
+        Log.i(TAG, "groupAdvertiseMessageId");
         String[] parts = receivedMsg.split(delimiter);
         return parts[1];
     }
 
     public static String[] groupAdvertiseMessageReceivers(String receivedMsg) {
+        Log.i(TAG, "groupAdvertiseMessageReceivers");
         String[] parts = receivedMsg.split(delimiter);
         return parts[2].split(groupReceiversDelimiter);
     }
@@ -209,12 +192,14 @@ public class ChatHelper {
     //CANCEL ADVERTISE
 
     public static String cancelAdvertiseMessage(String id) {
+        Log.i(TAG, "cancelAdvertiseMessage");
         return CANCEL_ADVERTISE_MESSAGE +
                 delimiter +
                 id;
     }
 
     public static String cancelAdvertiseMessageSender(String receivedMsg) {
+        Log.i(TAG, "cancelAdvertiseMessageSender");
         String[] parts = receivedMsg.split(delimiter);
         return parts[1];
     }
@@ -222,6 +207,7 @@ public class ChatHelper {
     //GROUP RECEIVERS CHANGED
 
     public static String groupReceiversChanged(String gid, String[] receivers) {
+        Log.i(TAG, "groupReceiversChanged");
         String msg = GROUP_RECEIVERS_CHANGED_MESSAGE
                 + delimiter
                 + gid
@@ -237,11 +223,13 @@ public class ChatHelper {
     }
 
     public static String groupReceiversChangedGid(String receivedMsg) {
+        Log.i(TAG, "groupReceiversChangedGid");
         String[] parts = receivedMsg.split(delimiter);
         return parts[1];
     }
 
     public static String[] groupReceiversChangedReceivers(String receivedMsg) {
+        Log.i(TAG, "groupReceiversChangedReceivers");
         String[] parts = receivedMsg.split(delimiter);
         return parts[2].split(groupReceiversDelimiter);
     }
@@ -249,12 +237,14 @@ public class ChatHelper {
     //GROUP DELETED
 
     public static String groupDeleted(String gid) {
+        Log.i(TAG, "groupDeleted");
         return GROUP_DELETED_MESSAGE +
                 delimiter +
                 gid;
     }
 
     public static String groupDeletedGid(String receivedMsg) {
+        Log.i(TAG, "groupDeletedGid");
         String[] parts = receivedMsg.split(delimiter);
         return parts[1];
     }
@@ -262,15 +252,18 @@ public class ChatHelper {
     //COMMON
 
     public static String getMessageType(String receivedMessage) {
+        Log.i(TAG, "getMessageType");
         String[] parts = receivedMessage.split(delimiter);
         return parts[0];
     }
 
     public static String imageText(String base64) {
+        Log.i(TAG, "imageText");
         return IMAGE_TEXT + base64;
     }
 
     public static boolean isImageText(String text) {
+        Log.i(TAG, "isImageText");
         if (text.length() <= IMAGE_TEXT.length()) {
             return false;
         }
@@ -279,15 +272,18 @@ public class ChatHelper {
     }
 
     public static String getImageBase64(String messageText) {
+        Log.i(TAG, "getImageBase64");
         messageText = messageText.replace(IMAGE_TEXT, "");
         return messageText;
     }
 
     public static String eventText(String eventText) {
+        Log.i(TAG, "eventText");
         return EVENT_TEXT + eventText;
     }
 
     public static boolean isEventText(String text) {
+        Log.i(TAG, "isEventText");
         if (text.length() <= IMAGE_TEXT.length()) {
             return false;
         }
@@ -296,15 +292,18 @@ public class ChatHelper {
     }
 
     public static String getEventText(String messageText) {
+        Log.i(TAG, "getEventText");
         messageText = messageText.replace(EVENT_TEXT, "");
         return messageText;
     }
 
     public static String encodeEventMessage(String eventId, String eventName, String eventInfo) {
+        Log.i(TAG, "encodeEventMessage");
         return eventId + EVENT_DELIMITER + eventName + EVENT_DELIMITER + eventInfo;
     }
 
     public static String[] decodeEventMessage(String eventMessage) {
+        Log.i(TAG, "decodeEventMessage");
         //[0] - eventID
         //[1] - eventName
         //[3] - eventInfo

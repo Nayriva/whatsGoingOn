@@ -8,6 +8,8 @@ import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 
 /**
+ * Comparator used for sorting of ChatChannels. Sorting is based on how old the last message is.
+ *
  * Created by dominikf on 9. 11. 2017.
  */
 
