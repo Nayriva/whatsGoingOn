@@ -3,6 +3,7 @@ package ee.ut.madp.whatsgoingon.adapters;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,19 +21,25 @@ import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_CHANNEL_ID;
 
 /**
+ * Adapter of chat channels for recycler view. Implements as well onClick handling.
+ *
  * Created by admin on 27.10.2017.
  */
 
 public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.ChatChannelViewHolder> {
 
+    private static final String TAG = ChatChannelAdapter.class.getSimpleName();
+
     private List<ChatChannel> channelList;
 
     public ChatChannelAdapter(List<ChatChannel> channelList) {
+        Log.i(TAG, "constructor: " + channelList);
         this.channelList = channelList;
     }
 
     @Override
     public ChatChannelViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Log.i(TAG, "onCreateViewHolder");
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_chat_channels, parent, false);
 
@@ -41,6 +48,7 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
 
     @Override
     public void onBindViewHolder(ChatChannelViewHolder holder, int position) {
+        Log.i(TAG, "onBindViewHolder");
         ChatChannel chatChannel = channelList.get(position);
         String photo = chatChannel.getPhoto();
 
@@ -59,18 +67,22 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
 
     @Override
     public int getItemCount() {
+        Log.i(TAG, "getItemCount");
         return channelList.size();
     }
 
     public void addChannel(ChatChannel foundChannel) {
+        Log.i(TAG, "addChannel: " + foundChannel);
         channelList.add(foundChannel);
     }
 
     public void removeChannel(ChatChannel channel) {
+        Log.i(TAG, "removeChannel: " + channel);
         channelList.remove(channel);
     }
 
     public ChatChannel getChannelById(String id) {
+        Log.i(TAG, "getChannelById: " + id);
         for (ChatChannel chatChannel: channelList) {
             if (chatChannel.getId().equals(id)) {
                 return chatChannel;
@@ -80,10 +92,12 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
     }
 
     public List<ChatChannel> getChannels() {
+        Log.i(TAG, "getChannels");
         return channelList;
     }
 
     public void clearChannels() {
+        Log.i(TAG, "clearChannels");
         channelList.clear();
     }
 
@@ -96,6 +110,7 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
 
         public ChatChannelViewHolder(View view) {
             super(view);
+            Log.i(TAG, "ChatChannelViewHolder.constructor");
             photo = (CircleImageView) view.findViewById(R.id.iv_user_photo);
             photo.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -119,6 +134,7 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
 
         @Override
         public void onClick(View v) {
+            Log.i(TAG, "ChatChannelViewHolder.onClick");
             ChatChannel chatChannel = channelList.get(getAdapterPosition());
             chatChannel.setNewMessage(false);
             Intent intent = new Intent(v.getContext(), ConversationActivity.class);

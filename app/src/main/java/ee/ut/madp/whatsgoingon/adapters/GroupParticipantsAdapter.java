@@ -3,6 +3,7 @@ package ee.ut.madp.whatsgoingon.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,10 +24,15 @@ import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.GroupParticipant;
 
 /**
+ * Adapter of channels for dialogs to pick channels as participants of group.
+ *
  * Created by dominikf on 3. 10. 2017.
  */
 
 public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
+
+    private static final String TAG = GroupParticipantsAdapter.class.getSimpleName();
+
     private Context context;
     private int layoutResourceId;
     private List<GroupParticipant> data = null;
@@ -35,6 +41,7 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
 
     public GroupParticipantsAdapter(Context context, int resource, List<GroupParticipant> participants) {
         super(context, resource, participants);
+        Log.i(TAG, "constructor");
         this.layoutResourceId = resource;
         this.context = context;
         this.data = participants;
@@ -44,6 +51,7 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
     @NonNull
     @Override
     public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
+        Log.i(TAG, "getView");
         View row = convertView;
         ChatChannelHolder holder;
 
@@ -92,10 +100,12 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
 
     @Override
     public boolean isEmpty() {
+        Log.i(TAG, "isEmpty");
         return data.isEmpty();
     }
 
     public List<GroupParticipant> getItems() {
+        Log.i(TAG, "getItems");
         return data;
     }
 
@@ -105,30 +115,25 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
 
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
+                Log.i(TAG, "Filter.performFiltering");
                 constraint = constraint.toString().toLowerCase();
                 FilterResults result = new FilterResults();
 
-                if (constraint != null) {
-                    List<GroupParticipant> found = new ArrayList<>();
-                    for (GroupParticipant item : origData) {
-                        if (item.getName().toLowerCase().contains(constraint)) {
-                            found.add(item);
-                        }
+                List<GroupParticipant> found = new ArrayList<>();
+                for (GroupParticipant item : origData) {
+                    if (item.getName().toLowerCase().contains(constraint)) {
+                        found.add(item);
                     }
 
                     result.values = found;
                     result.count = found.size();
-                } else {
-                    result.values = origData;
-                    result.count = origData.size();
                 }
                 return result;
-
-
             }
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
+                Log.i(TAG, "Filter.publishResults");
                 clear();
                 // TODO wait until its set
                 for (GroupParticipant item : (List<GroupParticipant>) results.values) {
@@ -136,17 +141,17 @@ public class GroupParticipantsAdapter extends ArrayAdapter<GroupParticipant> {
                 }
 
                 notifyDataSetChanged();
-
             }
-
         };
     }
 
     public List<GroupParticipant> getPickedParticipants() {
+        Log.i(TAG, "getPickedParticipants");
         return pickedParticipants;
     }
 
     public void setPickedParticipants(List<GroupParticipant> pickedParticipants) {
+        Log.i(TAG, "setPickedParticipants");
         this.pickedParticipants = pickedParticipants;
     }
 }

@@ -46,6 +46,9 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_DAY_REQUE
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EDITED_EVENT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_DAY;
 
+/**
+ * Activity displays list of events for one selected day.
+ */
 public class EventsOnDayActivity extends AppCompatActivity implements Observer {
 
     private static final String TAG = EventsOnDayActivity.class.getSimpleName();

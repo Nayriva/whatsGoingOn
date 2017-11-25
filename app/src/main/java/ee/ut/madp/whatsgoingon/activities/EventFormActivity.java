@@ -1,5 +1,6 @@
 package ee.ut.madp.whatsgoingon.activities;
 
+import android.Manifest;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Context;
@@ -9,7 +10,9 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -58,20 +61,26 @@ import ee.ut.madp.whatsgoingon.models.Event;
 import ee.ut.madp.whatsgoingon.models.GoogleAccountHelper;
 import ee.ut.madp.whatsgoingon.reminder.ReminderManager;
 
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_REMINDERS;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_REMINDER_HOURS_BEFORE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_ID;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_ACCOUNT_NAME;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_REMINDERS;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_REMINDER_HOURS_BEFORE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_ACCOUNT_PICKER;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_AUTHORIZATION;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_GOOGLE_PLAY_SERVICES;
 import static ee.ut.madp.whatsgoingon.models.GoogleAccountHelper.getGoogleAccountCredential;
 
+/**
+ * Activity displays form for event. This form can be used for creating, editing or just viewing
+ * (with possibility to join) of event. Only owner of the event can edit / delete event. Non-owner
+ * can join the event.
+ */
 public class EventFormActivity extends AppCompatActivity
         implements Validator.ValidationListener, Observer {
 
     private static final int SHARE_EVENT_REQUEST_CODE = 1;
+    private static final String TAG = EventFormActivity.class.getSimpleName();
     @NotEmpty
     @BindView(R.id.input_layout_eventname) TextInputLayout eventName;
     @NotEmpty
@@ -103,6 +112,7 @@ public class EventFormActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form_event);
         ButterKnife.bind(this);
@@ -125,6 +135,7 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     private void setupInfoAboutEvent() {
+        Log.i(TAG, "setupInfoAboutEvent");
         attendants = getIntent().getStringArrayListExtra(GeneralConstants.EXTRA_EVENT_ATTENDANTS);
         event.setAttendantIds(attendants);
         canEdit = UserHelper.getCurrentUserId().equals(event.getOwner());
@@ -132,9 +143,11 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     private void retrieveEventFromFirebase(String eventId) {
+        Log.i (TAG, "retrieveEventFromFirebase: " + eventId);
         eventsRef.child(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "retrieveEventFromFirebase.onDataChange");
                 event = dataSnapshot.getValue(Event.class);
                 setupContent();
             }
@@ -147,6 +160,7 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     private void setupContent() {
+        Log.i(TAG, "setupContent");
         setupInfoAboutEvent();
         setValidation();
         eventNameInput.setText(event.getName());
@@ -177,10 +191,10 @@ public class EventFormActivity extends AppCompatActivity
         synchronizeEventButton.setEnabled(true);
         synchronizeEventButton.setAlpha(1);
         setTitle(event.getName());
-
     }
 
     private void lockEdits() {
+        Log.i(TAG, "lockEdits");
         eventNameInput.setEnabled(false);
         eventPlaceInput.setEnabled(false);
         dateInput.setEnabled(false);
@@ -189,13 +203,8 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        application.deleteObserver(this);
-    }
-
-    @Override
     public void onValidationSucceeded() {
+        Log.i(TAG, "onValidationSucceeded");
         addEventButton.setEnabled(true);
         addEventButton.setAlpha(1);
         synchronizeEventButton.setAlpha(1);
@@ -205,6 +214,7 @@ public class EventFormActivity extends AppCompatActivity
 
     @Override
     public void onValidationFailed(List<ValidationError> errors) {
+        Log.i(TAG, "onValidationFailed: " + errors);
         if (date.isErrorEnabled() || time.isErrorEnabled()) {
             inputLayoutList.remove(time);
             inputLayoutList.remove(date);
@@ -227,6 +237,7 @@ public class EventFormActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.i(TAG, "onCreateOptionsMenu");
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.event_share_menu, menu);
         return true;
@@ -234,6 +245,7 @@ public class EventFormActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.i(TAG, "onOptionsItemSelected");
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.home: {
@@ -270,6 +282,7 @@ public class EventFormActivity extends AppCompatActivity
 
     @OnClick(R.id.btn_add_event)
     public void createEvent() {
+        Log.i(TAG, "createEvent");
         Event createdEvent = collectEventData(false);
         storeEvent(createdEvent, getString(R.string.message_saved_event));
 
@@ -291,6 +304,7 @@ public class EventFormActivity extends AppCompatActivity
 
     @OnClick(R.id.btn_edit_event)
     public void editEvent() {
+        Log.i(TAG, "editEvent");
         Event editedEvent = collectEventData(true);
         storeEvent(editedEvent, getString(R.string.success_message_edit_event));
         EventCalendarHelper.updateEvent(EventFormActivity.this, editedEvent);
@@ -304,6 +318,7 @@ public class EventFormActivity extends AppCompatActivity
 
     @OnClick(R.id.btn_delete_event)
     public void deleteEvent() {
+        Log.i(TAG, "deleteEvent");
         if (event != null && canEdit) {
             eventsRef.child(event.getId()).removeValue();
             if (event.getEventId() != 0 || event.getGoogleEventId() != null) EventCalendarHelper.deleteEvent(this, event.getEventId(), event.getGoogleEventId());
@@ -318,6 +333,7 @@ public class EventFormActivity extends AppCompatActivity
 
     @OnClick(R.id.input_time)
     public void showTimeDialog() {
+        Log.i(TAG, "showTimeDialog");
         time.setError(null);
         time.setErrorEnabled(false);
         if (event == null) {
@@ -329,6 +345,7 @@ public class EventFormActivity extends AppCompatActivity
 
     @OnClick(R.id.input_date)
     public void showDateDialog() {
+        Log.i(TAG, "showDateDialog");
         date.setError(null);
         date.setErrorEnabled(false);
         if (event == null) {
@@ -340,6 +357,7 @@ public class EventFormActivity extends AppCompatActivity
 
     @OnClick(R.id.btn_join_event)
     public void joinEvent() {
+        Log.i(TAG, "joinEvent");
         if (event != null) {
             boolean oldJoined = event.isJoined();
             if (!event.isJoined()) {
@@ -361,12 +379,22 @@ public class EventFormActivity extends AppCompatActivity
 
     @OnClick(R.id.btn_synchronize)
     public void synchronizeEvents() {
+        Log.i(TAG, "synchronizeEvents");
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_CALENDAR},
+                    PermissionConstants.PERMISSION_REQUEST_WRITE_CALENDAR);
+
+            return;
+        }
+
         DialogHelper.showCalendarSyncDialog(this);
     }
 
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case REQUEST_GOOGLE_PLAY_SERVICES:
@@ -403,10 +431,25 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        Log.i(TAG, "onResume");
+        super.onResume();
+        application.addObserver(this);
+    }
+
+    @Override
+    protected void onPause() {
+        Log.i(TAG, "onPause");
+        super.onPause();
+        application.deleteObserver(this);
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
+        Log.i(TAG, "onRequestPermissionsResult");
         switch (requestCode) {
-            case PermissionConstants.PERMISSIONS_GROUP_TWO: {
+            case PermissionConstants.PERMISSION_REQUEST_WRITE_CALENDAR: {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     synchronizeEvents();
                     Toast.makeText(EventFormActivity.this, "Permission was granted", Toast.LENGTH_LONG).show();
@@ -422,6 +465,7 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     private Event collectEventData(boolean isEdit) {
+        Log.i(TAG, "collectEventData: " + isEdit);
         String eventName = String.valueOf(eventNameInput.getText());
         String description = String.valueOf(descriptionInput.getText());
         String place = String.valueOf(eventPlaceInput.getText());
@@ -445,6 +489,7 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     private void setValidation() {
+        Log.i(TAG, "setValidation");
         Validator validator = new Validator(this);
         validator.setValidationListener(this);
 
@@ -478,6 +523,7 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     private void storeEvent(Event event, String message) {
+        Log.i(TAG, "storeEvent");
         String id;
         if (event.getId() == null) {
             id = eventsRef.push().getKey();
@@ -491,6 +537,7 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     private void shareEvent(Event event) {
+        Log.i(TAG, "shareEvent");
         Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
         sharingIntent.putExtra(EXTRA_EVENT_ID, event.getId());
         sharingIntent.setType("text/plain");
@@ -502,6 +549,7 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     public static Event getEvent() {
+        Log.i(TAG, "getEvent");
         return event;
     }
 }

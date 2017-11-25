@@ -1,13 +1,10 @@
 package ee.ut.madp.whatsgoingon.adapters;
 
-/**
- * Created by admin on 28.10.2017.
- */
-
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,32 +24,40 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_ATT
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT;
 
 /**
+ * Adapter of events for RecyclerView. Implements onClick listener as well.
+ *
  * Created by admin on 27.10.2017.
  */
 
-public class EventAdapter extends RecyclerView.Adapter<EventAdapter.MyViewHolder> {
+public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
+
+    private static final String TAG = EventAdapter.class.getSimpleName();
     private List<Event> eventList;
     private Activity context;
 
     public EventAdapter(Activity context, List<Event> eventList) {
+        Log.i(TAG, "constructor");
         this.eventList = eventList;
         this.context = context;
     }
 
     public List<Event> getData() {
+        Log.i(TAG, "getData");
         return eventList;
     }
 
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public EventViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Log.i(TAG, "onCreateViewHolder");
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_event_row, parent, false);
 
-        return new MyViewHolder(itemView);
+        return new EventViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(EventViewHolder holder, int position) {
+        Log.i(TAG, "onBindViewHolder");
         Event event = eventList.get(position);
         holder.eventName.setText(event.getName());
         if (UserHelper.getCurrentUserId().equals(event.getOwner())) {
@@ -68,16 +73,18 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.MyViewHolder
 
     @Override
     public int getItemCount() {
+        Log.i(TAG, "getItemCount");
         return eventList.size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class EventViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         TextView eventName;
         TextView eventType;
         TextView eventTime;
 
-        public MyViewHolder(View view) {
+        public EventViewHolder(View view) {
             super(view);
+            Log.i(TAG, "EventViewHolder.constructor");
             eventName = (TextView) view.findViewById(R.id.event_name);
             eventType = (TextView) view.findViewById(R.id.event_type);
             eventTime = (TextView) view.findViewById(R.id.event_time);
@@ -87,6 +94,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.MyViewHolder
 
         @Override
         public void onClick(View v) {
+            Log.i(TAG, "EventViewHolder.onClick");
             Event event = eventList.get(getAdapterPosition());
             Intent intent = new Intent(v.getContext(), EventFormActivity.class);
             intent.putStringArrayListExtra(EXTRA_EVENT_ATTENDANTS, (ArrayList<String>) event.getAttendantIds());

@@ -1,6 +1,5 @@
 package ee.ut.madp.whatsgoingon.activities;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

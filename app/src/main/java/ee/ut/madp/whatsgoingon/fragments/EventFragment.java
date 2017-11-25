@@ -147,7 +147,7 @@ public class EventFragment extends Fragment implements Observer {
                 if (daysWithEvents.contains(DateHelper.removeTimeFromDate(date))) {
                     Intent intent = new Intent(getActivity(), EventsOnDayActivity.class);
                     intent.putExtra(EXTRA_EVENT_DAY, DateHelper.removeTimeFromDate(date).getTime());
-                    getActivity().startActivityForResult(intent, EVENTS_REQUEST_CODE);
+                    startActivityForResult(intent, EVENTS_REQUEST_CODE);
                 }
             }
 

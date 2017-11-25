@@ -37,6 +37,10 @@ import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_USERS;
 
+/**
+ * Main activity of the application. This serves as a central point for starting other activities.
+ * Activity also contains one of two fragments (ChatChannelsFragment or EventFragment)
+ */
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -47,7 +51,7 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @BindView(R.id.toolbar) Toolbar toolbar;
 
-    private String activeFragment = "Chat";
+    private String activeFragment = "chat";
     private ApplicationClass application;
     private DatabaseReference userRef;
     private ValueEventListener valueEventListener;
@@ -69,7 +73,7 @@ public class MainActivity extends AppCompatActivity
         setUpDrawer();
         setupDataForDrawer();
         if (savedInstanceState == null) {
-            setUpFragment("Chat");
+            setUpFragment("chat");
         } else {
             activeFragment = savedInstanceState.getString(LAST_ACTIVE_FRAGMENT);
             setTitle(activeFragment);
@@ -90,7 +94,7 @@ public class MainActivity extends AppCompatActivity
         userRef.addValueEventListener(valueEventListener);
 
         if (activeFragment != null) {
-            if (activeFragment.equals("Chat")) {
+            if (activeFragment.equals("chat")) {
                 navigationView.setCheckedItem(R.id.nav_chat);
             } else if (activeFragment.equals("Events")) {
                 navigationView.setCheckedItem(R.id.nav_events);
@@ -139,7 +143,7 @@ public class MainActivity extends AppCompatActivity
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment fragment = null;
         try {
-            if (type.equalsIgnoreCase("Chat")) {
+            if (type.equalsIgnoreCase("chat")) {
                 fragment = ChatChannelsFragment.class.newInstance();
                 navigationView.setCheckedItem(R.id.nav_chat);
             } else if (type.equalsIgnoreCase("Events")) {
@@ -185,7 +189,7 @@ public class MainActivity extends AppCompatActivity
         switch (menuItem.getItemId()) {
             case R.id.nav_chat:
                 fragmentClass = ChatChannelsFragment.class;
-                activeFragment = "Chat";
+                activeFragment = "chat";
                 break;
             case R.id.nav_events:
                 fragmentClass = EventFragment.class;

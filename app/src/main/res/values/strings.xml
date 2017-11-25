@@ -205,8 +205,9 @@
     <string name="btn_share_event">Share event</string>
     <string name="succes_message_shared_event">Event has been shared</string>
     <string name="event_processing">Event is being processed</string>
-    <string name="sent_picture">Sent you a picture</string>
-    <string name="shared_event">Shared an event with you</string>
+    <string name="sent_picture">Picture</string>
+    <string name="shared_event">Event</string>
     <string name="synchronized_event">Event has been synchronized</string>
+>>>>>>> eee39547052e2b11e830d48c613c3446c910b591
 
 </resources>

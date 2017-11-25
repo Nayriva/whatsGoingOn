@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,23 +26,30 @@ import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_ID;
 
 /**
+ * Adapter of chat messages to be displayed in conversations.
+ *
  * Created by admin on 27.10.2017.
  */
 
-public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHolder> {
+public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
+
+    private static final String TAG = MessageAdapter.class.getSimpleName();
+
     private List<ChatMessage> chatMessages;
     private Context context;
     private Map<String, String> photosMap;
 
     public MessageAdapter(Context context, List<ChatMessage> chatMessages, Map<String, String> photosMap) {
+        Log.i(TAG, "constructor");
         this.chatMessages = chatMessages;
         this.context = context;
         this.photosMap = photosMap;
     }
 
     @Override
-    public MessageAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        MyViewHolder viewHolder;
+    public MessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Log.i(TAG, "onCreateViewHolder");
+        MessageViewHolder viewHolder;
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = null;
         // isMe
@@ -50,12 +58,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
         } else if (viewType == 0) {
             view = inflater.inflate(R.layout.message_you, parent, false);
         }
-        viewHolder = new MyViewHolder(view);
+        viewHolder = new MessageViewHolder(view);
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(final MessageAdapter.MyViewHolder holder, int position) {
+    public void onBindViewHolder(final MessageViewHolder holder, int position) {
+        Log.i(TAG, "onBindViewHolder");
         ChatMessage chatMessage = chatMessages.get(position);
         holder.author.setText(chatMessage.getDisplayName());
         holder.messageTime.setText(DateHelper.createMessageTime(context, chatMessage.getMessageTime()));
@@ -112,27 +121,31 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
 
     @Override
     public int getItemViewType(int position) {
+        Log.i(TAG, "getItemViewType");
         return chatMessages.get(position).isMe() ? 1 : 0;
     }
 
     @Override
     public int getItemCount() {
+        Log.i(TAG, "getItemCount");
         return chatMessages.size();
     }
 
     private boolean isMe(int position) {
+        Log.i(TAG, "isMe");
         return chatMessages.get(position).isMe();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder  {
+    public class MessageViewHolder extends RecyclerView.ViewHolder  {
         TextView messageTime, message, author;
         CircleImageView photo;
         ImageView messagePicture;
         RelativeLayout messageEvent;
         TextView eventName, eventInfo;
 
-        public MyViewHolder(View view) {
+        public MessageViewHolder(View view) {
             super(view);
+            Log.i(TAG, "MessageViewHolder.constructor");
             message = (TextView) view.findViewById(R.id.tv_message_text);
             messageTime = (TextView) view.findViewById(R.id.tv_message_time);
             author = (TextView) view.findViewById(R.id.tv_message_author);

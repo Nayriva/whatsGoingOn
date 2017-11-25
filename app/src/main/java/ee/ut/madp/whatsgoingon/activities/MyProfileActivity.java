@@ -40,6 +40,9 @@ import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.User;
 
+/**
+ * Activity for editing of users profile.
+ */
 public class MyProfileActivity extends AppCompatActivity implements Observer {
 
     private static final String TAG = MyProfileActivity.class.getSimpleName();
