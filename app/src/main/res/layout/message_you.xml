@@ -44,7 +44,6 @@
             android:drawableLeft="@drawable/ic_clock"
             android:textColor="@color/colorTextInfo"
             android:textSize="@dimen/h6"
-            android:layout_toEndOf="@+id/tv_message_author"
             android:layout_marginBottom="@dimen/spacing_small" />
         </LinearLayout>
 
@@ -60,7 +59,7 @@
             android:visibility="gone"
             android:adjustViewBounds="true"
             android:background="@drawable/bg_message_me"
-            android:layout_below="@id/tv_message_time"/>
+            android:layout_below="@id/ll_auth_time"/>
 
         <TextView
             android:id="@+id/tv_message_text"
@@ -70,7 +69,7 @@
             android:textColor="@android:color/white"
             android:textSize="@dimen/h3"
             android:background="@drawable/bg_message_me"
-            android:layout_below="@id/tv_message_time"/>
+            android:layout_below="@id/ll_auth_time"/>
 
     </RelativeLayout>
 
