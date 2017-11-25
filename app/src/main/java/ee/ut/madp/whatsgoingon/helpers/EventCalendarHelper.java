@@ -59,13 +59,17 @@ public class EventCalendarHelper {
     }
 
     public static void updateEvent(Context context, ee.ut.madp.whatsgoingon.models.Event event) {
-        // update event in local calendar
-        ContentResolver cr = context.getContentResolver();
-        Uri eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.getEventId());
-        cr.update(eventUri, createEventValues(event), null, null);
-        // update event in Google calendar
-        new UpdateEventAsyncTask((EventFormActivity) context, EventCalendarHelper.initializeCalendarService(context),
-                EventFormActivity.getEvent().getGoogleEventId(), EventCalendarHelper.createGoogleEvent(event)).execute();
+        if (event.getEventId() != 0) {
+            // update event in local calendar
+            ContentResolver cr = context.getContentResolver();
+            Uri eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.getEventId());
+            cr.update(eventUri, createEventValues(event), null, null);
+        }
+
+        if (event.getGoogleEventId() != null)
+            // update event in Google calendar
+            new UpdateEventAsyncTask((EventFormActivity) context, EventCalendarHelper.initializeCalendarService(context),
+                    EventFormActivity.getEvent().getGoogleEventId(), EventCalendarHelper.createGoogleEvent(event)).execute();
 
     }
 
