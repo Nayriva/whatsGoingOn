@@ -27,7 +27,9 @@ import java.util.HashMap;
 
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
+import ee.ut.madp.whatsgoingon.asynctasks.DeleteEventAsyncTask;
 import ee.ut.madp.whatsgoingon.asynctasks.InsertEventAsyncTask;
+import ee.ut.madp.whatsgoingon.asynctasks.UpdateEventAsyncTask;
 import ee.ut.madp.whatsgoingon.constants.PermissionConstants;
 import ee.ut.madp.whatsgoingon.models.GoogleAccountHelper;
 
@@ -56,15 +58,24 @@ public class EventCalendarHelper {
     }
 
     public static void updateEvent(Context context, ee.ut.madp.whatsgoingon.models.Event event) {
+        // update event in local calendar
         ContentResolver cr = context.getContentResolver();
         Uri eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.getEventId());
         cr.update(eventUri, createEventValues(event), null, null);
+        // update event in Google calendar
+        new UpdateEventAsyncTask((EventFormActivity) context, EventCalendarHelper.initializeCalendarService(context),
+                event.getGoogleEventId(), EventCalendarHelper.createGoogleEvent(event)).execute();
 
     }
 
-    public static void deleteEvent(Context context, long id) {
-        Uri eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, id);
+    public static void deleteEvent(Context context, long eventId, String googleEventId) {
+        // delete event from local calendar
+        Uri eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId);
         context.getContentResolver().delete(eventUri, null, null);
+        // delete vent from Google calendar
+        if (googleEventId != null)
+            new DeleteEventAsyncTask((EventFormActivity) context, EventCalendarHelper.initializeCalendarService(context),
+                    googleEventId).execute();
 
     }
 
@@ -93,7 +104,7 @@ public class EventCalendarHelper {
                     PermissionConstants.PERMISSION_REQUEST_WRITE_CALENDAR);
             return;
         }
-        Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, createEventValues(context, event));
+        Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, createEventValues(event));
         long eventID = Long.parseLong(uri.getLastPathSegment());
         EventFormActivity.getEvent().setEventId(eventID);
 
@@ -119,7 +130,7 @@ public class EventCalendarHelper {
         }
 
         Calendar service = initializeCalendarService(context);
-        new InsertEventAsyncTask((EventFormActivity) context, service, createGoogleEvent(event)).execute();
+        new InsertEventAsyncTask((EventFormActivity) context, service, event.getId(), createGoogleEvent(event)).execute();
 
     }
 
@@ -132,7 +143,7 @@ public class EventCalendarHelper {
                 .build();
     }
 
-    private static Event createGoogleEvent(ee.ut.madp.whatsgoingon.models.Event event) {
+    public static Event createGoogleEvent(ee.ut.madp.whatsgoingon.models.Event event) {
         Event newEvent = new Event()
                 .setSummary(event.getName())
                 .setLocation(event.getPlace())

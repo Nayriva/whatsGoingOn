@@ -14,7 +14,7 @@ import java.util.List;
 
 public class Event implements Parcelable {
     //date for filtering
-    private String id, name, description, owner, place;
+    private String id, name, description, owner, place, googleEventId;
     // id in calendar
     private long eventId;
     private long dateTime, date;
@@ -42,6 +42,7 @@ public class Event implements Parcelable {
     protected Event(Parcel in) {
         id = in.readString();
         eventId = in.readLong();
+        googleEventId = in.readString();
         name = in.readString();
         place = in.readString();
         description = in.readString();
@@ -70,6 +71,14 @@ public class Event implements Parcelable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getGoogleEventId() {
+        return googleEventId;
+    }
+
+    public void setGoogleEventId(String googleEventId) {
+        this.googleEventId = googleEventId;
     }
 
     public String getName() {
@@ -153,6 +162,7 @@ public class Event implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(id);
         dest.writeLong(eventId);
+        dest.writeString(googleEventId);
         dest.writeString(name);
         dest.writeString(place);
         dest.writeString(description);

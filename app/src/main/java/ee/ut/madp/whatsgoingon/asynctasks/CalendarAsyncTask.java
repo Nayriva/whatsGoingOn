@@ -20,7 +20,7 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_AUTHORI
  * Created by admin on 25.11.2017.
  */
 
-abstract class CalendarAsyncTask extends AsyncTask<Void, Void, Boolean> {
+abstract class CalendarAsyncTask extends AsyncTask<Void, Void, Void> {
 
     final EventFormActivity activity;
     final Calendar client;
@@ -31,16 +31,9 @@ abstract class CalendarAsyncTask extends AsyncTask<Void, Void, Boolean> {
     }
 
     @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        DialogHelper.showProgressDialog(activity, activity.getString(R.string.event_processing));
-    }
-
-    @Override
-    protected final Boolean doInBackground(Void... ignored) {
+    protected Void doInBackground(Void... params) {
         try {
             doInBackground();
-            return true;
         } catch (final GooglePlayServicesAvailabilityIOException availabilityException) {
             GoogleAccountHelper.showGooglePlayServicesAvailabilityErrorDialog(activity, availabilityException.getConnectionStatusCode());
         } catch (UserRecoverableAuthIOException userRecoverableException) {
@@ -49,14 +42,20 @@ abstract class CalendarAsyncTask extends AsyncTask<Void, Void, Boolean> {
         } catch (IOException e) {
             Log.e("CalendarAsyncTask", "Error occurred during handling Google calendar " + e.getMessage());
         }
-        return false;
+        return null;
     }
 
     @Override
-    protected final void onPostExecute(Boolean success) {
-        super.onPostExecute(success);
+    protected void onPreExecute() {
+        super.onPreExecute();
+        DialogHelper.showProgressDialog(activity, activity.getString(R.string.event_processing));
+    }
+
+    @Override
+    protected final void onPostExecute(Void ignored) {
+        super.onPostExecute(ignored);
         DialogHelper.hideProgressDialog();
     }
 
-    abstract protected void doInBackground() throws IOException;
+    protected abstract void doInBackground() throws IOException;
 }
