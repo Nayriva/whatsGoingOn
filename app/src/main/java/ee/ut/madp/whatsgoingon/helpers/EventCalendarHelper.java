@@ -164,7 +164,7 @@ public class EventCalendarHelper {
         DateTime endDateTime = new DateTime(event.getDateTime());
         EventDateTime end = new EventDateTime()
                 .setDateTime(endDateTime)
-                .setTimeZone("America/Los_Angeles");
+                .setTimeZone(tz.getID());
         newEvent.setEnd(end);
 
         return newEvent;

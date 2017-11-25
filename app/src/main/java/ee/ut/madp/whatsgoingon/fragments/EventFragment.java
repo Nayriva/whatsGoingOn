@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.res.ResourcesCompat;
@@ -14,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.api.client.util.DateTime;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -51,8 +49,8 @@ import ee.ut.madp.whatsgoingon.models.Event;
 
 import static android.app.Activity.RESULT_OK;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENTS_REQUEST_CODE;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_DAY_BECAME_EMPTY;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_DAY;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_DAY_BECAME_EMPTY;
 
 public class EventFragment extends Fragment implements Observer {
 
@@ -214,12 +212,10 @@ public class EventFragment extends Fragment implements Observer {
         public void decorate(DayView dayView) {
             Log.i(TAG, "EventColorDecorator.decorate");
             Calendar myCalendar = Calendar.getInstance();
-            Date actualDate = DateHelper.removeTimeFromDate(myCalendar.getTime());
             for (Date eventDay : daysWithEvents) {
                 if (DateHelper.removeTimeFromDate(dayView.getDate()).equals(eventDay)) {
                     dayView.setTextColor(Color.WHITE);
-                    Date dayViewDate = DateHelper.removeTimeFromDate(dayView.getDate());
-                    if (dayViewDate.before(actualDate)) {
+                    if (DateHelper.isPast(dayView.getDate().getTime())) {
                         dayView.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.colorGrey, null));
                     } else {
                         dayView.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.colorAccent, null));
