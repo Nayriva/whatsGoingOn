@@ -11,14 +11,13 @@ import android.widget.TextView;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.ConversationActivity;
 import ee.ut.madp.whatsgoingon.activities.UserProfileActivity;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.CHANNEL_ID;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_CHANNEL_ID;
 
 /**
  * Created by admin on 27.10.2017.
@@ -123,7 +122,7 @@ public class ChatChannelAdapter extends RecyclerView.Adapter<ChatChannelAdapter.
             ChatChannel chatChannel = channelList.get(getAdapterPosition());
             chatChannel.setNewMessage(false);
             Intent intent = new Intent(v.getContext(), ConversationActivity.class);
-            intent.putExtra(CHANNEL_ID, chatChannel.getId());
+            intent.putExtra(EXTRA_CHANNEL_ID, chatChannel.getId());
             v.getContext().startActivity(intent);
         }
     }

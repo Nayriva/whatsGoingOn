@@ -1,6 +1,8 @@
 package ee.ut.madp.whatsgoingon.activities;
 
 import android.Manifest;
+import android.accounts.AccountManager;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -54,13 +56,18 @@ import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.Event;
+import ee.ut.madp.whatsgoingon.models.GoogleAccountHelper;
 import ee.ut.madp.whatsgoingon.reminder.ReminderManager;
 
-import static ee.ut.madp.whatsgoingon.activities.SettingsActivity.PREFERENCE_REMINDERS;
-import static ee.ut.madp.whatsgoingon.activities.SettingsActivity.PREFERENCE_REMINDER_HOURS_BEFORE;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_ID;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_EVENT;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.SYNC_CAL_REQUEST_CODE;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_REMINDERS;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_REMINDER_HOURS_BEFORE;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_ID;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_ACCOUNT_NAME;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_ACCOUNT_PICKER;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_AUTHORIZATION;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_GOOGLE_PLAY_SERVICES;
+import static ee.ut.madp.whatsgoingon.models.GoogleAccountHelper.getGoogleAccountCredential;
 
 public class EventFormActivity extends AppCompatActivity
         implements Validator.ValidationListener, Observer {
@@ -102,12 +109,12 @@ public class EventFormActivity extends AppCompatActivity
         ButterKnife.bind(this);
 
         eventsRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_EVENTS);
-        if (getIntent().hasExtra(PARCEL_EVENT) || getIntent().hasExtra(GeneralConstants.EVENT_ID)) {
+        if (getIntent().hasExtra(EXTRA_EVENT) || getIntent().hasExtra(EXTRA_EVENT_ID)) {
             // is Edit
-            if (getIntent().hasExtra(GeneralConstants.EVENT_ID))
-                retrieveEventFromFirebase(getIntent().getStringExtra(EVENT_ID));
+            if (getIntent().hasExtra(EXTRA_EVENT_ID))
+                retrieveEventFromFirebase(getIntent().getStringExtra(EXTRA_EVENT_ID));
             else {
-                event = getIntent().getParcelableExtra(PARCEL_EVENT);
+                event = getIntent().getParcelableExtra(EXTRA_EVENT);
                 setupContent();
             }
         } else {
@@ -119,7 +126,7 @@ public class EventFormActivity extends AppCompatActivity
     }
 
     private void setupInfoAboutEvent() {
-        attendants = getIntent().getStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS);
+        attendants = getIntent().getStringArrayListExtra(GeneralConstants.EXTRA_EVENT_ATTENDANTS);
         event.setAttendantIds(attendants);
         canEdit = UserHelper.getCurrentUserId().equals(event.getOwner());
         isEdit = true;
@@ -269,15 +276,15 @@ public class EventFormActivity extends AppCompatActivity
 
         SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        if (prefs.getBoolean(PREFERENCE_REMINDERS, true) && prefs.getInt(PREFERENCE_REMINDER_HOURS_BEFORE, 1) > 0) {
+        if (prefs.getBoolean(PREF_REMINDERS, true) && prefs.getInt(PREF_REMINDER_HOURS_BEFORE, 1) > 0) {
             // notify user hours (defined from settings) before
-            long subtractedTime = new LocalDateTime(createdEvent.getDateTime()).minusHours(prefs.getInt(PREFERENCE_REMINDER_HOURS_BEFORE, 1)).toDateTime().getMillis();
+            long subtractedTime = new LocalDateTime(createdEvent.getDateTime()).minusHours(prefs.getInt(PREF_REMINDER_HOURS_BEFORE, 1)).toDateTime().getMillis();
             new ReminderManager(this).setReminder(createdEvent, subtractedTime);
         }
 
         Intent resultIntent = new Intent();
         resultIntent.putExtra(GeneralConstants.EXTRA_ADDED_EVENT, createdEvent);
-        resultIntent.putStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS,
+        resultIntent.putStringArrayListExtra(GeneralConstants.EXTRA_EVENT_ATTENDANTS,
                 (ArrayList<String>) createdEvent.getAttendantIds());
         setResult(RESULT_OK, resultIntent);
         finish();
@@ -291,7 +298,7 @@ public class EventFormActivity extends AppCompatActivity
 
         Intent resultIntent = new Intent();
         resultIntent.putExtra(GeneralConstants.EXTRA_EDITED_EVENT, editedEvent);
-        resultIntent.putStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS, (ArrayList<String>) editedEvent.getAttendantIds());
+        resultIntent.putStringArrayListExtra(GeneralConstants.EXTRA_EVENT_ATTENDANTS, (ArrayList<String>) editedEvent.getAttendantIds());
         setResult(RESULT_OK, resultIntent);
         finish();
     }
@@ -347,7 +354,7 @@ public class EventFormActivity extends AppCompatActivity
 
             Intent resultIntent = new Intent();
             resultIntent.putExtra(GeneralConstants.EXTRA_JOINED_EVENT, event);
-            resultIntent.putStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS, (ArrayList<String>) event.getAttendantIds());
+            resultIntent.putStringArrayListExtra(GeneralConstants.EXTRA_EVENT_ATTENDANTS, (ArrayList<String>) event.getAttendantIds());
             setResult(RESULT_OK, resultIntent);
             finish();
         }
@@ -366,14 +373,39 @@ public class EventFormActivity extends AppCompatActivity
         DialogHelper.showCalendarSyncDialog(this);
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            if (requestCode == SYNC_CAL_REQUEST_CODE) {
-            } else if (requestCode == SHARE_EVENT_REQUEST_CODE) {
-                finish();
-            }
+        switch (requestCode) {
+            case REQUEST_GOOGLE_PLAY_SERVICES:
+                if (resultCode == Activity.RESULT_OK) {
+                    // have been installed
+                    GoogleAccountHelper.haveGooglePlayServices(this, GoogleAccountHelper.getGoogleAccountCredential(this));
+                } else {
+                    GoogleAccountHelper.checkGooglePlayServicesAvailable(this);
+                }
+                break;
+            case REQUEST_AUTHORIZATION:
+                if (resultCode == Activity.RESULT_OK) {
+                    //AsyncLoadCalendars.run(this);
+                } else {
+                    GoogleAccountHelper.chooseAccount(this);
+                }
+                break;
+            case REQUEST_ACCOUNT_PICKER:
+                if (resultCode == Activity.RESULT_OK && data != null && data.getExtras() != null) {
+                    String accountName = data.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
+                    if (accountName != null) {
+                        getGoogleAccountCredential(this).setSelectedAccountName(accountName);
+                        SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString(PREF_ACCOUNT_NAME, accountName);
+                        editor.commit();
+                        //AsyncLoadCalendars.run(this);
+                    }
+                }
+                break;
         }
     }
 
@@ -466,7 +498,7 @@ public class EventFormActivity extends AppCompatActivity
 
     private void shareEvent(Event event) {
         Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-        sharingIntent.putExtra(EVENT_ID, event.getId());
+        sharingIntent.putExtra(EXTRA_EVENT_ID, event.getId());
         sharingIntent.setType("text/plain");
         String subject = event.getName();
         sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subject);

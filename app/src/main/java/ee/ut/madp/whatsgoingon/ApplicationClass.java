@@ -36,17 +36,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
-import ee.ut.madp.whatsgoingon.activities.SettingsActivity;
 import ee.ut.madp.whatsgoingon.chat.ChatInterface;
 import ee.ut.madp.whatsgoingon.chat.ControlInterface;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
+import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.database.IncomingMessagesDbHelper;
 import ee.ut.madp.whatsgoingon.database.MessagesDbContract.IncomingMessagesTable;
 import ee.ut.madp.whatsgoingon.database.MessagesDbContract.OutgoingMessagesTable;
@@ -116,11 +115,10 @@ public class ApplicationClass extends Application implements Observable, Observe
         mBusControlHandler = new Handler(busControlThread.getLooper(), new ControlBusHandlerCallback());
         mBusControlHandler.sendEmptyMessage(ControlBusHandlerCallback.CONNECT);
 
-        SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon",
-                Context.MODE_PRIVATE);
-        notificationsOn = prefs.getBoolean(SettingsActivity.PREFERENCE_MESSAGE_NOTIFICATION, true);
-        vibrateOn = prefs.getBoolean(SettingsActivity.PREFERENCE_NOTIFICATION_VIBRATE, true);
-        ringtone = Uri.parse(prefs.getString(SettingsActivity.PREFERENCE_NOTIFICATION_RINGTONE, "DEFAULT_SOUND"))   ;
+        SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon", Context.MODE_PRIVATE);
+        notificationsOn = prefs.getBoolean(GeneralConstants.PREF_MESSAGE_NOTIFICATION, true);
+        vibrateOn = prefs.getBoolean(GeneralConstants.PREF_NOTIFICATION_VIBRATE, true);
+        ringtone = Uri.parse(prefs.getString(GeneralConstants.PREF_NOTIFICATION_RINGTONE, "DEFAULT_SOUND"))   ;
     }
 
     @Override

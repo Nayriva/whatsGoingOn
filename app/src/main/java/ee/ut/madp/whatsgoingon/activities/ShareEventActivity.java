@@ -32,7 +32,7 @@ import ee.ut.madp.whatsgoingon.helpers.ChatHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.GroupParticipant;
 
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_ID;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_ID;
 
 public class ShareEventActivity extends AppCompatActivity {
 
@@ -57,9 +57,9 @@ public class ShareEventActivity extends AppCompatActivity {
         setupListView();
 
         if (getIntent().hasExtra(android.content.Intent.EXTRA_SUBJECT) && getIntent().hasExtra(Intent.EXTRA_TEXT)
-                && getIntent().hasExtra(EVENT_ID)) {
+                && getIntent().hasExtra(EXTRA_EVENT_ID)) {
 
-            encodedMessage = ChatHelper.encodeEventMessage(getIntent().getStringExtra(EVENT_ID),
+            encodedMessage = ChatHelper.encodeEventMessage(getIntent().getStringExtra(EXTRA_EVENT_ID),
                     getIntent().getStringExtra(android.content.Intent.EXTRA_SUBJECT),
                     getIntent().getStringExtra(android.content.Intent.EXTRA_TEXT));
         }

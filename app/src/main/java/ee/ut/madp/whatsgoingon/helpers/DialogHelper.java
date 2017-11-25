@@ -28,7 +28,7 @@ import java.util.Calendar;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
 
-import static ee.ut.madp.whatsgoingon.activities.SettingsActivity.PREFERENCE_REMINDER_HOURS_BEFORE;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_REMINDER_HOURS_BEFORE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.DATE_FORMAT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.FULL_DATE_FORMAT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.TIME_FORMAT;
@@ -236,7 +236,7 @@ public class DialogHelper {
             public void onClick(DialogInterface dialog, int which) {
                 SharedPreferences prefs = context.getSharedPreferences("setting.whatsgoingon", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt(PREFERENCE_REMINDER_HOURS_BEFORE, numberPicker.getValue());
+                editor.putInt(PREF_REMINDER_HOURS_BEFORE, numberPicker.getValue());
                 editor.commit();
             }
         });

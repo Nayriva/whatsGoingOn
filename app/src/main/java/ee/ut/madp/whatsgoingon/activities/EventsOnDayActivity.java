@@ -44,7 +44,7 @@ import ee.ut.madp.whatsgoingon.models.Event;
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_EVENTS_DATE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_DAY_REQUEST_CODE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EDITED_EVENT;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARAM_EVENT_DAY;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_DAY;
 
 public class EventsOnDayActivity extends AppCompatActivity implements Observer {
 
@@ -70,8 +70,8 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
         eventList = new ArrayList<>();
         setupRecyclerView();
 
-        if (getIntent().hasExtra(PARAM_EVENT_DAY)) {
-            dateOfEvents = getIntent().getLongExtra(PARAM_EVENT_DAY, 0);
+        if (getIntent().hasExtra(EXTRA_EVENT_DAY)) {
+            dateOfEvents = getIntent().getLongExtra(EXTRA_EVENT_DAY, 0);
             if (dateOfEvents == 0) {
                 return;
             }
@@ -96,7 +96,7 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
             //event has been joined
             if (data.hasExtra(GeneralConstants.EXTRA_JOINED_EVENT)) {
                 Event joinedEvent = data.getParcelableExtra(GeneralConstants.EXTRA_JOINED_EVENT);
-                List<String> attendants = data.getStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS);
+                List<String> attendants = data.getStringArrayListExtra(GeneralConstants.EXTRA_EVENT_ATTENDANTS);
                 joinedEvent.setAttendantIds(attendants);
                 if (eventList != null) {
                     for (Event event : eventList) {
@@ -116,7 +116,7 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
                         eventList.remove(event);
                         if (eventList.isEmpty()) {
                             Intent resultIntent = new Intent();
-                            resultIntent.putExtra(GeneralConstants.EVENT_DAY_BECAME_EMPTY, event.getDateTime());
+                            resultIntent.putExtra(GeneralConstants.EXTRA_EVENT_DAY_BECAME_EMPTY, event.getDateTime());
                             setResult(RESULT_OK, resultIntent);
                             finish();
                         }
@@ -126,7 +126,7 @@ public class EventsOnDayActivity extends AppCompatActivity implements Observer {
             }
             if (data.hasExtra(GeneralConstants.EXTRA_EDITED_EVENT)) {
                 Event editedEvent = data.getParcelableExtra(EXTRA_EDITED_EVENT);
-                List<String> attendants = data.getStringArrayListExtra(GeneralConstants.EVENT_ATTENDANTS);
+                List<String> attendants = data.getStringArrayListExtra(GeneralConstants.EXTRA_EVENT_ATTENDANTS);
                 editedEvent.setAttendantIds(attendants);
                 for (Event event: eventList) {
                     if (event.getId().equals(editedEvent.getId())) {
