@@ -17,17 +17,17 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
+import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
+import ee.ut.madp.whatsgoingon.asynctasks.InsertEventAsyncTask;
 import ee.ut.madp.whatsgoingon.constants.PermissionConstants;
 import ee.ut.madp.whatsgoingon.models.GoogleAccountHelper;
 
@@ -58,7 +58,7 @@ public class EventCalendarHelper {
     public static void updateEvent(Context context, ee.ut.madp.whatsgoingon.models.Event event) {
         ContentResolver cr = context.getContentResolver();
         Uri eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.getEventId());
-        cr.update(eventUri, createEventValues(context, event), null, null);
+        cr.update(eventUri, createEventValues(event), null, null);
 
     }
 
@@ -68,8 +68,8 @@ public class EventCalendarHelper {
 
     }
 
-    private static ContentValues createEventValues(Context context, ee.ut.madp.whatsgoingon.models.Event event) {
-        Calendar cal = Calendar.getInstance();
+    private static ContentValues createEventValues(ee.ut.madp.whatsgoingon.models.Event event) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
         java.util.TimeZone tz = cal.getTimeZone();
         ContentValues values = new ContentValues();
 
@@ -118,10 +118,25 @@ public class EventCalendarHelper {
             return;
         }
 
+        Calendar service = initializeCalendarService(context);
+        new InsertEventAsyncTask((EventFormActivity) context, service, createGoogleEvent(event)).execute();
+
+    }
+
+    public static Calendar initializeCalendarService(Context context) {
+        HttpTransport transport = AndroidHttp.newCompatibleTransport();
+        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+        return new com.google.api.services.calendar.Calendar.Builder(
+                transport, jsonFactory, GoogleAccountHelper.getGoogleAccountCredential(context))
+                .setApplicationName("What's Going On")
+                .build();
+    }
+
+    private static Event createGoogleEvent(ee.ut.madp.whatsgoingon.models.Event event) {
         Event newEvent = new Event()
-                .setSummary("Google I/O 2015")
-                .setLocation("800 Howard St., San Francisco, CA 94103")
-                .setDescription("A chance to hear more about Google's developer products.");
+                .setSummary(event.getName())
+                .setLocation(event.getPlace())
+                .setDescription(event.getDescription());
 
         DateTime startDateTime = new DateTime(event.getDateTime());
         EventDateTime start = new EventDateTime()
@@ -135,27 +150,7 @@ public class EventCalendarHelper {
                 .setTimeZone("America/Los_Angeles");
         newEvent.setEnd(end);
 
-        String calendarId = "primary";
-
-        initialize(context);
-        try {
-            newEvent = mService.events().insert(calendarId, newEvent).execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        return newEvent;
     }
-
-    private static com.google.api.services.calendar.Calendar mService = null;
-
-    public static void initialize(Context context) {
-        HttpTransport transport = AndroidHttp.newCompatibleTransport();
-        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-        mService = new com.google.api.services.calendar.Calendar.Builder(
-                transport, jsonFactory, GoogleAccountHelper.getGoogleAccountCredential(context))
-                .setApplicationName("What's Going On")
-                .build();
-    }
-
 
 }
