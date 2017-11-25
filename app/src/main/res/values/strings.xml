@@ -205,5 +205,7 @@
     <string name="btn_share_event">Share event</string>
     <string name="succes_message_shared_event">Event has been shared</string>
     <string name="event_processing">Event is being processed</string>
+    <string name="sent_picture">Picture</string>
+    <string name="shared_event">Event</string>
 
 </resources>

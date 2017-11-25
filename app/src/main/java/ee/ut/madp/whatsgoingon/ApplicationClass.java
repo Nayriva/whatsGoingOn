@@ -103,6 +103,7 @@ public class ApplicationClass extends Application implements Observable, Observe
 
     @Override
     public void onCreate() {
+        Log.i(TAG, "onCreate");
         super.onCreate();
         HandlerThread busControlThread = new HandlerThread("BusControlHandler");
         busControlThread.start();
@@ -123,6 +124,7 @@ public class ApplicationClass extends Application implements Observable, Observe
 
     @Override
     public void onTerminate() {
+        Log.i(TAG, "onTerminate");
         super.onTerminate();
         stopAdvertise();
 
@@ -139,6 +141,7 @@ public class ApplicationClass extends Application implements Observable, Observe
      * Performs basic initialization of application.
      */
     public void checkIn() {
+        Log.i(TAG, "checkIn");
         FirebaseApp.initializeApp(this);
         firebaseGroupsRef = FirebaseDatabase.getInstance()
                 .getReference().child(FirebaseConstants.FIREBASE_CHILD_GROUPS);
@@ -181,6 +184,7 @@ public class ApplicationClass extends Application implements Observable, Observe
 
         @Override
         protected Map<String, List<ChatMessage>> doInBackground(Void... voids) {
+            Log.i(TAG, "ReadMessagesFromDb.doInBackground");
             Map<String, List<ChatMessage>> readMessages = new HashMap<>();
             String[] incomingProjection = getIncomingProjection();
             String[] outgoingProjection = getOutgoingProjection();
@@ -190,6 +194,7 @@ public class ApplicationClass extends Application implements Observable, Observe
         }
 
         private void readIncomingDb(Map<String, List<ChatMessage>> readMessages, String[] projection) {
+            Log.i(TAG, "ReadMessagesFromDb.readIncomingDb");
             String selection = IncomingMessagesTable.COLUMN_NAME_LOGGED_USER + " = ?";
             String[] selectionArgs = { loggedUserId };
             Cursor incomingCursor = incomingDb.query(incomingTable, projection, selection, selectionArgs, null, null, null);
@@ -227,6 +232,7 @@ public class ApplicationClass extends Application implements Observable, Observe
         }
 
         private void readOutgoingDb(Map<String, List<ChatMessage>> readMessages, String[] projection) {
+            Log.i(TAG, "ReadMessagesFromDb.readOutgoingDb");
             String selection = OutgoingMessagesTable.COLUMN_NAME_LOGGED_USER + " = ?";
             String[] selectionArgs = { loggedUserId };
             Cursor outgoingCursor = outgoingDb.query(outgoingTable, projection, selection, selectionArgs, null, null, null);
@@ -287,6 +293,7 @@ public class ApplicationClass extends Application implements Observable, Observe
      * Set up all necessary components for advertising the device among others.
      */
     private void setUpAdvertising() {
+        Log.i(TAG, "setUpAdvertising");
         advertiseHandler = new Handler();
         advertiseCode = new Runnable() {
             @Override
@@ -300,40 +307,18 @@ public class ApplicationClass extends Application implements Observable, Observe
                         ChatHelper.advertiseMessage(currentUser.getUid()));
                 mBusControlHandler.sendMessage(message);
 
-                message = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL,
-                        ChatHelper.advertiseMessage("XPhFr2Fd12Z3QtI5j1VWlaExIOF3"));
-                mBusControlHandler.sendMessage(message);
-
-                message = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL,
-                        ChatHelper.advertiseMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3"));
-                mBusControlHandler.sendMessage(message);
-                //1-2-1 test
-//                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
-//                        ChatHelper.oneToOneMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová",
-//                                loggedUser.getId(), "Test message 1_2_1" + new Random().nextInt()));
-//                mBusChatHandler.sendMessage(message);
-//
-//                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
-//                        ChatHelper.oneToOneMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová", loggedUser.getId(),
-//                                ChatHelper.imageText("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")));
-//                mBusChatHandler.sendMessage(message);
-//
-//                //group test
-//                message = mBusChatHandler.obtainMessage(ChatBusHandlerCallback.CHAT,
-//                        ChatHelper.groupMessage("a5S16xVoXHbwd2IBVBzs8WXSiKG3", "Petra Cendelínová", "d94282264c994168a919554f90af9c4c",
-//                                new String[] { loggedUser.getId()}, "Test group text"  + new Random().nextInt()));
-//                mBusChatHandler.sendMessage(message);
-
                 advertiseHandler.postDelayed(this, 10000);
             }
         };
     }
 
     public static Uri getRingtone() {
+        Log.i(TAG, "getRingtone");
         return ringtone;
     }
 
     public static void setRingtone(String ringtoneName) {
+        Log.i(TAG, "setRingtone");
         ringtone = Uri.parse(ringtoneName);
     }
 
@@ -341,6 +326,7 @@ public class ApplicationClass extends Application implements Observable, Observe
      * Starts advertisement process
      */
     public synchronized void startAdvertise() {
+        Log.i(TAG, "startAdvertise");
         advertiseHandler.post(advertiseCode);
     }
 
@@ -348,6 +334,7 @@ public class ApplicationClass extends Application implements Observable, Observe
      * Stops advertisement process
      */
     public synchronized void stopAdvertise() {
+        Log.i(TAG, "stopAdvertise");
         sendChatMessage(ChatHelper.cancelAdvertiseMessage(loggedUser.getId()));
         advertiseHandler.removeCallbacks(advertiseCode);
         channelsNearDevice = new ConcurrentHashMap<>();
@@ -364,6 +351,7 @@ public class ApplicationClass extends Application implements Observable, Observe
 
         @Override
         public boolean handleMessage(Message msg) {
+            Log.i(TAG, "mChatHandler.handleMessage: " + msg);
             if (firebaseAuth.getCurrentUser() != null && msg.what == MESSAGE_CHAT) {
                 String receivedMsg = (String) msg.obj;
                 String messageType = ChatHelper.getMessageType(receivedMsg);
@@ -389,6 +377,7 @@ public class ApplicationClass extends Application implements Observable, Observe
     private Handler mControlHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message message) {
+            Log.i(TAG, "mControlHandler.handleMessage: " + message);
             if (firebaseAuth.getCurrentUser() != null && message.what == MESSAGE_CONTROL) {
                 String receivedMsg = (String) message.obj;
                 String messageType = ChatHelper.getMessageType(receivedMsg);
@@ -423,12 +412,14 @@ public class ApplicationClass extends Application implements Observable, Observe
     //***** MESSAGES METHODS *****\\
 
     private void dealWithGroupDeletedMessage(String receivedMsg) {
+        Log.i(TAG, "dealWithGroupDeletedMessage");
         String gid = ChatHelper.groupDeletedGid(receivedMsg);
         notifyObservers(GROUP_DELETED, gid);
         deleteGroup(gid, true);
     }
 
     private void dealWithGroupReceiversChanged(String receivedMsg) {
+        Log.i(TAG, "dealWithGroupReceiversChanged");
         String gid = ChatHelper.groupReceiversChangedGid(receivedMsg);
         String[] newReceivers = ChatHelper.groupReceiversChangedReceivers(receivedMsg);
         groupChatsReceiversMap.put(gid, newReceivers);
@@ -436,6 +427,7 @@ public class ApplicationClass extends Application implements Observable, Observe
     }
 
     private void dealWithCancelAdvertiseMessage(String receivedMsg) {
+        Log.i(TAG, "dealWithCancelAdvertiseMessage");
         String sender = ChatHelper.cancelAdvertiseMessageSender(receivedMsg);
         if (loggedUser == null || sender.equals(loggedUser.getId())) {
             return;
@@ -445,6 +437,7 @@ public class ApplicationClass extends Application implements Observable, Observe
     }
 
     private void dealWithGroupAdvertiseMessage(final String receivedMsg) {
+        Log.i(TAG, "dealWithGroupAdvertiseMessage");
         String gid = ChatHelper.groupAdvertiseMessageId(receivedMsg);
         if (channelsNearDevice.containsKey(gid)) {
             return;
@@ -470,6 +463,7 @@ public class ApplicationClass extends Application implements Observable, Observe
         firebaseGroupsRef.child(gid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "dealWithGroupAdvertiseMessage.onDataChange");
                 Group group = dataSnapshot.getValue(Group.class);
                 if (group == null) {
                     return;
@@ -493,6 +487,7 @@ public class ApplicationClass extends Application implements Observable, Observe
     }
 
     private void dealWithAdvertiseMessage(String receivedMsg) {
+        Log.i(TAG, "dealWithAdvertiseMessage");
         String uid = ChatHelper.advertiseMessageDisplayName(receivedMsg);
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if (currentUser == null ||
@@ -503,6 +498,7 @@ public class ApplicationClass extends Application implements Observable, Observe
         firebaseUsersRef.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "dealWithAdvertiseMessage.onDataChange");
                 User user = dataSnapshot.getValue(User.class);
                 if (user == null) {
                     return;
@@ -523,6 +519,7 @@ public class ApplicationClass extends Application implements Observable, Observe
     }
 
     private void dealWithGroupMessage(String receivedMsg) {
+        Log.i(TAG, "dealWithGroupMessage");
         String[] messageReceivers = ChatHelper.groupMessageReceivers(receivedMsg);
         String sender = ChatHelper.groupMessageSender(receivedMsg);
         if (loggedUser == null || sender.equals(loggedUser.getId())) {
@@ -549,6 +546,7 @@ public class ApplicationClass extends Application implements Observable, Observe
     }
 
     private void storeGroupMessage(String receivedMsg, boolean incoming) {
+        Log.i(TAG, "storeGroupMessage: " + incoming);
         String group = ChatHelper.groupMessageGID(receivedMsg);
         if (! chatHistory.containsKey(group)) {
             chatHistory.put(group, new ArrayList<ChatMessage>());
@@ -571,6 +569,7 @@ public class ApplicationClass extends Application implements Observable, Observe
     }
 
     private void dealWithOneToOneMessage(String receivedMsg) {
+        Log.i(TAG, "dealWithOneToOneMessage");
         String messageReceiver = ChatHelper.oneToOneMessageReceiver(receivedMsg);
         String sender = ChatHelper.oneToOneMessageSender(receivedMsg);
         if (loggedUser == null || sender.equals(loggedUser.getId())) {
@@ -587,6 +586,7 @@ public class ApplicationClass extends Application implements Observable, Observe
     }
 
     private void storeOneToOneMessage(String receivedMsg) {
+        Log.i(TAG, "storeOneToOneMessage");
         String sender = ChatHelper.oneToOneMessageSender(receivedMsg);
         if (! chatHistory.containsKey(sender)) {
             chatHistory.put(sender, new ArrayList<ChatMessage>());
@@ -607,6 +607,7 @@ public class ApplicationClass extends Application implements Observable, Observe
 
         @Override
         protected Long doInBackground(ContentValues... contentValues) {
+            Log.i(TAG, "StoreIncomingMessageAsyncTask.doInBackground");
             ContentValues values = contentValues[0];
             return incomingDb.insert(tableName, null, values);
         }
@@ -618,12 +619,14 @@ public class ApplicationClass extends Application implements Observable, Observe
 
         @Override
         protected Long doInBackground(ContentValues... contentValues) {
+            Log.i(TAG, "StoreOutgoingMessageAsyncTask.doInBackground");
             ContentValues values = contentValues[0];
             return outgoingDb.insert(tableName, null, values);
         }
     }
 
     private void storeIncomingMessage(String sender, String senderDisplName, String gid, String text, long time) {
+        Log.i(TAG, "storeIncomingMessage");
         ContentValues values = new ContentValues();
         values.put(IncomingMessagesTable.COLUMN_NAME_LOGGED_USER, loggedUser.getId());
         values.put(IncomingMessagesTable.COLUMN_NAME_SENDER, sender);
@@ -635,6 +638,7 @@ public class ApplicationClass extends Application implements Observable, Observe
     }
 
     private void storeOutgoingMessage(String receiver, String gid, String text, long time) {
+        Log.i(TAG, "storeOutgoingMessage");
         ContentValues values = new ContentValues();
         values.put(OutgoingMessagesTable.COLUMN_NAME_LOGGED_USER, loggedUser.getId());
         values.put(OutgoingMessagesTable.COLUMN_NAME_RECEIVER, receiver);
@@ -650,6 +654,7 @@ public class ApplicationClass extends Application implements Observable, Observe
      * @return last message, null if no messages were found
      */
     public ChatMessage getLastMessage(String channelId) {
+        Log.i(TAG, "getLastMessage");
         List<ChatMessage> chatMessages = chatHistory.get(channelId);
         if (chatMessages != null) {
             int size = chatMessages.size();
@@ -665,6 +670,7 @@ public class ApplicationClass extends Application implements Observable, Observe
      * @param message message to be sent
      */
     public void sendChatMessage(String message) {
+        Log.i(TAG, "sendChatMessage");
         String type = ChatHelper.getMessageType(message);
         switch (type) {
             case "S": {
@@ -692,11 +698,13 @@ public class ApplicationClass extends Application implements Observable, Observe
      * @param message message to be sent
      */
     public void sendControlMessage(String message) {
+        Log.i(TAG, "sendControlMessage");
         Message msg = mBusControlHandler.obtainMessage(ControlBusHandlerCallback.CONTROL, message);
         mBusControlHandler.sendMessage(msg);
     }
 
     public synchronized List<ChatMessage> getHistory(String key) {
+        Log.i(TAG, "getHistory");
         List<ChatMessage> orig = chatHistory.get(key);
         List<ChatMessage> copy = new ArrayList<>();
         for (ChatMessage message: orig) {
@@ -708,26 +716,31 @@ public class ApplicationClass extends Application implements Observable, Observe
     //***** CHANNELS METHODS *****\\
 
     public boolean isGroup(String gid) {
+        Log.i(TAG, "isGroup");
         return groupChatsReceiversMap.containsKey(gid);
     }
 
     public synchronized Set<ChatChannel> getChannels() {
+        Log.i(TAG, "getChannels");
         Set<ChatChannel> channelsCopy = new HashSet<>();
         channelsCopy.addAll(channelsNearDevice.values());
         return channelsCopy;
     }
 
     public ChatChannel getChannel(String channelId) {
+        Log.i(TAG, "getChannel");
         return channelsNearDevice.get(channelId);
     }
 
     //***** GROUPS METHODS *****\\
 
     public void createGroup(String gId, String[] receivers) {
+        Log.i(TAG, "createGroup");
         sendControlMessage(ChatHelper.groupAdvertiseMessage(gId, receivers));
     }
 
     public synchronized void deleteGroup(String groupId, boolean onlyDelete) {
+        Log.i(TAG, "deleteGroup");
         Iterator<Map.Entry<String,List<ChatMessage>>> iter1 = chatHistory.entrySet().iterator();
         while (iter1.hasNext()) {
             Map.Entry<String, List<ChatMessage>> entry = iter1.next();
@@ -765,6 +778,7 @@ public class ApplicationClass extends Application implements Observable, Observe
 
         @Override
         protected Void doInBackground(String... strings) {
+            Log.i(TAG, "DeleteGroupFromDb.doInBackground");
             String gid = strings[0];
             String incomingSelection = IncomingMessagesTable.COLUMN_NAME_GID + " = ?";
             String outgoingSelection = OutgoingMessagesTable.COLUMN_NAME_GID + " = ?";
@@ -775,11 +789,13 @@ public class ApplicationClass extends Application implements Observable, Observe
     }
 
     public synchronized String[] getGroupReceivers(String gid) {
+        Log.i(TAG, "getGroupReceivers");
         return groupChatsReceiversMap.get(gid);
     }
 
     @Override
     public synchronized void addObserver(Observer obs) {
+        Log.i(TAG, "addObserver");
         if (mObservers.contains(this)) {
             mObservers.remove(this);
         }
@@ -788,6 +804,7 @@ public class ApplicationClass extends Application implements Observable, Observe
 
     @Override
     public synchronized void deleteObserver(Observer obs) {
+        Log.i(TAG, "deleteObserver");
         mObservers.remove(obs);
         if (mObservers.size() == 0) {
             mObservers.add(this);
@@ -796,6 +813,7 @@ public class ApplicationClass extends Application implements Observable, Observe
 
     @Override
     public void update(Observable o, int qualifier, String data) {
+        Log.i(TAG, "update");
         switch (qualifier) {
             case ApplicationClass.ONE_TO_ONE_MESSAGE_RECEIVED:
             case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
@@ -810,25 +828,30 @@ public class ApplicationClass extends Application implements Observable, Observe
     }
 
     private void notifyObservers(int arg, String data) {
+        Log.i(TAG, "notifyObservers");
         for (Observer obs : mObservers) {
             obs.update(this, arg, data);
         }
     }
 
     public User getLoggedUser() {
+        Log.i(TAG, "getLoggedUser");
         return loggedUser;
     }
 
     public void setLoggedUser(User loggedUser) {
+        Log.i(TAG, "setLoggedUser");
         ApplicationClass.loggedUser = loggedUser;
     }
 
     public void groupReceiversChangedAdvertise(String gid, String[] receivers) {
+        Log.i(TAG, "groupReceiversChangedAdvertise");
         String message = ChatHelper.groupReceiversChanged(gid, receivers);
         sendControlMessage(message);
     }
 
     public void groupDeletedAdvertise(String gid) {
+        Log.i(TAG, "groupDeletedAdvertise");
         String message = ChatHelper.groupDeleted(gid);
         sendControlMessage(message);
     }
@@ -840,8 +863,8 @@ public class ApplicationClass extends Application implements Observable, Observe
             this.bus = bus;
         }
 
-        @BusSignalHandler(iface = "ee.ut.madp.whatisgoingon.control", signal = "Control")
-        public void Control(String message) throws BusException {
+        @BusSignalHandler(iface = "ee.ut.madp.whatisgoingon.control", signal = "control")
+        public void control(String message) throws BusException {
             Log.i(TAG, "Signal : " + message);
             sendControlMessage(MESSAGE_CONTROL, message);
         }
@@ -860,8 +883,8 @@ public class ApplicationClass extends Application implements Observable, Observe
             this.bus = bus;
         }
 
-        @BusSignalHandler(iface = "ee.ut.madp.whatisgoingon.chat", signal = "Chat")
-        public void Chat(String message) {
+        @BusSignalHandler(iface = "ee.ut.madp.whatisgoingon.chat", signal = "chat")
+        public void chat(String message) {
             Log.i(TAG, "Signal  : " + message);
             sendMessage(MESSAGE_CHAT, message);
         }
@@ -886,6 +909,7 @@ public class ApplicationClass extends Application implements Observable, Observe
 
         @Override
         public boolean handleMessage(Message msg) {
+            Log.i(TAG, "ControlBusHandlerCallback.handleMessage: " + msg);
             switch (msg.what) {
                 case CONNECT: {
                     connectToBus();
@@ -904,6 +928,7 @@ public class ApplicationClass extends Application implements Observable, Observe
         }
 
         private void dealWithControl(Message msg) {
+            Log.i(TAG, "dealWithControl: " + msg);
             try {
                 if (emitter == null) {
                     emitter = new SignalEmitter(mControlService, 0, SignalEmitter.GlobalBroadcast.Off);
@@ -913,7 +938,7 @@ public class ApplicationClass extends Application implements Observable, Observe
                 if (mControlInterface != null) {
                     String message = (String) msg.obj;
                     Log.i(TAG, "Sending message " + msg);
-                    mControlInterface.Control(message);
+                    mControlInterface.control(message);
                 }
             } catch (BusException ex) {
                 Log.w(TAG, ex);
@@ -921,11 +946,13 @@ public class ApplicationClass extends Application implements Observable, Observe
         }
 
         private void disconnectFromBus() {
+            Log.i(TAG, "disconnectFromBus");
             mBus.disconnect();
             mBusChatHandler.getLooper().quit();
         }
 
         private void connectToBus() {
+            Log.i(TAG, "connectToBus");
             org.alljoyn.bus.alljoyn.DaemonInit.PrepareDaemon(getApplicationContext());
             mBus = new BusAttachment(getPackageName(), BusAttachment.RemoteMessage.Receive);
             mControlService = new ControlService(mBus);
@@ -967,6 +994,7 @@ public class ApplicationClass extends Application implements Observable, Observe
 
         @Override
         public boolean handleMessage(Message msg) {
+            Log.i(TAG, "handleMessage: " + msg);
             switch (msg.what) {
                 case CONNECT: {
                     connectToBus();
@@ -985,6 +1013,7 @@ public class ApplicationClass extends Application implements Observable, Observe
         }
 
         private void dealWithChatMessage(Message msg) {
+            Log.i(TAG, "dealWithChatMessage");
             try {
                 if (emitter == null) {
                     emitter = new SignalEmitter(mChatService, 0, SignalEmitter.GlobalBroadcast.Off);
@@ -994,7 +1023,7 @@ public class ApplicationClass extends Application implements Observable, Observe
                 if (mChatInterface != null) {
                     String message = (String) msg.obj;
                     Log.i(TAG, "Sending message " + msg);
-                    mChatInterface.Chat(message);
+                    mChatInterface.chat(message);
                 }
             } catch (BusException ex) {
                 Log.w(TAG, ex);
@@ -1002,11 +1031,13 @@ public class ApplicationClass extends Application implements Observable, Observe
         }
 
         private void disconnectFromBus() {
+            Log.i(TAG, "disconnectFromBus");
             mBus.disconnect();
             mBusChatHandler.getLooper().quit();
         }
 
         private void connectToBus() {
+            Log.i(TAG, "connectToBus");
             org.alljoyn.bus.alljoyn.DaemonInit.PrepareDaemon(getApplicationContext());
             mBus = new BusAttachment(getPackageName(), BusAttachment.RemoteMessage.Receive);
             mChatService = new ChatService(mBus);
@@ -1035,6 +1066,7 @@ public class ApplicationClass extends Application implements Observable, Observe
 
     /* Load the native alljoyn_java library. */
     static {
+        Log.i(TAG, "loadAllJoyn_java");
         System.loadLibrary("alljoyn_java");
     }
 }

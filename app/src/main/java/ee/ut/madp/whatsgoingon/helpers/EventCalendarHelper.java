@@ -93,7 +93,7 @@ public class EventCalendarHelper {
                     PermissionConstants.PERMISSION_REQUEST_WRITE_CALENDAR);
             return;
         }
-        Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, createEventValues(context, event));
+        Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, createEventValues(event));
         long eventID = Long.parseLong(uri.getLastPathSegment());
         EventFormActivity.getEvent().setEventId(eventID);
 

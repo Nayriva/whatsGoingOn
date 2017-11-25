@@ -1,27 +1,30 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="ee.ut.madp.whatsgoingon.fragments.EventFragment">
+    android:layout_width="match_parent">
 
-    <com.imanoweb.calendarview.CustomCalendarView
-        android:id="@+id/calendar_view"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorWhite">
-    </com.imanoweb.calendarview.CustomCalendarView>
+        android:orientation="vertical">
 
-    <android.support.v7.widget.AppCompatButton
-        android:id="@+id/btn_add_event"
-        style="@style/ButtonStyle"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/spacing_xlarge"
-        android:background="@color/colorPrimary"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:text="@string/btn_add_event" />
+        <com.imanoweb.calendarview.CustomCalendarView
+            android:id="@+id/calendar_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorWhite">
+        </com.imanoweb.calendarview.CustomCalendarView>
 
-</RelativeLayout>
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/btn_add_event"
+            style="@style/ButtonStyle"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/spacing_xlarge"
+            android:background="@color/colorPrimary"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:text="@string/btn_add_event" />
+
+    </LinearLayout>
+</ScrollView>

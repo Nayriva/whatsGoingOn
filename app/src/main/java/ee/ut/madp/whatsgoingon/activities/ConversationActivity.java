@@ -69,6 +69,9 @@ import static ee.ut.madp.whatsgoingon.R.string.add_members;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_CHANNEL_ID;
 import static ee.ut.madp.whatsgoingon.constants.PermissionConstants.PERMISSIONS_GROUP_ONE;
 
+/**
+ * Activity for displaying chat conversation for single chat channel;
+ */
 public class ConversationActivity extends AppCompatActivity implements Observer {
     public static final String TAG = ConversationActivity.class.getSimpleName();
     private static final int PICK_PHOTO_REQUEST_CODE = 1;

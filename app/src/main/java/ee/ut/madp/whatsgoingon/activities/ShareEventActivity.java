@@ -1,7 +1,5 @@
 package ee.ut.madp.whatsgoingon.activities;
 
-import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -34,22 +32,23 @@ import ee.ut.madp.whatsgoingon.models.GroupParticipant;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_ID;
 
+/**
+ * Activity for sharing event to chat channels.
+ */
 public class ShareEventActivity extends AppCompatActivity {
 
     private static final String TAG = ShareEventActivity.class.getSimpleName();
-    @BindView(R.id.list_participants)
-    ListView participantsList;
-    @BindView(R.id.tv_no_users)
-    TextView noUsersTv;
+    @BindView(R.id.list_participants) ListView participantsList;
+    @BindView(R.id.tv_no_users) TextView noUsersTv;
 
-    GroupParticipantsAdapter participantsAdapter;
-    List<GroupParticipant> pickedParticipants = new ArrayList<>();
+    private GroupParticipantsAdapter participantsAdapter;
     private ApplicationClass application;
     private String encodedMessage;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share_event);
         ButterKnife.bind(this);
@@ -69,6 +68,7 @@ public class ShareEventActivity extends AppCompatActivity {
 
     @OnClick(R.id.btn_share_event)
     public void shareEvent() {
+        Log.i(TAG, "shareEvent");
         List<ChatChannel> receivers = new ArrayList<>();
         for (GroupParticipant groupParticipant : participantsAdapter.getPickedParticipants()) {
             receivers.add(application.getChannel(groupParticipant.getId()));
@@ -80,6 +80,7 @@ public class ShareEventActivity extends AppCompatActivity {
 
 
     private void setupListView() {
+        Log.i(TAG, "setupLastView");
         List<GroupParticipant> participants = new ArrayList<>();
         for (ChatChannel tmp : ((ApplicationClass) getApplication()).getChannels()) {
             participants.add(new GroupParticipant(tmp.getId(), tmp.getName(), tmp.getPhoto(), false));
@@ -91,20 +92,21 @@ public class ShareEventActivity extends AppCompatActivity {
         participantsList.setAdapter(participantsAdapter);
     }
 
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.i(TAG, "onCreateOptionsMenu");
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.users_share_menu, menu);
 
         MenuItem searchItem = menu.findItem(R.id.action_search);
 
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-
-        SearchView searchView = null;
+        SearchView searchView;
         if (searchItem != null) {
             searchView = (SearchView) searchItem.getActionView();
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
+                    Log.i(TAG, "onCreateOptionsMenu.onQueryTextSubmit");
                     participantsAdapter.getFilter().filter(query);
                     if (participantsAdapter.getCount() == 0) noUsersTv.setVisibility(View.VISIBLE);
                     else noUsersTv.setVisibility(View.GONE);
@@ -112,8 +114,8 @@ public class ShareEventActivity extends AppCompatActivity {
                 }
                 @Override
                 public boolean onQueryTextChange(String s) {
+                    Log.i(TAG, "onCreateOptionsMenu.onQueryTextChange");
                     participantsAdapter.getFilter().filter(s);
-
                     return false;
                 }
             });
@@ -132,6 +134,7 @@ public class ShareEventActivity extends AppCompatActivity {
         private String channelId;
 
         public ShareEventAsyncTask(String sender, String displayName, List<ChatChannel> receivers) {
+            Log.i(TAG, "ShareEvenAsyncTask.constructor: " + sender + ", " + displayName + ", " + receivers);
             this.sender = sender;
             this.displayName = displayName;
             this.receivers = receivers;
@@ -139,6 +142,7 @@ public class ShareEventActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Uri... uris) {
+            Log.i(TAG, "ShareEventAsyncTask.doInBackground");
             if (uris != null) {
                 try {
                     for (ChatChannel receiver : receivers) {
@@ -157,7 +161,7 @@ public class ShareEventActivity extends AppCompatActivity {
         }
 
         private void sendMessage(String text) {
-            Log.i(TAG, "SendTakenPhotoAsyncTask.sendMessage");
+            Log.i(TAG, "ShareEventAsyncTask.sendMessage");
             String message;
             if (isGroup) {
                 message = ChatHelper.groupMessage(sender, displayName, channelId, groupReceivers, text);
@@ -169,6 +173,7 @@ public class ShareEventActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
+            Log.i(TAG, "ShareEventAsyncTask.onPostExecute");
             super.onPostExecute(aVoid);
             Toast.makeText(ShareEventActivity.this, getString(R.string.succes_message_shared_event), Toast.LENGTH_SHORT).show();
         }
