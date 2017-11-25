@@ -4,6 +4,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
+ * Model for user in system
+ *
  * Created by admin on 07.10.2017.
  */
 

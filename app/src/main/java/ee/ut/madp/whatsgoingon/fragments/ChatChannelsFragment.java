@@ -337,6 +337,7 @@ public class ChatChannelsFragment extends Fragment implements Observer {
     }
 
     private void setLastMessage(ChatChannel chatChannel, ChatMessage lastMessage) {
+        Log.i(TAG, "setLastMessage");
         if (chatChannel.isGroup()) {
             if (ChatHelper.isImageText(lastMessage.getMessageText())) {
                 chatChannel.setLastMessage(getPartOfSender(lastMessage.isMe(), lastMessage.getDisplayName()) + " sent a picture");

@@ -31,13 +31,10 @@ import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
 import ee.ut.madp.whatsgoingon.asynctasks.DeleteEventAsyncTask;
 import ee.ut.madp.whatsgoingon.asynctasks.InsertEventAsyncTask;
 import ee.ut.madp.whatsgoingon.asynctasks.UpdateEventAsyncTask;
-import ee.ut.madp.whatsgoingon.models.GoogleAccountHelper;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_EVENTS;
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_EVENTS_ID;
 import static ee.ut.madp.whatsgoingon.constants.PermissionConstants.PERMISSIONS_GROUP_TWO;
-
-//import ee.ut.madp.whatsgoingon.models.Event;
 
 /**
  * Created by admin on 23.11.2017.

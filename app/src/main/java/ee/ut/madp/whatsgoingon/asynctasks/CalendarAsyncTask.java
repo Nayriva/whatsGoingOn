@@ -11,8 +11,8 @@ import java.io.IOException;
 
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
+import ee.ut.madp.whatsgoingon.helpers.GoogleAccountHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
-import ee.ut.madp.whatsgoingon.models.GoogleAccountHelper;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_AUTHORIZATION;
 

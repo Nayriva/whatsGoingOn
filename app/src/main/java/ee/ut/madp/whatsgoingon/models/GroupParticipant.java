@@ -1,6 +1,8 @@
 package ee.ut.madp.whatsgoingon.models;
 
 /**
+ * Model of participant of group.
+ *
  * Created by dominikf on 21. 10. 2017.
  */
 

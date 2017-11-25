@@ -2,6 +2,8 @@
 package ee.ut.madp.whatsgoingon.models;
 
 /**
+ * Model of chat channel.
+ *
  * Created by dominikf on 21. 10. 2017.
  */
 public class ChatChannel {

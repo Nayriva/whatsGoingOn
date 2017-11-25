@@ -47,7 +47,7 @@ public class UserHelper {
      * @param photo photo of user
      * @param logIn if true, user is stored in ApplicationClass as logged user
      */
-    public static void saveNewUserToDB(String name, FirebaseUser firebaseUser, String photo, boolean logIn) {
+    public static synchronized void saveNewUserToDB(String name, FirebaseUser firebaseUser, String photo, boolean logIn) {
         Log.i(TAG, "saveNewUserToDb: " + name + ", " + firebaseUser + ", logIn: " + logIn);
         User user = ModelFactory.createUser(firebaseUser.getUid(), photo, firebaseUser.getEmail(), name);
         if (logIn) {
@@ -141,6 +141,7 @@ public class UserHelper {
     }
 
     private static String getFacebookPhotoUrl(FirebaseUser firebaseUser) {
+        Log.i(TAG, "getFacebookPhotoUrl");
         String facebookUserId = "";
         for (UserInfo profile: firebaseUser.getProviderData()) {
             if (profile.getProviderId().equals("facebook.com")) {

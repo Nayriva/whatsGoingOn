@@ -37,12 +37,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import de.hdodenhof.circleimageview.CircleImageView;
-import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.FirebaseExceptionsChecker;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
-import ee.ut.madp.whatsgoingon.helpers.MyTextWatcherHelper;
+import ee.ut.madp.whatsgoingon.helpers.TextWatcherHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 
 /**
@@ -116,13 +115,13 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
     public void onValidationSucceeded() {
         signUpButton.setEnabled(true);
         signUpButton.setAlpha(1);
-        MyTextWatcherHelper.clearAllInputs(inputLayoutList);
+        TextWatcherHelper.clearAllInputs(inputLayoutList);
     }
 
     @Override
     public void onValidationFailed(List<ValidationError> errors) {
         Log.i(TAG, "onValidationFailed: " + errors);
-        MyTextWatcherHelper.clearAllInputs(inputLayoutList);
+        TextWatcherHelper.clearAllInputs(inputLayoutList);
         for (ValidationError error : errors) {
             View view = error.getView();
             String message = error.getCollatedErrorMessage(this);
@@ -218,6 +217,6 @@ public class SignUpActivity extends AppCompatActivity implements Validator.Valid
 
         inputLayoutList = Arrays.asList(name, email, password, passwordAgain);
 
-        MyTextWatcherHelper.setTextWatcherListeners(inputLayoutList, validator);
+        TextWatcherHelper.setTextWatcherListeners(inputLayoutList, validator);
     }
 }

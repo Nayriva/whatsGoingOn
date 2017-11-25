@@ -3,6 +3,8 @@ package ee.ut.madp.whatsgoingon.models;
 import java.util.List;
 
 /**
+ * Model of group as a chat channel in system
+ *
  * Created by dominikf on 21. 10. 2017.
  */
 

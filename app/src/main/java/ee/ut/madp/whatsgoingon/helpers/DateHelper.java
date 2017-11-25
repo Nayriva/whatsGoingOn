@@ -1,6 +1,7 @@
 package ee.ut.madp.whatsgoingon.helpers;
 
 import android.content.Context;
+import android.util.Log;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -19,12 +20,17 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.FULL_DATE_TIME_
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.TIME_FORMAT;
 
 /**
+ * Helper for working with date.
+ *
  * Created by admin on 27.10.2017.
  */
 
 public class DateHelper {
 
+    private static final String TAG = DateHelper.class.getSimpleName();
+
     public static DateTime parseDateFromString(String stringDate) {
+        Log.i(TAG, "parseDateFromString: " + stringDate);
         DateTime parseDate = null;
         if (!stringDate.isEmpty()) {
             String pattern = stringDate.matches("[a-zA-Z]{3}\\s\\d{1,2}\\s\\d{4}") ? FULL_DATE_FORMAT : DATE_FORMAT;
@@ -38,6 +44,7 @@ public class DateHelper {
     }
 
     public static Date removeTimeFromDate(Date date) {
+        Log.i(TAG, "removeTimeFromDate: " + date);
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -48,6 +55,7 @@ public class DateHelper {
     }
 
     public static DateTime parseTimeFromString(String stringTime) {
+        Log.i(TAG, "parseTimeFromString: " + stringTime);
         DateTime parseTime = null;
         if (!stringTime.isEmpty()) {
             DateTimeFormatter formatter = DateTimeFormat.forPattern(TIME_FORMAT);
@@ -63,6 +71,7 @@ public class DateHelper {
      * @return
      */
     public static String createMessageTime(Context context, long time) {
+        Log.i(TAG, "createMessageTime: " + time);
         DateTimeFormatter dateTimeFormatter;
         String messageTime;
 
@@ -88,28 +97,34 @@ public class DateHelper {
     }
 
     public static String parseTimeFromLong(long time) {
+        Log.i(TAG, "parseTimeFromLong: " + time);
         DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(TIME_FORMAT);
         return dateTimeFormatter.print(time);
     }
 
     public static String parseDateFromLong(long date) {
+        Log.i(TAG, "parseDateFromLong: " + date);
         DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(DATE_FORMAT);
         return dateTimeFormatter.print(date);
     }
 
     public static boolean isToday(long time) {
+        Log.i(TAG, "isToday: " + time);
         return LocalDate.now().compareTo(new LocalDate(time)) == 0;
     }
 
     public static boolean isSameYear(long time) {
+        Log.i(TAG, "isSameYear: " + time);
         return new DateTime(time).getYear() - LocalDate.now().getYear() == 0;
     }
 
     public static boolean isPast(long time) {
+        Log.i(TAG, "isPast: " + time);
         return !isToday(time) && new DateTime(time).isBeforeNow();
     }
 
     public static boolean isFutureTime(long time) {
+        Log.i(TAG, "isFutureTime: " + time);
         return new DateTime(time).isAfter(DateTime.now());
     }
 }

@@ -12,6 +12,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Helper for working with images, mainly converting between bitmap and base64 formats.
+ */
 public class ImageHelper {
 
     private static final String TAG = ImageHelper.class.getSimpleName();
@@ -22,6 +25,7 @@ public class ImageHelper {
      * @return
      */
     public static String encodeBitmap(Bitmap bitmap) {
+        Log.i(TAG, "encodeBitmap");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
         return Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
@@ -33,6 +37,7 @@ public class ImageHelper {
      * @return
      */
     public static Bitmap decodeBitmap(String encodedImage) {
+        Log.i(TAG, "decodeBitmap");
         Bitmap imageDecoded = null;
         if (encodedImage != null && !encodedImage.isEmpty()) {
             byte[] decodedBytes = Base64.decode(encodedImage, Base64.DEFAULT);
@@ -43,7 +48,7 @@ public class ImageHelper {
     }
 
     public static Bitmap getScaledBitmap(Context context, String path) {
-        Log.i(TAG, "getBitmap: " + path);
+        Log.i(TAG, "getScaledBitmap: " + path);
         Uri uri = Uri.fromFile(new File(path));
         InputStream in;
         try {

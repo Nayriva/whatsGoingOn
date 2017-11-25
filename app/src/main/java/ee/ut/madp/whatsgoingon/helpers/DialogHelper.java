@@ -1,6 +1,5 @@
 package ee.ut.madp.whatsgoingon.helpers;
 
-
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
@@ -13,6 +12,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.NumberPicker;
@@ -33,7 +33,12 @@ import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.DATE_FORMAT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.FULL_DATE_FORMAT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.TIME_FORMAT;
 
+/**
+ * Helper for working with dialogs.
+ */
 public class DialogHelper {
+
+    private static final String TAG = DialogHelper.class.getSimpleName();
 
     private static ProgressDialog progressDialog;
 
@@ -43,6 +48,7 @@ public class DialogHelper {
      * @param titleMessage
      */
     public static void showProgressDialog(Context context, String titleMessage) {
+        Log.i(TAG, "showProgressDialog");
         if (context != null) {
             progressDialog = new ProgressDialog(context,R.style.MyAlertDialogStyle);
             progressDialog.setTitle(titleMessage);
@@ -57,6 +63,7 @@ public class DialogHelper {
      * Hides the progress dialog
      */
     public static void hideProgressDialog() {
+        Log.i(TAG, "hideProgressDialog");
         if (progressDialog != null) {
             progressDialog.dismiss();
             progressDialog = null;
@@ -69,6 +76,7 @@ public class DialogHelper {
      * @param message
      */
     public static void showAlertDialog(Context context, String message) {
+        Log.i(TAG, "showAlertDialog");
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(message)
                 .setTitle(R.string.error)
@@ -83,12 +91,14 @@ public class DialogHelper {
      * @param message
      */
     public static void showInformationMessage(View coordinatorLayout, String message) {
+        Log.i(TAG, "showInformationMessage");
         Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_LONG).show();
     }
 
     public static void showTimePickerDialog( final Context context, final TextInputLayout timeInputLayout,
                                              Long dateLong, Long timeLong) {
 
+        Log.i(TAG, "showTimePickerDialog: " + dateLong + ", " + timeLong);
         final Calendar myCalendar = Calendar.getInstance();
         int hours, minutes;
         if (timeLong == null) {
@@ -149,6 +159,7 @@ public class DialogHelper {
 
     public static void showDatePickerDialog(final Context context, final TextInputLayout textInputLayout,
                                             Long dateLong) {
+        Log.i(TAG, "showDatePickerDialog: " + dateLong);
         final Calendar myCalendar = Calendar.getInstance();
         final Calendar c = Calendar.getInstance();
         int year, month, day;
@@ -188,6 +199,7 @@ public class DialogHelper {
     }
 
     public static void showCalendarSyncDialog(final Context context) {
+        Log.i(TAG, "showCalendarSyncDialog");
         final CharSequence[] items = context.getResources().getStringArray(R.array.calendar_types);
         final ArrayList selectedItems = new ArrayList();
 
@@ -221,6 +233,7 @@ public class DialogHelper {
     }
 
     public static void showNumberPickerDialog(final Context context, int selected) {
+        Log.i(TAG, "showNumberPickerDialog: " + selected);
         final NumberPicker numberPicker = new NumberPicker(context);
         numberPicker.setMaxValue(360);
         numberPicker.setMinValue(0);
