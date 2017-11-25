@@ -445,6 +445,7 @@ public class EventFormActivity extends AppCompatActivity
             createdEvent = ModelFactory.createNewEvent(event.getId(), eventName, place, description,
                     DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
             if (event.getEventId() != 0) createdEvent.setEventId(event.getEventId());
+            if (event.getGoogleEventId() != null) createdEvent.setGoogleEventId(event.getGoogleEventId());
         }
 
         else createdEvent = ModelFactory.createNewEvent(null, eventName, place, description,
