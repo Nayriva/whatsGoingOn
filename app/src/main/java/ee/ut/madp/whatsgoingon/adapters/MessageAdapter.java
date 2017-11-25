@@ -22,7 +22,7 @@ import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.ImageHelper;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_ID;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_ID;
 
 /**
  * Created by admin on 27.10.2017.
@@ -98,7 +98,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(context, EventFormActivity.class);
-                    intent.putExtra(EVENT_ID, decodedEventMessage[0]);
+                    intent.putExtra(EXTRA_EVENT_ID, decodedEventMessage[0]);
                     context.startActivity(intent);
                 }
             });

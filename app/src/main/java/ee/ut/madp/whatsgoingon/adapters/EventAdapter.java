@@ -23,8 +23,8 @@ import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.Event;
 
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_ATTENDANTS;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_EVENT;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_ATTENDANTS;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT;
 
 /**
  * Created by admin on 27.10.2017.
@@ -89,8 +89,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.MyViewHolder
         public void onClick(View v) {
             Event event = eventList.get(getAdapterPosition());
             Intent intent = new Intent(v.getContext(), EventFormActivity.class);
-            intent.putStringArrayListExtra(EVENT_ATTENDANTS, (ArrayList<String>) event.getAttendantIds());
-            intent.putExtra(PARCEL_EVENT, event);
+            intent.putStringArrayListExtra(EXTRA_EVENT_ATTENDANTS, (ArrayList<String>) event.getAttendantIds());
+            intent.putExtra(EXTRA_EVENT, event);
             context.startActivityForResult(intent, GeneralConstants.EVENT_DAY_REQUEST_CODE);
         }
     }

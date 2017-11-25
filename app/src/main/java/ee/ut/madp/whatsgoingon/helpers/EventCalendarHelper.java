@@ -17,21 +17,19 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
-import com.google.api.client.util.ExponentialBackOff;
-import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
 import ee.ut.madp.whatsgoingon.constants.PermissionConstants;
+import ee.ut.madp.whatsgoingon.models.GoogleAccountHelper;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_EVENTS;
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_EVENTS_ID;
@@ -44,6 +42,8 @@ import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD
 
 public class EventCalendarHelper {
 
+    private static GoogleAccountCredential googleAccountCredential;
+
     public static void insertEvent(Context context, ee.ut.madp.whatsgoingon.models.Event event, ArrayList calendarTypes) {
 
         if (calendarTypes.contains(context.getResources().getStringArray(R.array.calendar_types)[0])) {
@@ -53,8 +53,6 @@ public class EventCalendarHelper {
         if (calendarTypes.contains(context.getResources().getStringArray(R.array.calendar_types)[1])) {
             addEventToGoogleCalendar(context, event);
         }
-
-
     }
 
     public static void updateEvent(Context context, ee.ut.madp.whatsgoingon.models.Event event) {
@@ -86,65 +84,6 @@ public class EventCalendarHelper {
         return values;
     }
 
-    private static final String[] SCOPES = { CalendarScopes.CALENDAR };
-
-    private static final String PREF_ACCOUNT_NAME = "accountName";
-
-    private static void addEventToGoogleCalendar(Context context, ee.ut.madp.whatsgoingon.models.Event event) {
-        Event newEvent = new Event()
-                .setSummary("Google I/O 2015")
-                .setLocation("800 Howard St., San Francisco, CA 94103")
-                .setDescription("A chance to hear more about Google's developer products.");
-
-        DateTime startDateTime = new DateTime(event.getDateTime());
-        EventDateTime start = new EventDateTime()
-                .setDateTime(startDateTime)
-                .setTimeZone("America/Los_Angeles");
-        newEvent.setStart(start);
-
-        DateTime endDateTime = new DateTime(event.getDateTime());
-        EventDateTime end = new EventDateTime()
-                .setDateTime(endDateTime)
-                .setTimeZone("America/Los_Angeles");
-        newEvent.setEnd(end);
-
-        String calendarId = "primary";
-
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions((Activity) context,
-                    new String[]{Manifest.permission.GET_ACCOUNTS},
-                    PermissionConstants.PERMISSION_REQUEST_GET_ACCOUNTS);
-            return;
-        }
-
-        GoogleAccountCredential mCredential = GoogleAccountCredential.usingOAuth2(
-                context.getApplicationContext(), Arrays.asList(SCOPES))
-                .setBackOff(new ExponentialBackOff());
-//        String accountName = (Activity)context.getPrefence(Context.MODE_PRIVATE)
-//                .getString(PREF_ACCOUNT_NAME, null);
-//        if (accountName != null) {
-//            mCredential.setSelectedAccountName(accountName);
-//        }
-
-        initialize(context, mCredential);
-        try {
-            newEvent = mService.events().insert(calendarId, newEvent).execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private static com.google.api.services.calendar.Calendar mService = null;
-    public static void initialize(Context context, GoogleAccountCredential credential) {
-        HttpTransport transport = AndroidHttp.newCompatibleTransport();
-        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-        mService = new com.google.api.services.calendar.Calendar.Builder(
-                transport, jsonFactory, credential)
-                .setApplicationName("What's Going On")
-                .build();
-    }
-
     private static void addEventToLocalCalendar(Context context, ee.ut.madp.whatsgoingon.models.Event event) {
         ContentResolver cr = context.getContentResolver();
 
@@ -164,4 +103,59 @@ public class EventCalendarHelper {
 
         FirebaseDatabase.getInstance().getReference().child(FIREBASE_CHILD_EVENTS).child(event.getId()).updateChildren(result);
     }
+
+
+    private static void addEventToGoogleCalendar(Context context, ee.ut.madp.whatsgoingon.models.Event event) {
+        googleAccountCredential = GoogleAccountHelper.getGoogleAccountCredential(context);
+        if (GoogleAccountHelper.checkGooglePlayServicesAvailable((Activity) context)) {
+            GoogleAccountHelper.haveGooglePlayServices((Activity) context, googleAccountCredential);
+        }
+
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions((Activity) context,
+                    new String[]{Manifest.permission.GET_ACCOUNTS},
+                    PermissionConstants.PERMISSION_REQUEST_GET_ACCOUNTS);
+            return;
+        }
+
+        Event newEvent = new Event()
+                .setSummary("Google I/O 2015")
+                .setLocation("800 Howard St., San Francisco, CA 94103")
+                .setDescription("A chance to hear more about Google's developer products.");
+
+        DateTime startDateTime = new DateTime(event.getDateTime());
+        EventDateTime start = new EventDateTime()
+                .setDateTime(startDateTime)
+                .setTimeZone("America/Los_Angeles");
+        newEvent.setStart(start);
+
+        DateTime endDateTime = new DateTime(event.getDateTime());
+        EventDateTime end = new EventDateTime()
+                .setDateTime(endDateTime)
+                .setTimeZone("America/Los_Angeles");
+        newEvent.setEnd(end);
+
+        String calendarId = "primary";
+
+        initialize(context);
+        try {
+            newEvent = mService.events().insert(calendarId, newEvent).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static com.google.api.services.calendar.Calendar mService = null;
+
+    public static void initialize(Context context) {
+        HttpTransport transport = AndroidHttp.newCompatibleTransport();
+        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+        mService = new com.google.api.services.calendar.Calendar.Builder(
+                transport, jsonFactory, GoogleAccountHelper.getGoogleAccountCredential(context))
+                .setApplicationName("What's Going On")
+                .build();
+    }
+
+
 }

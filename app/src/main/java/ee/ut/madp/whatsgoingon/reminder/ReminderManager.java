@@ -8,8 +8,8 @@ import android.os.SystemClock;
 
 import ee.ut.madp.whatsgoingon.models.Event;
 
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.NOTIFICATION_ID;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_EVENT;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_NOTIFICATION_ID;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT;
 
 /**
  * Created by admin on 24.11.2017.
@@ -32,7 +32,7 @@ public class ReminderManager {
     public void setReminder(Event event, long when) {
 
         Intent notificationIntent = new Intent(context, ReminderReceiver.class);
-        notificationIntent.putExtra(PARCEL_EVENT, event);
+        notificationIntent.putExtra(EXTRA_EVENT, event);
 
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, event.getId().hashCode(), notificationIntent, 0);
         alarmManager.set(AlarmManager.RTC_WAKEUP, when, alarmIntent);
@@ -45,7 +45,7 @@ public class ReminderManager {
      */
     public void setRepeatingAlarm(int notificationId) {
         Intent notificationIntent = new Intent(context, ReminderReceiver.class);
-        notificationIntent.putExtra(NOTIFICATION_ID, notificationId);
+        notificationIntent.putExtra(EXTRA_NOTIFICATION_ID, notificationId);
 
 
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, notificationId, notificationIntent, 0);

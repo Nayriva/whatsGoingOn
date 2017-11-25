@@ -49,8 +49,8 @@ import ee.ut.madp.whatsgoingon.models.Event;
 
 import static android.app.Activity.RESULT_OK;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENTS_REQUEST_CODE;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EVENT_DAY_BECAME_EMPTY;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARAM_EVENT_DAY;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_DAY_BECAME_EMPTY;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_DAY;
 
 public class EventFragment extends Fragment implements Observer {
 
@@ -78,8 +78,8 @@ public class EventFragment extends Fragment implements Observer {
             }
         }
         if (requestCode == EVENTS_REQUEST_CODE && resultCode == RESULT_OK) {
-            if (data.hasExtra(EVENT_DAY_BECAME_EMPTY)) {
-                long day = data.getLongExtra(EVENT_DAY_BECAME_EMPTY, 0);
+            if (data.hasExtra(EXTRA_EVENT_DAY_BECAME_EMPTY)) {
+                long day = data.getLongExtra(EXTRA_EVENT_DAY_BECAME_EMPTY, 0);
                 if (day != 0) {
                     daysWithEvents.remove(DateHelper.removeTimeFromDate(new Date(day)));
                 }
@@ -144,7 +144,7 @@ public class EventFragment extends Fragment implements Observer {
                 Log.i(TAG, "onResume.onDateSelected");
                 if (daysWithEvents.contains(DateHelper.removeTimeFromDate(date))) {
                     Intent intent = new Intent(getActivity(), EventsOnDayActivity.class);
-                    intent.putExtra(PARAM_EVENT_DAY, DateHelper.removeTimeFromDate(date).getTime());
+                    intent.putExtra(EXTRA_EVENT_DAY, DateHelper.removeTimeFromDate(date).getTime());
                     getActivity().startActivityForResult(intent, EVENTS_REQUEST_CODE);
                 }
             }

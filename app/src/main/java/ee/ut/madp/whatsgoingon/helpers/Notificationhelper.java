@@ -19,8 +19,8 @@ import ee.ut.madp.whatsgoingon.models.Event;
 import ee.ut.madp.whatsgoingon.reminder.DismissReceiver;
 import ee.ut.madp.whatsgoingon.reminder.SnoozeReceiver;
 
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.NOTIFICATION_ID;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PARCEL_EVENT;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_NOTIFICATION_ID;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT;
 
 /**
  * Created by admin on 24.11.2017.
@@ -44,7 +44,7 @@ public class NotificationHelper {
         NotificationCompat.Builder builder = getNotificationBuilder(context, event.getName(),
                 DateHelper.parseDateFromLong(event.getDateTime()) + ", " + event.getPlace());
         Intent resultIntent = new Intent(context, EventFormActivity.class);
-        resultIntent.putExtra(PARCEL_EVENT, event);
+        resultIntent.putExtra(EXTRA_EVENT, event);
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addParentStack(MainActivity.class);
@@ -99,7 +99,7 @@ public class NotificationHelper {
      */
     private static PendingIntent createDismissIntent(Context context, int notificationId) {
         Intent dismissIntent = new Intent(context, DismissReceiver.class);
-        dismissIntent.putExtra(NOTIFICATION_ID, notificationId);
+        dismissIntent.putExtra(EXTRA_NOTIFICATION_ID, notificationId);
 
         return PendingIntent.getBroadcast(context, notificationId, dismissIntent, 0);
     }
@@ -112,7 +112,7 @@ public class NotificationHelper {
      */
     private static PendingIntent createSnoozeIntent(Context context, int notificationId) {
         Intent snoozeIntent = new Intent(context, SnoozeReceiver.class);
-        snoozeIntent.putExtra(NOTIFICATION_ID, notificationId);
+        snoozeIntent.putExtra(EXTRA_NOTIFICATION_ID, notificationId);
 
         return PendingIntent.getBroadcast(context, notificationId, snoozeIntent, 0);
     }

@@ -66,7 +66,7 @@ import ee.ut.madp.whatsgoingon.models.GroupParticipant;
 import ee.ut.madp.whatsgoingon.models.User;
 
 import static ee.ut.madp.whatsgoingon.R.string.add_members;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.CHANNEL_ID;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_CHANNEL_ID;
 import static ee.ut.madp.whatsgoingon.constants.PermissionConstants.PERMISSIONS_GROUP_ONE;
 
 public class ConversationActivity extends AppCompatActivity implements Observer {
@@ -100,8 +100,8 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         usersRef = FirebaseDatabase.getInstance().getReference().child(FirebaseConstants.FIREBASE_CHILD_USERS);
         photosMap = new HashMap<>();
 
-        if (getIntent().hasExtra(CHANNEL_ID)) {
-            chatChannel = application.getChannel(getIntent().getStringExtra(CHANNEL_ID));
+        if (getIntent().hasExtra(EXTRA_CHANNEL_ID)) {
+            chatChannel = application.getChannel(getIntent().getStringExtra(EXTRA_CHANNEL_ID));
             setTitle(chatChannel.getName());
         }
 

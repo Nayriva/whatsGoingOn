@@ -2,7 +2,6 @@ package ee.ut.madp.whatsgoingon.activities;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -24,6 +23,7 @@ import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
+import ee.ut.madp.whatsgoingon.constants.GeneralConstants;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
@@ -33,13 +33,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener, Observer {
 
     private static final String TAG = SettingsActivity.class.getSimpleName();
-
-    public static final String PREFERENCE_PASSWORD = "password";
-    public static final String PREFERENCE_MESSAGE_NOTIFICATION = "notifications_message";
-    public static final String PREFERENCE_NOTIFICATION_VIBRATE = "notification_vibrate";
-    public static final String PREFERENCE_NOTIFICATION_RINGTONE = "notification_ringtone";
-    public static final String PREFERENCE_REMINDER_HOURS_BEFORE = "reminder_hours_before";
-    public static final String PREFERENCE_REMINDERS = "notification_reminders";
 
     private static FirebaseAuth firebaseAuth;
     private Intent intent;
@@ -90,34 +83,34 @@ public class SettingsActivity extends AppCompatPreferenceActivity
         Log.i(TAG, "onSharedPreferenceChanged: " + sharedPreferences + ", " + key);
         SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        if (key.equals(PREFERENCE_MESSAGE_NOTIFICATION)) {
+        if (key.equals(GeneralConstants.PREF_MESSAGE_NOTIFICATION)) {
             boolean isAllowed = sharedPreferences.getBoolean(key, true);
-            editor.putBoolean(PREFERENCE_MESSAGE_NOTIFICATION, isAllowed);
+            editor.putBoolean(GeneralConstants.PREF_MESSAGE_NOTIFICATION, isAllowed);
             editor.apply();
             ApplicationClass.notificationsOn = isAllowed;
         }
 
-        if (key.equals(PREFERENCE_NOTIFICATION_VIBRATE)) {
+        if (key.equals(GeneralConstants.PREF_NOTIFICATION_VIBRATE)) {
             boolean isAllowed = sharedPreferences.getBoolean(key, true);
-            editor.putBoolean(PREFERENCE_NOTIFICATION_VIBRATE, isAllowed);
+            editor.putBoolean(GeneralConstants.PREF_NOTIFICATION_VIBRATE, isAllowed);
             editor.commit();
             ApplicationClass.vibrateOn = isAllowed;
         }
-        if (key.equals(PREFERENCE_REMINDERS)) {
+        if (key.equals(GeneralConstants.PREF_REMINDERS)) {
             boolean isAllowed = sharedPreferences.getBoolean(key, true);
-            editor.putBoolean(PREFERENCE_REMINDERS, isAllowed);
+            editor.putBoolean(GeneralConstants.PREF_REMINDERS, isAllowed);
             editor.commit();
         }
 
-        if (key.equals(PREFERENCE_REMINDER_HOURS_BEFORE)) {
+        if (key.equals(GeneralConstants.PREF_REMINDER_HOURS_BEFORE)) {
             int hours = sharedPreferences.getInt(key, 1);
-            editor.putInt(PREFERENCE_REMINDER_HOURS_BEFORE, hours);
+            editor.putInt(GeneralConstants.PREF_REMINDER_HOURS_BEFORE, hours);
             editor.commit();
         }
 
-        if (key.equals(PREFERENCE_NOTIFICATION_RINGTONE)) {
-            String ringtonePreference = sharedPreferences.getString(PREFERENCE_NOTIFICATION_RINGTONE, "DEFAULT_SOUND");
-            editor.putString(PREFERENCE_NOTIFICATION_RINGTONE, ringtonePreference);
+        if (key.equals(GeneralConstants.PREF_NOTIFICATION_RINGTONE)) {
+            String ringtonePreference = sharedPreferences.getString(GeneralConstants.PREF_NOTIFICATION_RINGTONE, "DEFAULT_SOUND");
+            editor.putString(GeneralConstants.PREF_NOTIFICATION_RINGTONE, ringtonePreference);
             editor.commit();
             ApplicationClass.setRingtone(ringtonePreference);
         }
@@ -169,7 +162,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.settings);
 
-            Preference passwordPreference = findPreference(PREFERENCE_PASSWORD);
+            Preference passwordPreference = findPreference(GeneralConstants.PREF_PASSWORD);
             passwordPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
@@ -188,7 +181,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity
                 }
             });
 
-            Preference hoursBeforePreference = findPreference(PREFERENCE_REMINDER_HOURS_BEFORE);
+            Preference hoursBeforePreference = findPreference(GeneralConstants.PREF_REMINDER_HOURS_BEFORE);
             hoursBeforePreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
