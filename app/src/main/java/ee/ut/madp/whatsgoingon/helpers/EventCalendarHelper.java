@@ -64,7 +64,7 @@ public class EventCalendarHelper {
         cr.update(eventUri, createEventValues(event), null, null);
         // update event in Google calendar
         new UpdateEventAsyncTask((EventFormActivity) context, EventCalendarHelper.initializeCalendarService(context),
-                event.getGoogleEventId(), EventCalendarHelper.createGoogleEvent(event)).execute();
+                EventFormActivity.getEvent().getGoogleEventId(), EventCalendarHelper.createGoogleEvent(event)).execute();
 
     }
 

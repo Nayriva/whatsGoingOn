@@ -9,9 +9,7 @@ import com.google.api.services.calendar.Calendar;
 
 import java.io.IOException;
 
-import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
-import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.models.GoogleAccountHelper;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_AUTHORIZATION;
@@ -48,13 +46,13 @@ abstract class CalendarAsyncTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        DialogHelper.showProgressDialog(activity, activity.getString(R.string.event_processing));
+        // DialogHelper.showProgressDialog(activity, activity.getString(R.string.event_processing));
     }
 
     @Override
     protected final void onPostExecute(Void ignored) {
         super.onPostExecute(ignored);
-        DialogHelper.hideProgressDialog();
+        // DialogHelper.hideProgressDialog();
     }
 
     protected abstract void doInBackground() throws IOException;

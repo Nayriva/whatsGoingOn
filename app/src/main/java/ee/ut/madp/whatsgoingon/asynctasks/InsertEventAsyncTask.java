@@ -33,6 +33,7 @@ public class InsertEventAsyncTask extends CalendarAsyncTask {
             HashMap<String, Object> result = new HashMap<>();
             result.put(FIREBASE_CHILD_EVENTS_GOOGLE_ID, eventId);
             FirebaseDatabase.getInstance().getReference().child(FIREBASE_CHILD_EVENTS).child(firebaseEventId).updateChildren(result);
+            EventFormActivity.getEvent().setGoogleEventId(eventId);
         }
     }
 }
