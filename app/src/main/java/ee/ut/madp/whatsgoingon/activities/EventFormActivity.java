@@ -43,6 +43,7 @@ import butterknife.OnClick;
 import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.ModelFactory;
 import ee.ut.madp.whatsgoingon.R;
+import ee.ut.madp.whatsgoingon.asynctasks.InsertEventAsyncTask;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
 import ee.ut.madp.whatsgoingon.constants.FirebaseConstants;
@@ -320,7 +321,7 @@ public class EventFormActivity extends AppCompatActivity
         Log.i(TAG, "deleteEvent");
         if (event != null && canEdit) {
             eventsRef.child(event.getId()).removeValue();
-            if (event.getEventId() != 0) EventCalendarHelper.deleteEvent(this, event.getEventId());
+            if (event.getEventId() != 0 || event.getGoogleEventId() != null) EventCalendarHelper.deleteEvent(this, event.getEventId(), event.getGoogleEventId());
 
             Toast.makeText(this, getString(R.string.success_message_deleted_event), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent();
@@ -398,7 +399,7 @@ public class EventFormActivity extends AppCompatActivity
         switch (requestCode) {
             case REQUEST_GOOGLE_PLAY_SERVICES:
                 if (resultCode == Activity.RESULT_OK) {
-                    // have been installed
+                    // has been installed
                     GoogleAccountHelper.haveGooglePlayServices(this, GoogleAccountHelper.getGoogleAccountCredential(this));
                 } else {
                     GoogleAccountHelper.checkGooglePlayServicesAvailable(this);
@@ -406,7 +407,8 @@ public class EventFormActivity extends AppCompatActivity
                 break;
             case REQUEST_AUTHORIZATION:
                 if (resultCode == Activity.RESULT_OK) {
-                    //AsyncLoadCalendars.run(this);
+                    new InsertEventAsyncTask(EventFormActivity.this, EventCalendarHelper.initializeCalendarService(EventFormActivity.this),
+                            event.getId(), EventCalendarHelper.createGoogleEvent(event)).execute();
                 } else {
                     GoogleAccountHelper.chooseAccount(this);
                 }
@@ -420,7 +422,8 @@ public class EventFormActivity extends AppCompatActivity
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putString(PREF_ACCOUNT_NAME, accountName);
                         editor.commit();
-                        //AsyncLoadCalendars.run(this);
+                        new InsertEventAsyncTask(EventFormActivity.this, EventCalendarHelper.initializeCalendarService(EventFormActivity.this),
+                                event.getId(), EventCalendarHelper.createGoogleEvent(event)).execute();
                     }
                 }
                 break;
@@ -476,6 +479,7 @@ public class EventFormActivity extends AppCompatActivity
             createdEvent = ModelFactory.createNewEvent(event.getId(), eventName, place, description,
                     DateHelper.removeTimeFromDate(date.toDate()).getTime(), ownerId, dateTime.getMillis());
             if (event.getEventId() != 0) createdEvent.setEventId(event.getEventId());
+            if (event.getGoogleEventId() != null) createdEvent.setGoogleEventId(event.getGoogleEventId());
         }
 
         else createdEvent = ModelFactory.createNewEvent(null, eventName, place, description,
