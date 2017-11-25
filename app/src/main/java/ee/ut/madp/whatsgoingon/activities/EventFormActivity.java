@@ -247,7 +247,7 @@ public class EventFormActivity extends AppCompatActivity
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.home: {
-                onBackPressed();
+                finish();
                 return true;
             }
             case R.id.share_button:

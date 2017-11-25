@@ -62,13 +62,18 @@
             android:name=".activities.MyProfileActivity"
             android:label="@string/title_activity_my_profile"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".activities.EventsOnDayActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
+        </activity>
         <activity
             android:name=".activities.EventFormActivity"
             android:label="@string/new_event_label"
             android:windowSoftInputMode="stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
+                android:value="ee.ut.madp.whatsgoingon.activities.EventFormActivity" />
         </activity>
         <activity
             android:name=".activities.ConversationActivity"
@@ -77,11 +82,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
         </activity>
-        <activity android:name=".activities.EventsOnDayActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="ee.ut.madp.whatsgoingon.activities.MainActivity" />
-        </activity>
+
         <activity
             android:name=".activities.UserProfileActivity"
             android:theme="@style/AppTheme.NoActionBar" />
