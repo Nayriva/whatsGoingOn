@@ -188,11 +188,14 @@ public class SettingsActivity extends AppCompatPreferenceActivity
                 }
             });
 
+            SharedPreferences prefs = getPreferenceManager().getSharedPreferences() ;
+            final int hours = prefs.getInt(PREFERENCE_REMINDER_HOURS_BEFORE, 1);
+
             Preference hoursBeforePreference = findPreference(PREFERENCE_REMINDER_HOURS_BEFORE);
             hoursBeforePreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    DialogHelper.showNumberPickerDialog(getContext());
+                    DialogHelper.showNumberPickerDialog(getActivity(), hours);
                     return true;
                 }
             });

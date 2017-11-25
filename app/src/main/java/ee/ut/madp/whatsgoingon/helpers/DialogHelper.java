@@ -220,11 +220,11 @@ public class DialogHelper {
         dialog.show();
     }
 
-    public static void showNumberPickerDialog(final Context context) {
+    public static void showNumberPickerDialog(final Context context, int selected) {
         final NumberPicker numberPicker = new NumberPicker(context);
         numberPicker.setMaxValue(360);
         numberPicker.setMinValue(0);
-        int chosenValue;
+        numberPicker.setValue(selected);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(context.getString(R.string.hours_before_event_title));
