@@ -2,6 +2,7 @@ package ee.ut.madp.whatsgoingon.asynctasks;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -9,6 +10,7 @@ import com.google.api.services.calendar.Calendar;
 
 import java.io.IOException;
 
+import ee.ut.madp.whatsgoingon.R;
 import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
 import ee.ut.madp.whatsgoingon.models.GoogleAccountHelper;
 
@@ -53,6 +55,7 @@ abstract class CalendarAsyncTask extends AsyncTask<Void, Void, Void> {
     protected final void onPostExecute(Void ignored) {
         super.onPostExecute(ignored);
         // DialogHelper.hideProgressDialog();
+        Toast.makeText(activity, activity.getString(R.string.synchronized_event), Toast.LENGTH_SHORT).show();
     }
 
     protected abstract void doInBackground() throws IOException;

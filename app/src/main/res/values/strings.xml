@@ -207,5 +207,6 @@
     <string name="event_processing">Event is being processed</string>
     <string name="sent_picture">Sent you a picture</string>
     <string name="shared_event">Shared an event with you</string>
+    <string name="synchronized_event">Event has been synchronized</string>
 
 </resources>

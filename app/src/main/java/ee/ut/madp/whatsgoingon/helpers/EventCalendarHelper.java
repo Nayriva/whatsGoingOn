@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
+import android.widget.Toast;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -69,9 +70,11 @@ public class EventCalendarHelper {
     }
 
     public static void deleteEvent(Context context, long eventId, String googleEventId) {
-        // delete event from local calendar
-        Uri eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId);
-        context.getContentResolver().delete(eventUri, null, null);
+        if (eventId != 0) {
+            // delete event from local calendar
+            Uri eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId);
+            context.getContentResolver().delete(eventUri, null, null);
+        }
         // delete vent from Google calendar
         if (googleEventId != null)
             new DeleteEventAsyncTask((EventFormActivity) context, EventCalendarHelper.initializeCalendarService(context),
@@ -113,6 +116,7 @@ public class EventCalendarHelper {
         result.put(FIREBASE_CHILD_EVENTS_ID, eventID);
 
         FirebaseDatabase.getInstance().getReference().child(FIREBASE_CHILD_EVENTS).child(event.getId()).updateChildren(result);
+        Toast.makeText(context, context.getString(R.string.synchronized_event), Toast.LENGTH_SHORT).show();
     }
 
 

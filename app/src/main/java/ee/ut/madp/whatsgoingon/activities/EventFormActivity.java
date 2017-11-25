@@ -308,7 +308,7 @@ public class EventFormActivity extends AppCompatActivity
     public void deleteEvent() {
         if (event != null && canEdit) {
             eventsRef.child(event.getId()).removeValue();
-            if (event.getEventId() != 0) EventCalendarHelper.deleteEvent(this, event.getEventId(), event.getGoogleEventId());
+            if (event.getEventId() != 0 || event.getGoogleEventId() != null) EventCalendarHelper.deleteEvent(this, event.getEventId(), event.getGoogleEventId());
 
             Toast.makeText(this, getString(R.string.success_message_deleted_event), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent();
