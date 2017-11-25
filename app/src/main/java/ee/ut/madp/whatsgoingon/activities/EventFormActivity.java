@@ -1,6 +1,5 @@
 package ee.ut.madp.whatsgoingon.activities;
 
-import android.Manifest;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Context;
@@ -10,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -61,11 +59,11 @@ import ee.ut.madp.whatsgoingon.models.Event;
 import ee.ut.madp.whatsgoingon.helpers.GoogleAccountHelper;
 import ee.ut.madp.whatsgoingon.reminder.ReminderManager;
 
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_REMINDERS;
-import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_REMINDER_HOURS_BEFORE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT_ID;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_ACCOUNT_NAME;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_REMINDERS;
+import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.PREF_REMINDER_HOURS_BEFORE;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_ACCOUNT_PICKER;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_AUTHORIZATION;
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.REQUEST_GOOGLE_PLAY_SERVICES;
@@ -380,13 +378,6 @@ public class EventFormActivity extends AppCompatActivity
     @OnClick(R.id.btn_synchronize)
     public void synchronizeEvents() {
         Log.i(TAG, "synchronizeEvents");
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_CALENDAR},
-                    PermissionConstants.PERMISSION_REQUEST_WRITE_CALENDAR);
-
-            return;
-        }
 
         DialogHelper.showCalendarSyncDialog(this);
     }
@@ -449,7 +440,7 @@ public class EventFormActivity extends AppCompatActivity
                                            String permissions[], int[] grantResults) {
         Log.i(TAG, "onRequestPermissionsResult");
         switch (requestCode) {
-            case PermissionConstants.PERMISSION_REQUEST_WRITE_CALENDAR: {
+            case PermissionConstants.PERMISSIONS_GROUP_TWO: {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     synchronizeEvents();
                     Toast.makeText(EventFormActivity.this, "Permission was granted", Toast.LENGTH_LONG).show();

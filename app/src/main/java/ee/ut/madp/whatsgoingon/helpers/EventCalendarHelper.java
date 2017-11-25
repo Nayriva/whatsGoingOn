@@ -31,18 +31,18 @@ import ee.ut.madp.whatsgoingon.activities.EventFormActivity;
 import ee.ut.madp.whatsgoingon.asynctasks.DeleteEventAsyncTask;
 import ee.ut.madp.whatsgoingon.asynctasks.InsertEventAsyncTask;
 import ee.ut.madp.whatsgoingon.asynctasks.UpdateEventAsyncTask;
-import ee.ut.madp.whatsgoingon.constants.PermissionConstants;
 
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_EVENTS;
 import static ee.ut.madp.whatsgoingon.constants.FirebaseConstants.FIREBASE_CHILD_EVENTS_ID;
-
-//import ee.ut.madp.whatsgoingon.models.Event;
+import static ee.ut.madp.whatsgoingon.constants.PermissionConstants.PERMISSIONS_GROUP_TWO;
 
 /**
  * Created by admin on 23.11.2017.
  */
 
 public class EventCalendarHelper {
+
+    static String[] PERMISSIONS = {Manifest.permission.GET_ACCOUNTS, Manifest.permission.WRITE_CALENDAR};
 
     private static GoogleAccountCredential googleAccountCredential;
 
@@ -103,11 +103,9 @@ public class EventCalendarHelper {
 
     private static void addEventToLocalCalendar(Context context, ee.ut.madp.whatsgoingon.models.Event event) {
         ContentResolver cr = context.getContentResolver();
-
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions((Activity) context,
-                    new String[]{Manifest.permission.WRITE_CALENDAR},
-                    PermissionConstants.PERMISSION_REQUEST_WRITE_CALENDAR);
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(context, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions((Activity) context, PERMISSIONS, PERMISSIONS_GROUP_TWO);
             return;
         }
         Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, createEventValues(event));
@@ -129,10 +127,9 @@ public class EventCalendarHelper {
             GoogleAccountHelper.haveGooglePlayServices((Activity) context, googleAccountCredential);
         }
 
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions((Activity) context,
-                    new String[]{Manifest.permission.GET_ACCOUNTS},
-                    PermissionConstants.PERMISSION_REQUEST_GET_ACCOUNTS);
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(context, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions((Activity) context, PERMISSIONS, PERMISSIONS_GROUP_TWO);
             return;
         }
 
