@@ -125,6 +125,7 @@ public class EventFormActivity extends AppCompatActivity
                 setupContent();
             }
         } else {
+            setValidation();
             event = null;
         }
 
