@@ -191,6 +191,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
             case ApplicationClass.GROUP_MESSAGE_RECEIVED: {
                 if (data.equals(chatChannel.getId())) {
                     updateHistory();
+                    chatChannel.setNewMessage(false);
                 } else {
                     ChatChannel chatChannel = application.getChannel(data);
                     ChatMessage lastMessage = application.getLastMessage(data);
@@ -267,8 +268,6 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
                 }
             }
-
-
         }
     }
 

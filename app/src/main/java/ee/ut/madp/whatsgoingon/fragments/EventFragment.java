@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.res.ResourcesCompat;
@@ -13,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.api.client.util.DateTime;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -211,18 +213,18 @@ public class EventFragment extends Fragment implements Observer {
         @Override
         public void decorate(DayView dayView) {
             Log.i(TAG, "EventColorDecorator.decorate");
+            Calendar myCalendar = Calendar.getInstance();
+            Date actualDate = DateHelper.removeTimeFromDate(myCalendar.getTime());
             for (Date eventDay : daysWithEvents) {
                 if (DateHelper.removeTimeFromDate(dayView.getDate()).equals(eventDay)) {
                     dayView.setTextColor(Color.WHITE);
-                    if (dayView.getDate().before(new Date())) {
+                    Date dayViewDate = DateHelper.removeTimeFromDate(dayView.getDate());
+                    if (dayViewDate.before(actualDate)) {
                         dayView.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.colorGrey, null));
                     } else {
                         dayView.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.colorAccent, null));
                     }
-
-
                 }
-
 
                 if (DateHelper.isToday(dayView.getDate().getTime())) {
                     dayView.setPaintFlags(dayView.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);

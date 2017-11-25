@@ -29,8 +29,14 @@ public class MessageNotificationHelper {
             NotificationCompat.Builder builder =
                     new NotificationCompat.Builder(context)
                             .setSmallIcon(R.drawable.logo)
-                            .setContentTitle(sender)
-                            .setContentText(text);
+                            .setContentTitle(sender);
+            if (ChatHelper.isImageText(text)) {
+                builder.setContentText(context.getString(R.string.sent_picture));
+            } else if (ChatHelper.isEventText(text)) {
+                builder.setContentText(context.getString(R.string.shared_event));
+            } else {
+                builder.setContentText(text);
+            }
             if (ApplicationClass.notificationsOn) {
                 builder.setSound(ApplicationClass.getRingtone());
             }

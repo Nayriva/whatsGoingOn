@@ -18,9 +18,9 @@ public class ChatChannelComparator implements Comparator<ChatChannel> {
         if (chatChannel == null && chatChannel2 == null) {
             return 0;
         } else if (chatChannel == null) {
-            return 1;
-        } else if (chatChannel2 == null) {
             return -1;
+        } else if (chatChannel2 == null) {
+            return 1;
         }
 
         String t1 = chatChannel.getLastMessageTime();
@@ -34,7 +34,7 @@ public class ChatChannelComparator implements Comparator<ChatChannel> {
         } else {
             DateTime t1Date = DateHelper.parseTimeFromString(t1);
             DateTime t2Date = DateHelper.parseTimeFromString(t2);
-            return t1Date.compareTo(t2Date);
+            return -1 * t1Date.compareTo(t2Date);
         }
     }
 }

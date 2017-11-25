@@ -115,8 +115,7 @@ public class ApplicationClass extends Application implements Observable, Observe
         mBusControlHandler = new Handler(busControlThread.getLooper(), new ControlBusHandlerCallback());
         mBusControlHandler.sendEmptyMessage(ControlBusHandlerCallback.CONNECT);
 
-        SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon",
-                Context.MODE_WORLD_READABLE);
+        SharedPreferences prefs = getSharedPreferences("setting.whatsgoingon", Context.MODE_PRIVATE);
         notificationsOn = prefs.getBoolean(GeneralConstants.PREF_MESSAGE_NOTIFICATION, true);
         vibrateOn = prefs.getBoolean(GeneralConstants.PREF_NOTIFICATION_VIBRATE, true);
         ringtone = Uri.parse(prefs.getString(GeneralConstants.PREF_NOTIFICATION_RINGTONE, "DEFAULT_SOUND"))   ;
@@ -542,6 +541,10 @@ public class ApplicationClass extends Application implements Observable, Observe
         }
         storeGroupMessage(receivedMsg, true);
         String gid = ChatHelper.groupMessageGID(receivedMsg);
+        ChatChannel chatChannel = getChannel(gid);
+        if (chatChannel != null) {
+            chatChannel.setNewMessage(true);
+        }
         notifyObservers(GROUP_MESSAGE_RECEIVED, gid);
     }
 
@@ -576,6 +579,10 @@ public class ApplicationClass extends Application implements Observable, Observe
             return;
         }
         storeOneToOneMessage(receivedMsg);
+        ChatChannel chatChannel = getChannel(sender);
+        if (chatChannel != null) {
+            chatChannel.setNewMessage(true);
+        }
         notifyObservers(ONE_TO_ONE_MESSAGE_RECEIVED, sender);
     }
 

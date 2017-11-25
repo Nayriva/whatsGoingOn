@@ -72,6 +72,7 @@ import static ee.ut.madp.whatsgoingon.models.GoogleAccountHelper.getGoogleAccoun
 public class EventFormActivity extends AppCompatActivity
         implements Validator.ValidationListener, Observer {
 
+    private static final int SHARE_EVENT_REQUEST_CODE = 1;
     @NotEmpty
     @BindView(R.id.input_layout_eventname) TextInputLayout eventName;
     @NotEmpty
@@ -170,6 +171,8 @@ public class EventFormActivity extends AppCompatActivity
                 joinEventButton.setVisibility(View.VISIBLE);
                 lockEdits();
             }
+        } else {
+            lockEdits();
         }
 
         synchronizeEventButton.setEnabled(true);
@@ -234,10 +237,16 @@ public class EventFormActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
+            case R.id.home: {
+                onBackPressed();
+                return true;
+            }
             case R.id.share_button:
-                if (event != null)
+                if (event != null) {
                     shareEvent(event);
-                else shareEvent(collectEventData(false));
+                } else {
+                    shareEvent(collectEventData(false));
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -495,7 +504,7 @@ public class EventFormActivity extends AppCompatActivity
         sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, subject);
         String text = DateHelper.parseDateFromLong(event.getDateTime()) + " at " + DateHelper.parseTimeFromLong(event.getDateTime()) + ", " + event.getPlace();
         sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, text);
-        startActivity(Intent.createChooser(sharingIntent, "Sharing option"));
+        startActivityForResult(Intent.createChooser(sharingIntent, "Sharing option"), SHARE_EVENT_REQUEST_CODE);
     }
 
     public static Event getEvent() {

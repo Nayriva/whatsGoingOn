@@ -35,9 +35,7 @@ public class DateHelper {
             }
         }
         return parseDate;
-
     }
-
 
     public static Date removeTimeFromDate(Date date) {
         Calendar cal = Calendar.getInstance();
