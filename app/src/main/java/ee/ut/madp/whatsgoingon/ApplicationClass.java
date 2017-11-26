@@ -276,6 +276,7 @@ public class ApplicationClass extends Application implements Observable, Observe
                     IncomingMessagesTable.COLUMN_NAME_TIME
             };
             return incomingProjection;
+
         }
 
         public String[] getOutgoingProjection() {
@@ -352,7 +353,7 @@ public class ApplicationClass extends Application implements Observable, Observe
         @Override
         public boolean handleMessage(Message msg) {
             Log.i(TAG, "mChatHandler.handleMessage: " + msg);
-            if (firebaseAuth.getCurrentUser() != null && msg.what == MESSAGE_CHAT) {
+            if (firebaseAuth != null && firebaseAuth.getCurrentUser() != null && msg.what == MESSAGE_CHAT) {
                 String receivedMsg = (String) msg.obj;
                 String messageType = ChatHelper.getMessageType(receivedMsg);
                 switch (messageType) {
@@ -378,7 +379,7 @@ public class ApplicationClass extends Application implements Observable, Observe
         @Override
         public boolean handleMessage(Message message) {
             Log.i(TAG, "mControlHandler.handleMessage: " + message);
-            if (firebaseAuth.getCurrentUser() != null && message.what == MESSAGE_CONTROL) {
+            if (firebaseAuth != null && firebaseAuth.getCurrentUser() != null && message.what == MESSAGE_CONTROL) {
                 String receivedMsg = (String) message.obj;
                 String messageType = ChatHelper.getMessageType(receivedMsg);
                 switch (messageType) {

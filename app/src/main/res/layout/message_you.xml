@@ -28,6 +28,14 @@
             android:orientation="horizontal">
 
             <TextView
+                android:id="@+id/tv_message_author"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorTextInfo"
+                android:textSize="@dimen/h6"
+                android:layout_marginBottom="@dimen/spacing_xsmall"/>
+
+            <TextView
                 android:id="@+id/tv_message_time"
                 android:layout_marginLeft="@dimen/spacing_medium"
                 android:layout_width="wrap_content"
@@ -37,14 +45,6 @@
                 android:textColor="@color/colorTextInfo"
                 android:textSize="@dimen/h6"
                 android:layout_marginBottom="@dimen/spacing_small" />
-
-            <TextView
-                android:id="@+id/tv_message_author"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/colorTextInfo"
-                android:textSize="@dimen/h6"
-                android:layout_marginBottom="@dimen/spacing_xsmall"/>
 
         </LinearLayout>
 

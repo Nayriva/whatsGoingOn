@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">What\'s Going On???</string>
+    <string name="app_name">What\'s Going On?</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="log_in">Log in</string>
