@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment fragment = null;
         try {
-            if (type.equalsIgnoreCase("chat")) {
+            if (type.equalsIgnoreCase("Chat")) {
                 fragment = ChatChannelsFragment.class.newInstance();
                 navigationView.setCheckedItem(R.id.nav_chat);
             } else if (type.equalsIgnoreCase("Events")) {
@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity
         switch (menuItem.getItemId()) {
             case R.id.nav_chat:
                 fragmentClass = ChatChannelsFragment.class;
-                activeFragment = "chat";
+                activeFragment = "Chat";
                 break;
             case R.id.nav_events:
                 fragmentClass = EventFragment.class;
