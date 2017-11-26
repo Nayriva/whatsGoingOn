@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity
         userRef.addValueEventListener(valueEventListener);
 
         if (activeFragment != null) {
-            if (activeFragment.equals("chat")) {
+            if (activeFragment.equals("Chat")) {
                 navigationView.setCheckedItem(R.id.nav_chat);
             } else if (activeFragment.equals("Events")) {
                 navigationView.setCheckedItem(R.id.nav_events);
