@@ -2,12 +2,7 @@ package ee.ut.madp.whatsgoingon.helpers;
 
 import android.app.NotificationManager;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
-
-import java.util.Random;
 
 import ee.ut.madp.whatsgoingon.ApplicationClass;
 import ee.ut.madp.whatsgoingon.R;
@@ -28,7 +23,7 @@ public class MessageNotificationHelper {
         if (ApplicationClass.notificationsOn || ApplicationClass.vibrateOn) {
             NotificationCompat.Builder builder =
                     new NotificationCompat.Builder(context)
-                            .setSmallIcon(R.drawable.logo)
+                            .setSmallIcon(R.mipmap.ic_launcher)
                             .setContentTitle(sender);
             if (ChatHelper.isImageText(text)) {
                 builder.setContentText(context.getString(R.string.sent_picture));
