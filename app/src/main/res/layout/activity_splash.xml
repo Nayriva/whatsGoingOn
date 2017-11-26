@@ -18,7 +18,7 @@
             android:layout_height="@dimen/laucher_size"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/spacing_xxxlarge"
-            android:src="@drawable/blbost"/>
+            android:src="@drawable/app_logo"/>
 
         <TextView
             android:id="@+id/app_name"
