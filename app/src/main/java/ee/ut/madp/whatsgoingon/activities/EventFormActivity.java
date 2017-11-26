@@ -238,7 +238,9 @@ public class EventFormActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         Log.i(TAG, "onCreateOptionsMenu");
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.event_share_menu, menu);
+        if (event != null) {
+            inflater.inflate(R.menu.event_share_menu, menu);
+        }
         return true;
     }
 
