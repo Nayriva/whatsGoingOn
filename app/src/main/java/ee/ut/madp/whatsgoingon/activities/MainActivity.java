@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity
         setUpDrawer();
         setupDataForDrawer();
         if (savedInstanceState == null) {
-            setUpFragment("chat");
+            setUpFragment("Chat");
         } else {
             activeFragment = savedInstanceState.getString(LAST_ACTIVE_FRAGMENT);
             setTitle(activeFragment);
