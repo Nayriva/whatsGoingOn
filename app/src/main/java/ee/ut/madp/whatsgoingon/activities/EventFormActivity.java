@@ -50,13 +50,13 @@ import ee.ut.madp.whatsgoingon.constants.PermissionConstants;
 import ee.ut.madp.whatsgoingon.helpers.DateHelper;
 import ee.ut.madp.whatsgoingon.helpers.DialogHelper;
 import ee.ut.madp.whatsgoingon.helpers.EventCalendarHelper;
+import ee.ut.madp.whatsgoingon.helpers.GoogleAccountHelper;
 import ee.ut.madp.whatsgoingon.helpers.MessageNotificationHelper;
 import ee.ut.madp.whatsgoingon.helpers.TextWatcherHelper;
 import ee.ut.madp.whatsgoingon.helpers.UserHelper;
 import ee.ut.madp.whatsgoingon.models.ChatChannel;
 import ee.ut.madp.whatsgoingon.models.ChatMessage;
 import ee.ut.madp.whatsgoingon.models.Event;
-import ee.ut.madp.whatsgoingon.helpers.GoogleAccountHelper;
 import ee.ut.madp.whatsgoingon.reminder.ReminderManager;
 
 import static ee.ut.madp.whatsgoingon.constants.GeneralConstants.EXTRA_EVENT;
@@ -338,7 +338,12 @@ public class EventFormActivity extends AppCompatActivity
         time.setError(null);
         time.setErrorEnabled(false);
         if (event == null) {
-            DialogHelper.showTimePickerDialog(this, time, DateHelper.parseDateFromString(dateInput.getText().toString()).getMillis(), null);
+            if (!dateInput.getText().toString().isEmpty())
+                DialogHelper.showTimePickerDialog(this, time,
+                        DateHelper.parseDateFromString(dateInput.getText().toString()).getMillis(), null);
+            else
+                DialogHelper.showTimePickerDialog(this, time, null, null);
+
         } else {
             DialogHelper.showTimePickerDialog(this, time, event.getDate(), event.getDateTime());
         }
