@@ -338,7 +338,7 @@ public class EventFormActivity extends AppCompatActivity
         time.setError(null);
         time.setErrorEnabled(false);
         if (event == null) {
-            DialogHelper.showTimePickerDialog(this, time, null, null);
+            DialogHelper.showTimePickerDialog(this, time, DateHelper.parseDateFromString(dateInput.getText().toString()).getMillis(), null);
         } else {
             DialogHelper.showTimePickerDialog(this, time, event.getDate(), event.getDateTime());
         }
