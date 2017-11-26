@@ -201,13 +201,13 @@ public class ChatChannelsFragment extends Fragment implements Observer {
                 R.layout.dialog_group_list_item, participants);
         participantsList.setAdapter(dialogAdapter);
 
+        final Fragment fragment = this;
         pickGroupPhoto.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                ImagePicker.pickImage(getActivity());
+                ImagePicker.pickImage(fragment);
             }
         });
-
         dialogConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

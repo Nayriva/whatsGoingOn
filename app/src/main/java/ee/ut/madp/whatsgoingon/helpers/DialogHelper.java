@@ -111,7 +111,7 @@ public class DialogHelper {
         }
 
 
-        final int year,month, day;
+        final int year, month, day;
         final DateTime date  = (dateLong == null) ?
                 null :
                 DateHelper.parseDateFromString(DateHelper.parseDateFromLong(dateLong));
@@ -138,13 +138,11 @@ public class DialogHelper {
                 long calendarTime = myCalendar.getTime().getTime();
 
                 DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(TIME_FORMAT);
-                if (date != null) {
-                    if ((DateHelper.isToday(date.getMillis()) && !DateHelper.isFutureTime(calendarTime)) ||
-                            DateHelper.isPast(calendarTime)) {
-                        timeInputLayout.setErrorEnabled(true);
-                        timeInputLayout.setError(context.getString(R.string.error_time_past));
+                if ((DateHelper.isToday(date.getMillis()) && !DateHelper.isFutureTime(calendarTime)) ||
+                        DateHelper.isPast(calendarTime)) {
+                    timeInputLayout.setErrorEnabled(true);
+                    timeInputLayout.setError(context.getString(R.string.error_time_past));
 
-                    }
                 }
 
                 timeInputLayout.getEditText().setText(dateTimeFormatter.print(myCalendar.getTime().getTime()));
