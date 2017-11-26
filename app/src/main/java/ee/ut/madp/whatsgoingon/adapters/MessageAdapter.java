@@ -38,12 +38,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private List<ChatMessage> chatMessages;
     private Context context;
     private Map<String, String> photosMap;
+    private boolean isGroupConversation;
 
-    public MessageAdapter(Context context, List<ChatMessage> chatMessages, Map<String, String> photosMap) {
+    public MessageAdapter(Context context, List<ChatMessage> chatMessages, Map<String, String> photosMap,
+                          boolean group) {
         Log.i(TAG, "constructor");
         this.chatMessages = chatMessages;
         this.context = context;
         this.photosMap = photosMap;
+        this.isGroupConversation = group;
     }
 
     @Override
@@ -116,6 +119,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             holder.messagePicture.setVisibility(View.GONE);
             holder.message.setVisibility(View.VISIBLE);
             holder.message.setText(chatMessage.getMessageText());
+        }
+
+        if (! isGroupConversation) {
+            holder.author.setVisibility(View.GONE);
         }
     }
 

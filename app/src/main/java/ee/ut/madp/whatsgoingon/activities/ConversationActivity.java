@@ -276,7 +276,7 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
 
     private void setupRecyclerView() {
         Log.i(TAG, "setupRecyclerView");
-        messageAdapter = new MessageAdapter(this, chatMessageList, photosMap);
+        messageAdapter = new MessageAdapter(this, chatMessageList, photosMap, chatChannel.isGroup());
         linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
