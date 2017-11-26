@@ -114,8 +114,8 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
         } else {
             photosMap.put(application.getLoggedUser().getId(), application.getLoggedUser().getPhoto());
             photosMap.put(chatChannel.getId(), chatChannel.getPhoto());
+            updateHistory();
         }
-        updateHistory();
     }
 
     @Override
@@ -293,10 +293,11 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
             usersRef.child(receiver).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    Log.i(TAG, "downloadPhotos.onDataChane");
+                    Log.i(TAG, "downloadPhotos.onDataChange");
                     User user = dataSnapshot.getValue(User.class);
                     if (user != null && user.getId() != null && user.getPhoto() != null) {
                         photosMap.put(user.getId(), user.getPhoto());
+                        updateHistory();
                     }
                 }
 

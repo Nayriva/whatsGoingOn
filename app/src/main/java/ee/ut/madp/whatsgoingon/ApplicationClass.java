@@ -31,6 +31,7 @@ import org.alljoyn.bus.Status;
 import org.alljoyn.bus.annotation.BusSignalHandler;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,6 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 import ee.ut.madp.whatsgoingon.chat.ChatInterface;
+import ee.ut.madp.whatsgoingon.comparators.ChatMessageComparator;
 import ee.ut.madp.whatsgoingon.chat.ControlInterface;
 import ee.ut.madp.whatsgoingon.chat.Observable;
 import ee.ut.madp.whatsgoingon.chat.Observer;
@@ -169,6 +171,7 @@ public class ApplicationClass extends Application implements Observable, Observe
                 } else {
                     chatHistory.put(key, messages);
                 }
+                Collections.sort(chatHistory.get(key), new ChatMessageComparator());
             }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
