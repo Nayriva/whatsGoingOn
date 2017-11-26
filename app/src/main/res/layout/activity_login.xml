@@ -110,7 +110,7 @@
                 android:text="@string/reg_link" />
 
             <TextView
-                android:id="@+id/forgotten_password_link"
+                android:id="@+id/tv_forgotten_password_link"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="true"

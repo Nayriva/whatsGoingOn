@@ -1,14 +1,22 @@
 package ee.ut.madp.whatsgoingon.activities;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.service.voice.AlwaysOnHotwordDetector;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TextInputEditText;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.Window;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
@@ -63,6 +71,7 @@ public class LoginActivity extends AppCompatActivity
     @BindView(R.id.input_password) TextInputEditText passwordInput;
     @BindView(R.id.login_title) TextView loginTitle;
     @BindView(R.id.btn_facebook) LoginButton facebookButton;
+    @BindView(R.id.tv_forgotten_password_link) TextView forgottenPassLink;
 
     private GoogleApiClient mGoogleApiClient;
     private FirebaseAuth firebaseAuth;
@@ -145,6 +154,40 @@ public class LoginActivity extends AppCompatActivity
         startActivityForResult(intent, SIGN_UP_REQUEST_CODE);
     }
 
+    @OnClick(R.id.tv_forgotten_password_link)
+    public void resetPass() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View view = inflater.inflate(R.layout.dialog_reset_password, null);
+        final EditText input = (EditText) view.findViewById(R.id.et_email_reset);
+        builder.setView(view);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                firebaseAuth.sendPasswordResetEmail(String.valueOf(input.getText()))
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.reset_password_instructions_sent));
+                                } else {
+                                    DialogHelper.showInformationMessage(coordinatorLayout, getString(R.string.reset_password_instructions_not_sent));
+                                }
+                            }
+                        });
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
     private void initializeAuth() {
         Log.i(TAG, "initializeAuth");
         firebaseAuth = FirebaseAuth.getInstance();
@@ -195,7 +238,6 @@ public class LoginActivity extends AppCompatActivity
                             FirebaseExceptionsChecker.checkFirebaseAuth(LoginActivity.this, task);
                         } else if (checkUserLogin()) {
                             String userId = task.getResult().getUser().getUid();
-                            String userName = task.getResult().getUser().getDisplayName();
                             Log.i(TAG, "User: " + userId + " has been logged in");
                             startMainActivity();
                         }
