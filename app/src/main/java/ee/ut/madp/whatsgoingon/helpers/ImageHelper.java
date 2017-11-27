@@ -102,4 +102,14 @@ public class ImageHelper {
             return null;
         }
     }
+
+    public static Bitmap resize(Bitmap bitmap) {
+        float maxImageSize = 250;
+        float ratio = Math.min(
+                maxImageSize / bitmap.getWidth(),
+                maxImageSize / bitmap.getHeight());
+        int width = Math.round(ratio *  bitmap.getWidth());
+        int height = Math.round(ratio * bitmap.getHeight());
+        return Bitmap.createScaledBitmap(bitmap, width, height, false);
+    }
 }

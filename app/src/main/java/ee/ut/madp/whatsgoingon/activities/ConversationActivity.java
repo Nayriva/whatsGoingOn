@@ -485,9 +485,12 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
             if (inputStreams != null) {
                 InputStream is = inputStreams[0];
                 Bitmap bmp = BitmapFactory.decodeStream(is);
-                String base64 = ImageHelper.encodeBitmap(bmp);
-                String text = ChatHelper.imageText(base64);
-                sendMessage(text);
+                if (bmp != null) {
+                    bmp = ImageHelper.resize(bmp);
+                    String base64 = ImageHelper.encodeBitmap(bmp);
+                    String text = ChatHelper.imageText(base64);
+                    sendMessage(text);
+                }
             }
             return null;
         }
@@ -532,9 +535,10 @@ public class ConversationActivity extends AppCompatActivity implements Observer 
             if (uris != null) {
                 Uri uri = uris[0];
                 try {
-                    Bitmap reducedSizeBitmap = ImageHelper.getScaledBitmap(ConversationActivity.this, uri.getPath());
-                    if(reducedSizeBitmap != null) {
-                        sendMessage(ChatHelper.imageText(ImageHelper.encodeBitmap(reducedSizeBitmap)));
+                    Bitmap bitmap = ImageHelper.getScaledBitmap(ConversationActivity.this, uri.getPath());
+                    if(bitmap != null) {
+                        bitmap = ImageHelper.resize(bitmap);
+                        sendMessage(ChatHelper.imageText(ImageHelper.encodeBitmap(bitmap)));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
