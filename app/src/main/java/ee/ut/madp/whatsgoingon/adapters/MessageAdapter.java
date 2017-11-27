@@ -103,6 +103,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             holder.messageEvent.setLayoutParams(params);
 
             holder.message.setVisibility(View.GONE);
+            holder.messagePicture.setVisibility(View.GONE);
             final String[] decodedEventMessage = ChatHelper.decodeEventMessage(ChatHelper.getEventText(messageText));
             holder.eventName.setText(decodedEventMessage[1]);
             holder.eventInfo.setText(decodedEventMessage[2]);
