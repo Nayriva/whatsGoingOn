@@ -107,7 +107,7 @@
         <receiver
             android:name=".reminder.SnoozeReceiver"
             android:enabled="true"
-            android:exported="true"></receiver>
+            android:exported="true"/>
     </application>
 
 </manifest>
