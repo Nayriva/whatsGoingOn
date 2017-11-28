@@ -76,6 +76,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         final String messageText = chatMessage.getMessageText();
         if (ChatHelper.isImageText(messageText)) {
             holder.messagePicture.setVisibility(View.VISIBLE);
+            holder.messageEvent.setVisibility(View.GONE);
             holder.messagePicture.setImageBitmap(
                     ImageHelper.decodeBitmap(ChatHelper.getImageBase64(messageText))
             );
